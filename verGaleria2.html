@@ -294,43 +294,61 @@
             });
         }
 
+        async function uploadFiles(event) {
+            const files = event.target.files;
+            const user = auth.currentUser;
+            if (!user) {
+                alert("Por favor, inicia sesión para subir archivos.");
+                return;
+            }
+            const email = user.email;
+            const promises = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileRef = ref(storage, `${email}/${new Date().toISOString()}-${file.name}`);
+                promises.push(uploadBytes(fileRef, file));
+            }
+
+            try {
+                await Promise.all(promises);
+                alert('Archivos subidos exitosamente.');
+                loadGallery(email);
+            } catch (error) {
+                alert('Error al subir archivos: ' + error.message);
+            }
+        }
+
         function toggleDeleteButton() {
-            const selected = galleryItems.filter(item => item.checked);
-            document.getElementById('deleteSelectedBtn').style.display = selected.length > 0 ? 'block' : 'none';
+            const selectedItems = galleryItems.filter(item => item.checked);
+            const deleteBtn = document.getElementById('deleteSelectedBtn');
+            if (selectedItems.length > 0) {
+                deleteBtn.style.display = 'flex';
+            } else {
+                deleteBtn.style.display = 'none';
+            }
         }
 
         async function deleteSelectedFiles() {
+            const selectedItems = galleryItems.filter(item => item.checked);
+            if (selectedItems.length === 0) return;
+
             const confirmDelete = confirm("¿Estás seguro de que deseas eliminar los archivos seleccionados?");
-            if (!confirmDelete) {
+            if (!confirmDelete) return;
+
+            const user = auth.currentUser;
+            if (!user) {
+                alert("Por favor, inicia sesión para eliminar archivos.");
                 return;
             }
-            const email = auth.currentUser.email;
-            const selectedItems = galleryItems.filter(item => item.checked);
-            for (let item of selectedItems) {
-                const fileRef = ref(storage, item.dataset.ref);
-                try {
-                    await deleteObject(fileRef);
-                } catch (error) {
-                    alert('Error al eliminar algunos archivos: ' + error.message);
-                }
-            }
-            alert('Archivos eliminados exitosamente.');
-            loadGallery(email);
-        }
 
-        function uploadFiles(event) {
-            const email = auth.currentUser.email;
-            const files = event.target.files;
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const timestamp = new Date().toISOString().replace(/[-:T]/g, '').split('.')[0];
-                const storageRef = ref(storage, `${email}/${timestamp}_${file.name}`);
-                uploadBytes(storageRef, file).then((snapshot) => {
-                    console.log('Archivo subido exitosamente');
-                    loadGallery(email);
-                }).catch((error) => {
-                    console.error('Error al subir el archivo:', error);
-                });
+            const email = user.email;
+            const promises = selectedItems.map(item => deleteObject(ref(storage, item.dataset.ref)));
+            try {
+                await Promise.all(promises);
+                alert('Archivos seleccionados eliminados exitosamente.');
+                loadGallery(email);
+            } catch (error) {
+                alert('Error al eliminar los archivos: ' + error.message);
             }
         }
     </script>
