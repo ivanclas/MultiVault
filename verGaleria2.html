@@ -143,58 +143,68 @@
             background-color: darkred;
         }
 
-  @media (max-width: 600px) {
+ @media (max-width: 600px) {
     h1 {
         font-size: 28px;
-        text-align: center; /* Centra el título para darle un look más vacan */
+        text-align: center; /* Centra el título */
+        position: fixed; /* Hace que el título sea flotante */
+        top: 10px; /* Posición desde la parte superior */
+        left: 50%; /* Centra el título horizontalmente */
+        transform: translateX(-50%); /* Ajusta la posición para centrar */
+        z-index: 9; /* Asegura que esté debajo de los botones */
+        background-color: rgba(255, 255, 255, 0.8); /* Fondo semitransparente */
+        padding: 10px; /* Espaciado alrededor del texto */
+        border-radius: 10px; /* Bordes redondeados */
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para destacar */
     }
 
     .filter-buttons {
         position: fixed;
-        top: 10px;
+        top: 60px; /* Espacio debajo del título */
         left: 50%;
-        transform: translateX(-50%); /* Centra los botones en la parte superior de la pantalla */
-        z-index: 10;
+        transform: translateX(-50%); /* Centra horizontalmente */
+        z-index: 10; /* Asegura que esté encima del título */
         display: flex; /* Alinea los botones horizontalmente */
         gap: 10px; /* Espacio entre los botones */
-        background-color: rgba(255, 255, 255, 0.9); /* Fondo semitransparente para que resalten */
+        background-color: rgba(255, 255, 255, 0.9); /* Fondo semitransparente */
         padding: 10px;
-        border-radius: 10px; /* Bordes redondeados para un estilo moderno */
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Agrega una sombra para que floten visualmente */
+        border-radius: 10px; /* Bordes redondeados */
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para destacar */
     }
 
     .filter-buttons button {
         padding: 8px 16px;
         font-size: 14px;
         min-width: 100px;
-        border: none; /* Quita los bordes de los botones para un look más limpio */
-        background-color: #007BFF; /* Color de fondo para resaltar */
+        border: none; /* Quita los bordes de los botones */
+        background-color: #007BFF; /* Color de fondo */
         color: white; /* Texto blanco para contraste */
         border-radius: 5px; /* Bordes redondeados en los botones */
         cursor: pointer;
     }
 
     .filter-buttons button:hover {
-        background-color: #0056b3; /* Cambio de color en hover para interacción */
+        background-color: #0056b3; /* Cambio de color en hover */
     }
 
     .gallery {
-        width: 90%; /* Ajusta el ancho de la galería para pantallas pequeñas */
-        margin: 0 auto; /* Centra la galería horizontalmente */
+        width: 90%; /* Ancho de la galería */
+        margin: 0 auto; /* Centra la galería */
         padding: 0 15px;
         gap: 20px;
+        margin-top: 120px; /* Espacio arriba para no solaparse con el título y botones */
     }
 
     .gallery-item {
         padding: 8px;
-        border: 1px solid #ddd; /* Agrega un borde suave alrededor de cada item */
-        border-radius: 5px; /* Bordes redondeados para los items de la galería */
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave para cada item */
+        border: 1px solid #ddd; /* Borde suave */
+        border-radius: 5px; /* Bordes redondeados */
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave */
     }
 
     .gallery-item h4 {
         font-size: 12px;
-        text-align: center; /* Centra los títulos en cada ítem de la galería */
+        text-align: center; /* Centra los títulos de los items */
     }
 
     .float-button {
@@ -203,6 +213,7 @@
         font-size: 20px;
     }
 }
+
 }
 
 
