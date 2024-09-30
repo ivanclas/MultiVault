@@ -240,6 +240,12 @@
     <button class="delete-float-button" id="deleteSelectedBtn" onclick="deleteSelectedFiles()">❌</button>
 
     <input type="file" id="fileInput" style="display: none;" multiple accept="image/*,video/*" onchange="uploadFiles(event)">
+    <script>
+    function toggleFilterMenu() {
+        const filterMenu = document.getElementById('filterMenu');
+        filterMenu.style.display = filterMenu.style.display === 'none' || filterMenu.style.display === '' ? 'block' : 'none';
+    }
+</script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
