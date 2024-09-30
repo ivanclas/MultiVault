@@ -1,306 +1,352 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Galería de Fotos y Videos</title>
-  <style>
-    /* Estilos */
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f5f5f5;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    h1 {
-      margin-top: 20px;
-      color: #007bff;
-      text-align: center;
-      font-size: 36px;
-    }
-    .filter-buttons {
-      display: flex;
-      justify-content: center;
-      margin: 20px;
-      flex-wrap: wrap;
-    }
-    .filter-buttons button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 10px 20px;
-      cursor: pointer;
-      font-size: 16px;
-      margin: 5px;
-      flex: 1;
-      min-width: 120px;
-      transition: background-color 0.3s;
-    }
-    .filter-buttons button:hover {
-      background-color: #0056b3;
-    }
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 20px;
-      padding: 20px;
-      max-width: 1200px;
-      width: 100%;
-    }
-    .gallery-item {
-      background-color: white;
-      padding: 15px;
-      border-radius: 15px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      transition: transform 0.3s ease;
-      position: relative;
-    }
-    .gallery-item:hover {
-      transform: scale(1.05);
-    }
-    .gallery-item img,
-    .gallery-item video {
-      max-width: 100%;
-      height: auto;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-    .gallery-item h4 {
-      margin: 10px 0 0;
-      color: #333;
-      font-size: 18px;
-    }
-    .delete-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background-color: red;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-    .delete-btn:hover {
-      background-color: darkred;
-    }
-    .float-button {
-      position: fixed;
-      bottom: 80px;
-      right: 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      font-size: 24px;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .float-button:hover {
-      background-color: #0056b3;
-    }
-    .delete-float-button {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: red;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      font-size: 24px;
-      cursor: pointer;
-      display: none;
-      justify-content: center;
-      align-items: center;
-    }
-    .delete-float-button:hover {
-      background-color: darkred;
-    }
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 28px;
-      }
-      .gallery {
-        padding: 10px;
-        gap: 15px;
-      }
-      .gallery-item {
-        padding: 10px;
-      }
-      .float-button,
-      .delete-float-button {
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galería de Fotos y Videos</title>
+    <style>
+        /* Estilos */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+            color: #007bff;
+            text-align: center;
+            font-size: 36px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            justify-content: center;
+            margin: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-buttons button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            flex: 1;
+            min-width: 120px;
+            transition: background-color 0.3s;
+        }
+
+        .filter-buttons button:hover {
+            background-color: #0056b3;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .gallery-item {
+            background-color: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+        }
+
+        .gallery-item img,
+        .gallery-item video {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .gallery-item h4 {
+            margin: 10px 0 0;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background-color: darkred;
+        }
+
+        .float-button {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .float-button:hover {
+            background-color: #0056b3;
+        }
+
+        .delete-float-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .delete-float-button:hover {
+            background-color: darkred;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 28px;
+            }
+
+            .gallery {
+                padding: 20px;
+                gap: 15px;
+            }
+
+            .gallery-item {
+                padding: 25px;
+            }
+
+            .float-button,
+            .delete-float-button {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>Galería de fotos y videos</h1>
-  <div class="filter-buttons">
-    <button onclick="filterGallery('all')">Todo</button>
-    <button onclick="filterGallery('photo')">Fotos</button>
-    <button onclick="filterGallery('video')">Videos</button>
-  </div>
-  <div class="gallery" id="gallery"></div>
+    <h1>Galería de Fotos y Videos</h1>
+    <div class="filter-buttons">
+        <button onclick="filterGallery('all')">Todo</button>
+        <button onclick="filterGallery('photo')">Fotos</button>
+        <button onclick="filterGallery('video')">Videos</button>
+    </div>
+    <div class="gallery" id="gallery"></div>
 
-  <!-- Botón para volver a ingresar al formulario -->
-  <button class="float-button" onclick="window.location.href='formulario.html'">+</button>
+    <!-- Botón para redirigir al formulario -->
+    <button class="float-button" onclick="window.location.href='formulario.html'">+</button>
 
-  <!-- Botón para eliminar archivos seleccionados -->
-  <button class="delete-float-button" id="deleteSelectedBtn" onclick="deleteSelectedFiles()">❌</button>
+    <!-- Botón para eliminar archivos seleccionados -->
+    <button class="delete-float-button" id="deleteSelectedBtn" onclick="deleteSelectedFiles()">❌</button>
 
-  <input type="file" id="fileInput" style="display: none;" multiple accept="image/*,video/*" onchange="uploadFiles(event)">
+    <input type="file" id="fileInput" style="display: none;" multiple accept="image/*,video/*" onchange="uploadFiles(event)">
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getStorage, ref, listAll, getDownloadURL, deleteObject, uploadBytes } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getStorage, ref, listAll, getDownloadURL, deleteObject, uploadBytes } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
-    // Configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
-      authDomain: "login-de3fd.firebaseapp.com",
-      databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
-      projectId: "login-de3fd",
-      storageBucket: "login-de3fd.appspot.com",
-      messagingSenderId: "1064113669692",
-      appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
-      measurementId: "G-TMWR9JNR18"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const storage = getStorage(app);
-    const auth = getAuth(app);
-    let galleryItems = [];
-
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        loadGallery(user.email);
-      } else {
-        alert("Por favor, inicia sesión para ver la galería.");
-        window.location.href = "index.html";
-      }
-    });
-
-    async function loadGallery(email) {
-      const storageRef = ref(storage, email);
-      const listResult = await listAll(storageRef);
-      const gallery = document.getElementById('gallery');
-      gallery.innerHTML = '';
-      galleryItems = [];
-
-      listResult.items.forEach(async (itemRef) => {
-        const url = await getDownloadURL(itemRef);
-        const galleryItem = document.createElement('div');
-        galleryItem.className = 'gallery-item';
-        galleryItem.dataset.type = itemRef.name.match(/\.(jpg|jpeg|png)$/i) ? 'photo' : 'video';
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'gallery-checkbox';
-        checkbox.dataset.ref = itemRef.fullPath;
-        checkbox.addEventListener('change', toggleDeleteButton);
-        galleryItem.appendChild(checkbox);
-        galleryItems.push(checkbox);
-
-        if (galleryItem.dataset.type === 'photo') {
-          const img = document.createElement('img');
-          img.src = url;
-          img.alt = itemRef.name;
-          galleryItem.appendChild(img);
-        } else {
-          const video = document.createElement('video');
-          video.src = url;
-          video.controls = true;
-          galleryItem.appendChild(video);
-        }
-
-        const title = document.createElement('h4');
-        title.textContent = itemRef.name;
-        galleryItem.appendChild(title);
-
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'delete-btn';
-        deleteBtn.innerHTML = 'Eliminar';
-        deleteBtn.onclick = async () => {
-          const confirmSingleDelete = confirm("¿Estás seguro de que deseas eliminar este archivo?");
-          if (!confirmSingleDelete) {
-            return;
-          }
-          try {
-            await deleteObject(ref(storage, itemRef.fullPath));
-            alert('Archivo eliminado exitosamente.');
-            loadGallery(email);
-          } catch (error) {
-            console.error("Error al eliminar el archivo:", error);
-            alert('Hubo un error al eliminar el archivo.');
-          }
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
+            authDomain: "login-de3fd.firebaseapp.com",
+            databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
+            projectId: "login-de3fd",
+            storageBucket: "login-de3fd.appspot.com",
+            messagingSenderId: "1064113669692",
+            appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
+            measurementId: "G-TMWR9JNR18"
         };
-        galleryItem.appendChild(deleteBtn);
-        gallery.appendChild(galleryItem);
-      });
-    }
 
-    function toggleDeleteButton() {
-      const selectedItems = document.querySelectorAll('.gallery-checkbox:checked').length;
-      const deleteBtn = document.getElementById('deleteSelectedBtn');
-      deleteBtn.style.display = selectedItems > 0 ? 'flex' : 'none';
-    }
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+        const auth = getAuth(app);
+        let galleryItems = [];
 
-    function filterGallery(type) {
-      galleryItems.forEach(item => {
-        const galleryItem = item.closest('.gallery-item');
-        if (galleryItem) {
-          galleryItem.style.display = (type === 'all' || galleryItem.dataset.type === type) ? '' : 'none';
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                loadGallery(user.email);
+            } else {
+                alert("Por favor, inicia sesión para ver la galería.");
+                window.location.href = "index.html";
+            }
+        });
+
+        async function loadGallery(email) {
+            const storageRef = ref(storage, email);
+            const listResult = await listAll(storageRef);
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+            galleryItems = [];
+
+            listResult.items.forEach(async (itemRef) => {
+                const url = await getDownloadURL(itemRef);
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item';
+                galleryItem.dataset.type = itemRef.name.match(/\.(jpg|jpeg|png)$/i) ? 'photo' : 'video';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'gallery-checkbox';
+                checkbox.dataset.ref = itemRef.fullPath;
+                checkbox.addEventListener('change', toggleDeleteButton);
+                galleryItem.appendChild(checkbox);
+                galleryItems.push(checkbox);
+
+                if (galleryItem.dataset.type === 'photo') {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = itemRef.name;
+                    galleryItem.appendChild(img);
+                } else {
+                    const video = document.createElement('video');
+                    video.src = url;
+                    video.controls = true;
+                    galleryItem.appendChild(video);
+                }
+
+                const title = document.createElement('h4');
+                title.textContent = itemRef.name;
+                galleryItem.appendChild(title);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.innerHTML = 'Eliminar';
+                deleteBtn.onclick = async () => {
+                    const confirmSingleDelete = confirm("¿Estás seguro de que deseas eliminar este archivo?");
+                    if (!confirmSingleDelete) {
+                        return;
+                    }
+                    try {
+                        await deleteObject(ref(storage, itemRef.fullPath));
+                        alert('Archivo eliminado exitosamente.');
+                        loadGallery(email);
+                    } catch (error) {
+                        console.error("Error al eliminar el archivo:", error);
+                        alert('Hubo un error al eliminar el archivo.');
+                    }
+                };
+                galleryItem.appendChild(deleteBtn);
+
+                gallery.appendChild(galleryItem);
+            });
         }
-      });
-    }
 
-    function deleteSelectedFiles() {
-      const confirmDelete = confirm("¿Estás seguro de que deseas eliminar los archivos seleccionados?");
-      if (!confirmDelete) {
-        return;
-      }
-      galleryItems.filter(item => item.checked).forEach(async item => {
-        try {
-          await deleteObject(ref(storage, item.dataset.ref));
-        } catch (error) {
-          console.error("Error al eliminar archivo:", error);
+        // Función para mostrar/ocultar el botón de eliminar seleccionados
+        function toggleDeleteButton() {
+            const selectedItems = document.querySelectorAll('.gallery-checkbox:checked').length;
+            const deleteBtn = document.getElementById('deleteSelectedBtn');
+            deleteBtn.style.display = selectedItems > 0 ? 'flex' : 'none';
         }
-      });
-      alert("Archivos seleccionados eliminados.");
-      loadGallery(auth.currentUser.email);
-    }
 
-    function uploadFiles(event) {
-      const files = event.target.files;
-      Array.from(files).forEach(async (file) => {
-        const date = new Date();
-        const dateString = `${date.toISOString().slice(0, 10)}_${date.toTimeString().slice(0, 8).replace(/:/g, '')}`;
-        const fileName = `${dateString}_${file.name}`;
-        const fileRef = ref(storage, `${auth.currentUser.email}/${fileName}`);
-        try {
-          await uploadBytes(fileRef, file);
-          alert("Archivo subido exitosamente.");
-          loadGallery(auth.currentUser.email);
-        } catch (error) {
-          console.error("Error al subir archivo:", error);
+        // Función para filtrar la galería
+        function filterGallery(type) {
+            galleryItems.forEach(item => {
+                const galleryItem = item.closest('.gallery-item');
+                if (galleryItem) {
+                    galleryItem.style.display = (type === 'all' || galleryItem.dataset.type === type) ? 'block' : 'none';
+                }
+            });
         }
-      });
-    }
-  </script>
+
+        // Función para subir archivos
+        async function uploadFiles(event) {
+            const files = event.target.files;
+            const user = auth.currentUser;
+            if (!user) {
+                alert("Por favor, inicia sesión para subir archivos.");
+                return;
+            }
+            const userEmail = user.email;
+
+            try {
+                for (const file of files) {
+                    const fileRef = ref(storage, `${userEmail}/${file.name}`);
+                    await uploadBytes(fileRef, file);
+                }
+                alert('Archivos subidos exitosamente.');
+                loadGallery(userEmail);
+            } catch (error) {
+                console.error("Error al subir los archivos:", error);
+                alert('Hubo un error al subir los archivos.');
+            }
+        }
+
+        // Función para eliminar archivos seleccionados
+        async function deleteSelectedFiles() {
+            const checkboxes = document.querySelectorAll('.gallery-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert("No hay archivos seleccionados para eliminar.");
+                return;
+            }
+
+            const confirmDelete = confirm("¿Estás seguro de que deseas eliminar los archivos seleccionados?");
+            if (!confirmDelete) {
+                return;
+            }
+
+            const promises = [];
+            checkboxes.forEach(checkbox => {
+                const itemRef = ref(storage, checkbox.dataset.ref);
+                promises.push(deleteObject(itemRef));
+            });
+
+            try {
+                await Promise.all(promises);
+                alert('Archivos eliminados exitosamente.');
+                loadGallery(auth.currentUser.email);
+            } catch (error) {
+                console.error("Error al eliminar los archivos:", error);
+                alert('Hubo un error al eliminar algunos archivos.');
+            }
+        }
+
+        // Exponer las funciones al ámbito global para que sean accesibles desde los manejadores de eventos en línea
+        window.filterGallery = filterGallery;
+        window.deleteSelectedFiles = deleteSelectedFiles;
+        window.uploadFiles = uploadFiles;
+    </script>
 </body>
 </html>
