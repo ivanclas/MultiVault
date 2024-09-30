@@ -143,22 +143,31 @@
             background-color: darkred;
         }
 
-        @media (max-width: 600px) {
+         @media (max-width: 600px) {
             h1 {
                 font-size: 28px;
             }
 
+            .filter-buttons button {
+                padding: 8px 16px;
+                font-size: 14px;
+                min-width: 100px;
+            }
+
             .gallery {
-                padding: 20px;
+                padding: 10px;
                 gap: 15px;
             }
 
             .gallery-item {
-                padding: 25px;
+                padding: 10px;
             }
 
-            .float-button,
-            .delete-float-button {
+            .gallery-item h4 {
+                font-size: 16px;
+            }
+
+            .float-button {
                 width: 50px;
                 height: 50px;
                 font-size: 20px;
