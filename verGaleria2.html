@@ -143,7 +143,7 @@
             background-color: darkred;
         }
 
- @media (max-width: 600px) {
+@media (max-width: 600px) {
     h1 {
         font-size: 28px;
         text-align: center; /* Centra el título */
@@ -158,33 +158,38 @@
         box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para destacar */
     }
 
-    .filter-buttons {
+    .filter-menu {
         position: fixed;
         top: 60px; /* Espacio debajo del título */
         left: 50%;
         transform: translateX(-50%); /* Centra horizontalmente */
         z-index: 10; /* Asegura que esté encima del título */
-        display: flex; /* Alinea los botones horizontalmente */
-        gap: 10px; /* Espacio entre los botones */
         background-color: rgba(255, 255, 255, 0.9); /* Fondo semitransparente */
         padding: 10px;
         border-radius: 10px; /* Bordes redondeados */
         box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para destacar */
+        display: none; /* Oculta el menú por defecto */
     }
 
-    .filter-buttons button {
-        padding: 8px 16px;
-        font-size: 14px;
-        min-width: 100px;
-        border: none; /* Quita los bordes de los botones */
+    .filter-button {
+        cursor: pointer;
+        padding: 10px; /* Espaciado dentro del botón */
         background-color: #007BFF; /* Color de fondo */
         color: white; /* Texto blanco para contraste */
-        border-radius: 5px; /* Bordes redondeados en los botones */
-        cursor: pointer;
+        border: none; /* Sin borde */
+        border-radius: 5px; /* Bordes redondeados */
+        font-size: 14px; /* Tamaño de fuente */
+        margin-top: 10px; /* Espacio encima del botón */
     }
 
-    .filter-buttons button:hover {
+    .filter-button:hover {
         background-color: #0056b3; /* Cambio de color en hover */
+    }
+
+    .filter-options {
+        display: flex; /* Alínea las opciones de filtro horizontalmente */
+        flex-direction: column; /* Coloca las opciones en vertical */
+        gap: 10px; /* Espacio entre opciones */
     }
 
     .gallery {
