@@ -143,15 +143,39 @@
             background-color: darkred;
         }
 
-    @media (max-width: 600px) {
+  @media (max-width: 600px) {
     h1 {
         font-size: 28px;
+        text-align: center; /* Centra el título para darle un look más vacan */
+    }
+
+    .filter-buttons {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%); /* Centra los botones en la parte superior de la pantalla */
+        z-index: 10;
+        display: flex; /* Alinea los botones horizontalmente */
+        gap: 10px; /* Espacio entre los botones */
+        background-color: rgba(255, 255, 255, 0.9); /* Fondo semitransparente para que resalten */
+        padding: 10px;
+        border-radius: 10px; /* Bordes redondeados para un estilo moderno */
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Agrega una sombra para que floten visualmente */
     }
 
     .filter-buttons button {
         padding: 8px 16px;
         font-size: 14px;
         min-width: 100px;
+        border: none; /* Quita los bordes de los botones para un look más limpio */
+        background-color: #007BFF; /* Color de fondo para resaltar */
+        color: white; /* Texto blanco para contraste */
+        border-radius: 5px; /* Bordes redondeados en los botones */
+        cursor: pointer;
+    }
+
+    .filter-buttons button:hover {
+        background-color: #0056b3; /* Cambio de color en hover para interacción */
     }
 
     .gallery {
@@ -160,23 +184,25 @@
         padding: 0 15px;
         gap: 20px;
     }
-    
+
     .gallery-item {
         padding: 8px;
+        border: 1px solid #ddd; /* Agrega un borde suave alrededor de cada item */
+        border-radius: 5px; /* Bordes redondeados para los items de la galería */
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave para cada item */
     }
 
     .gallery-item h4 {
         font-size: 12px;
+        text-align: center; /* Centra los títulos en cada ítem de la galería */
     }
 
-    .filter-buttons {
-    position: fixed;
-    top: 10px; /* Ajusta la posición del botón en la parte superior de la página */
-    left: 10px; /* Ajusta la posición horizontal */
-    z-index: 10; /* Asegura que esté por encima de otros elementos */
+    .float-button {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
 }
-
-    }
 }
 
 
