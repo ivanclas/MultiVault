@@ -143,35 +143,37 @@
             background-color: darkred;
         }
 
-         @media (max-width: 600px) {
-            h1 {
-                font-size: 28px;
-            }
+      @media (max-width: 600px) {
+    h1 {
+        font-size: 28px; /* Reduce el tamaño de la fuente del h1 */
+    }
 
-            .filter-buttons button {
-                padding: 8px 16px;
-                font-size: 14px;
-                min-width: 100px;
-            }
-            .gallery {
-                padding: 0 30px; 
-                gap: 25px;
-            }
-            
-            .gallery-item {
-                padding: 10px;
-            }
+    .filter-buttons button {
+        padding: 8px 16px; /* Ajusta el relleno del botón */
+        font-size: 14px; /* Reduce el tamaño de la fuente del botón */
+        min-width: 100px; /* Establece un ancho mínimo */
+    }
 
-            .gallery-item h4 {
-                font-size: 12px;
-            }
+    .gallery {
+        padding: 0 15px; /* Ajusta el padding de la galería para pantallas pequeñas */
+        gap: 20px; /* Reduce el gap para que se vea más compacta */
+    }
+    
+    .gallery-item {
+        padding: 8px; /* Ajusta el padding dentro de cada item de la galería */
+    }
 
-            .float-button {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-            }
-        }
+    .gallery-item h4 {
+        font-size: 12px; /* Reduce el tamaño de los títulos en la galería */
+    }
+
+    .float-button {
+        width: 50px; /* Ajusta el ancho del botón flotante */
+        height: 50px; /* Ajusta la altura del botón flotante */
+        font-size: 20px; /* Reduce el tamaño de la fuente dentro del botón */
+    }
+}
+
     </style>
 </head>
 <body>
