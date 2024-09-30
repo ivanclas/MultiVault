@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login con Firebase</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        input {
+            width: 90%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            border-color: #007bff;
+        }
+        button {
+            width: 100%;
+            padding: 19px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin: 10px 0; /* Agregado para el espacio entre botones */
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        p {
+            margin-top: 20px;
+            color: #666;
+        }
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .register-container {
+            display: none; /* Oculto por defecto */
+            margin-top: 20px;
+        }
+    </style>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
+            authDomain: "login-de3fd.firebaseapp.com",
+            databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
+            projectId: "login-de3fd",
+            storageBucket: "login-de3fd.appspot.com",
+            messagingSenderId: "1064113669692",
+            appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
+            measurementId: "G-TMWR9JNR18"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Función para iniciar sesión
+        async function login() {
+            const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
+            const errorMessage = document.getElementById("login-error-message");
+
+            if (!email || !password) {
+                errorMessage.textContent = "Por favor, completa todos los campos.";
+                return;
+            }
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                localStorage.setItem("userEmail", email); // Guardar el correo en localStorage
+                alert("¡Inicio de sesión exitoso!");
+                window.location.href = 'menu.html'; // Redirigir a página principal
+            } catch (error) {
+                errorMessage.textContent = "Error en el inicio de sesión: " + error.message;
+                console.error("Error en el inicio de sesión:", error.message);
+            }
+        }
+
+        // Función para registrar un nuevo usuario
+        async function register() {
+            const email = document.getElementById("register-email").value;
+            const password = document.getElementById("register-password").value;
+            const errorMessage = document.getElementById("register-error-message");
+
+            if (!email || !password) {
+                errorMessage.textContent = "Por favor, completa todos los campos.";
+                return;
+            }
+
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                alert("¡Registro exitoso!");
+                window.location.href = 'menu.html'; // Redirigir a página principal
+            } catch (error) {
+                if (error.code === 'auth/email-already-in-use') {
+                    alert("El correo ya está registrado. Por favor, utiliza otro correo.");
+                } else {
+                    errorMessage.textContent = "Error en el registro: " + error.message;
+                }
+                console.error("Error en el registro:", error.message);
+            }
+        }
+
+        function toggleRegisterForm() {
+            const registerContainer = document.getElementById("register-container");
+            registerContainer.style.display = registerContainer.style.display === "none" ? "block" : "none";
+        }
+
+        window.login = login;
+        window.register = register;
+        window.toggleRegisterForm = toggleRegisterForm;
+    </script>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Iniciar Sesión</h1>
+        <input type="email" id="login-email" placeholder="Correo electrónico" required />
+        <input type="password" id="login-password" placeholder="Contraseña" required />
+        <button onclick="login()">Iniciar Sesión</button>
+        <p>¿No tienes una cuenta? <a href="javascript:void(0);" onclick="toggleRegisterForm()">Regístrate aquí</a>.</p>
+        <div class="error-message" id="login-error-message"></div>
+
+        <div class="register-container" id="register-container">
+            <h1>Registrarse</h1>
+            <input type="email" id="register-email" placeholder="Correo electrónico" required />
+            <input type="password" id="register-password" placeholder="Contraseña" required />
+            <button onclick="register()">Registrarse</button>
+            <div class="error-message" id="register-error-message"></div>
+            <p>¿Ya tienes una cuenta? <a href="javascript:void(0);" onclick="toggleRegisterForm()">Inicia sesión aquí</a>.</p>
+        </div>
+    </div>
+</body>
+</html>

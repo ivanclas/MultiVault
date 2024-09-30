@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir Fotos y Videos a Firebase</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+            font-size: 16px;
+        }
+        input[type="email"], input[type="file"] {
+            width: 80%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            transition: border-color 0.3s ease;
+        }
+        input[type="email"]:focus, input[type="file"]:focus {
+            border-color: #007bff;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #selectedImages {
+            margin-top: 20px;
+            display: none;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        #selectedImages img, #selectedImages video {
+            max-width: 80px;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin: 5px;
+        }
+        #progressBar {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none; 
+            margin-top: 10px;
+            position: relative;
+        }
+        #progress {
+            height: 20px;
+            background-color: #007bff;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+        #progressMessage {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Media Queries */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            button {
+                font-size: 14px;
+            }
+            input[type="file"] {
+                width: 90%;
+            }
+            #selectedImages img, #selectedImages video {
+                max-width: 60px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 18px;
+            }
+            button {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Subir Fotos y Videos a Firebase</h1>
+        <label for="emailInput">Correo Electrónico:</label>
+        <input type="email" id="emailInput" placeholder="Tu correo electrónico" required readonly>
+        
+        <label for="fileInput">Seleccionar Archivos (imágenes y videos):</label>
+        <input type="file" id="fileInput" accept="image/*, video/*" multiple onchange="previewFiles()">
+
+        <div id="selectedImages"></div>
+        <div id="progressBar">
+            <div id="progress"></div>
+            <div id="progressMessage"></div>
+        </div>
+
+        <button onclick="uploadFiles()">Subir Archivos</button>
+        <button onclick="window.location.href='verGaleria2.html'">Ver Galería</button>
+        <button onclick="window.location.href='menu.html'">volver al Menu</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
+            authDomain: "login-de3fd.firebaseapp.com",
+            databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
+            projectId: "login-de3fd",
+            storageBucket: "login-de3fd.appspot.com",
+            messagingSenderId: "1064113669692",
+            appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
+            measurementId: "G-TMWR9JNR18"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+        const auth = getAuth(app);
+        let userEmail = "";
+
+        // Verificar si el usuario está autenticado
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userEmail = user.email; // Guardar el correo electrónico del usuario
+                document.getElementById('emailInput').value = userEmail; // Mostrar el correo en el campo
+                console.log("Usuario autenticado: ", userEmail);
+            } else {
+                alert("Por favor, inicia sesión para subir archivos.");
+                // Aquí podrías redirigir a la página de inicio de sesión
+            }
+        });
+
+        // Función para mostrar las imágenes y videos seleccionados antes de subirlos
+        window.previewFiles = function() {
+            const files = document.getElementById('fileInput').files;
+            const selectedFilesContainer = document.getElementById('selectedImages');
+            selectedFilesContainer.innerHTML = ""; // Limpiar archivos anteriores
+
+            if (files.length > 0) {
+                selectedFilesContainer.style.display = 'flex'; // Mostrar contenedor
+                Array.from(files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        if (file.type.startsWith('image/')) {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            selectedFilesContainer.appendChild(img);
+                        } else if (file.type.startsWith('video/')) {
+                            const video = document.createElement('video');
+                            video.src = e.target.result;
+                            video.controls = true; // Agregar controles al video
+                            selectedFilesContainer.appendChild(video);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                selectedFilesContainer.style.display = 'none'; // Ocultar si no hay archivos
+            }
+        };
+
+        // Función para subir archivos a Firebase
+        window.uploadFiles = async function() {
+            const files = document.getElementById('fileInput').files;
+            if (files.length === 0) {
+                alert("Por favor, selecciona al menos un archivo.");
+                return;
+            }
+
+            if (!userEmail) {
+                alert("No se ha detectado un correo electrónico. Asegúrate de haber iniciado sesión.");
+                return;
+            }
+
+            const date = new Date().toISOString().replace(/:/g, '-');
+            const progressBar = document.getElementById('progressBar');
+            const progress = document.getElementById('progress');
+            const progressMessage = document.getElementById('progressMessage');
+
+            // Desactivar botones
+            document.querySelector('button').disabled = true;
+            document.querySelectorAll('button')[1].disabled = true; // Desactivar botón de "Ver Galería"
+            
+            progressBar.style.display = 'block'; // Mostrar barra de progreso
+
+            const promises = []; // Crear un array para las promesas
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const storageRef = ref(storage, `${userEmail}/${date}-${file.name}`);
+                const uploadTask = uploadBytesResumable(storageRef, file);
+
+                // Monitorear el progreso de la subida
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        const progressValue = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progress.style.width = `${progressValue}%`;
+                        progressMessage.textContent = `Subiendo: ${progressValue.toFixed(2)}%`;
+                    }, 
+                    (error) => {
+                        console.error("Error al subir archivo: ", error);
+                        alert("Error al subir archivo.");
+                    }, 
+                    () => {
+                        // Obtener la URL de descarga una vez que la carga se complete
+                        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                            console.log("Archivo disponible en: ", downloadURL);
+                        });
+                    }
+                );
+                promises.push(uploadTask); // Agregar la tarea a las promesas
+            }
+
+            // Esperar a que todas las cargas finalicen
+            Promise.all(promises)
+                .then(() => {
+                    alert("Todos los archivos han sido subidos con éxito."); // Mensaje de éxito
+                    progressMessage.textContent = "Todos los archivos han sido subidos con éxito.";
+
+                    // Limpiar el formulario
+                    document.getElementById('fileInput').value = ''; // Limpiar archivos seleccionados
+                    document.getElementById('selectedImages').innerHTML = ''; // Limpiar vista previa
+                    document.getElementById('selectedImages').style.display = 'none'; // Ocultar contenedor de vista previa
+
+                    setTimeout(() => {
+                        progressBar.style.display = 'none'; // Ocultar barra de progreso
+                        progress.style.width = '0'; // Reiniciar el progreso
+                        progressMessage.textContent = '';
+                        document.querySelector('button').disabled = false; // Reactivar botón de cargar
+                        document.querySelectorAll('button')[1].disabled = false; // Reactivar botón de "Ver Galería"
+                    }, 2000); // Esperar 2 segundos antes de ocultar
+                })
+                .catch((error) => {
+                    console.error("Error al subir archivos: ", error);
+                    alert("Error al subir archivos."); // Mensaje de error
+                });
+        }
+    </script>
+</body>
+</html>
