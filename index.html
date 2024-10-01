@@ -6,74 +6,138 @@
     <title>Login con Firebase</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
         }
+
         .login-container {
             background-color: #fff;
-            padding: 30px;
+            padding: 40px;
             border-radius: 15px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
             max-width: 400px;
             text-align: center;
+            transition: all 0.3s ease;
         }
+
+        .login-container:hover {
+            transform: translateY(-5px);
+        }
+
         h1 {
             color: #333;
-            font-size: 24px;
+            font-size: 28px;
             margin-bottom: 20px;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
+
         input {
-            width: 90%;
-            padding: 12px;
+            width: 100%;
+            padding: 15px;
             margin: 10px 0;
             border: 2px solid #ddd;
             border-radius: 10px;
             font-size: 16px;
-            transition: border-color 0.3s;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
         }
+
         input:focus {
             border-color: #007bff;
+            outline: none;
         }
+
         button {
             width: 100%;
-            padding: 19px;
+            padding: 15px;
             background-color: #007bff;
             color: white;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             font-size: 16px;
-            transition: background-color 0.3s;
-            margin: 10px 0; /* Agregado para el espacio entre botones */
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+            letter-spacing: 0.5px;
         }
+
         button:hover {
             background-color: #0056b3;
         }
+
         p {
             margin-top: 20px;
             color: #666;
         }
+
         .error-message {
             color: red;
             font-size: 14px;
             margin-top: 10px;
+            display: none;
         }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
         .register-container {
-            display: none; /* Oculto por defecto */
+            display: none;
             margin-top: 20px;
+        }
+
+        /* Transición suave al mostrar el formulario de registro */
+        .register-container.fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Responsividad */
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 30px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            input {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 14px;
+            }
         }
     </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
-        // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
             authDomain: "login-de3fd.firebaseapp.com",
@@ -85,60 +149,62 @@
             measurementId: "G-TMWR9JNR18"
         };
 
-        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Función para iniciar sesión
         async function login() {
             const email = document.getElementById("login-email").value;
             const password = document.getElementById("login-password").value;
             const errorMessage = document.getElementById("login-error-message");
 
             if (!email || !password) {
-                errorMessage.textContent = "Por favor, completa todos los campos.";
+                showErrorMessage("login", "Por favor, completa todos los campos.");
                 return;
             }
 
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                localStorage.setItem("userEmail", email); // Guardar el correo en localStorage
+                localStorage.setItem("userEmail", email);
                 alert("¡Inicio de sesión exitoso!");
-                window.location.href = 'menu.html'; // Redirigir a página principal
+                window.location.href = 'menu.html';
             } catch (error) {
-                errorMessage.textContent = "Error en el inicio de sesión: " + error.message;
-                console.error("Error en el inicio de sesión:", error.message);
+                showErrorMessage("login", "Error en el inicio de sesión: " + error.message);
             }
         }
 
-        // Función para registrar un nuevo usuario
         async function register() {
             const email = document.getElementById("register-email").value;
             const password = document.getElementById("register-password").value;
             const errorMessage = document.getElementById("register-error-message");
 
             if (!email || !password) {
-                errorMessage.textContent = "Por favor, completa todos los campos.";
+                showErrorMessage("register", "Por favor, completa todos los campos.");
                 return;
             }
 
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
                 alert("¡Registro exitoso!");
-                window.location.href = 'menu.html'; // Redirigir a página principal
+                window.location.href = 'menu.html';
             } catch (error) {
                 if (error.code === 'auth/email-already-in-use') {
-                    alert("El correo ya está registrado. Por favor, utiliza otro correo.");
+                    showErrorMessage("register", "El correo ya está registrado. Por favor, utiliza otro.");
                 } else {
-                    errorMessage.textContent = "Error en el registro: " + error.message;
+                    showErrorMessage("register", "Error en el registro: " + error.message);
                 }
-                console.error("Error en el registro:", error.message);
             }
         }
 
         function toggleRegisterForm() {
             const registerContainer = document.getElementById("register-container");
+            registerContainer.classList.toggle("fade-in");
             registerContainer.style.display = registerContainer.style.display === "none" ? "block" : "none";
+        }
+
+        function showErrorMessage(form, message) {
+            const errorElement = document.getElementById(`${form}-error-message`);
+            errorElement.textContent = message;
+            errorElement.style.display = "block";
         }
 
         window.login = login;
@@ -152,8 +218,8 @@
         <input type="email" id="login-email" placeholder="Correo electrónico" required />
         <input type="password" id="login-password" placeholder="Contraseña" required />
         <button onclick="login()">Iniciar Sesión</button>
-        <p>¿No tienes una cuenta? <a href="javascript:void(0);" onclick="toggleRegisterForm()">Regístrate aquí</a>.</p>
         <div class="error-message" id="login-error-message"></div>
+        <p>¿No tienes una cuenta? <a href="javascript:void(0);" onclick="toggleRegisterForm()">Regístrate aquí</a>.</p>
 
         <div class="register-container" id="register-container">
             <h1>Registrarse</h1>
@@ -166,3 +232,5 @@
     </div>
 </body>
 </html>
+
+
