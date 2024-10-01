@@ -24,16 +24,6 @@
             max-width: 450px;
             text-align: center;
             transition: all 0.3s ease;
-            opacity: 0;
-            transform: translateY(-20px);
-            animation: fadeIn 0.5s forwards;
-        }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         h1 {
@@ -53,7 +43,7 @@
         input[type="email"], input[type="file"] {
             width: 90%;
             padding: 12px;
-            margin: 10px 0;
+            margin: 15px 0;
             border: 2px solid #ddd;
             border-radius: 10px;
             font-size: 16px;
@@ -153,7 +143,7 @@
         <label for="emailInput">Correo Electrónico:</label>
         <input type="email" id="emailInput" placeholder="Tu correo electrónico" required readonly>
         
-        <label for="fileInput">Seleccionar Archivos:</label>
+        <label for="fileInput">Seleccionar Archivos (Imágenes y Videos):</label>
         <input type="file" id="fileInput" accept="image/*, video/*" multiple onchange="previewFiles()">
 
         <div id="selectedImages"></div>
@@ -170,17 +160,18 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
+        // Configuración de Firebase
         const firebaseConfig = {
-            apiKey: "API_KEY",
-            authDomain: "DOMAIN",
-            databaseURL: "DB_URL",
-            projectId: "PROJECT_ID",
-            storageBucket: "STORAGE_BUCKET",
-            messagingSenderId: "SENDER_ID",
-            appId: "APP_ID",
-            measurementId: "MEASUREMENT_ID"
+            apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
+            authDomain: "login-de3fd.firebaseapp.com",
+            databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
+            projectId: "login-de3fd",
+            storageBucket: "login-de3fd.appspot.com",
+            messagingSenderId: "1064113669692",
+            appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
+            measurementId: "G-TMWR9JNR18"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -188,24 +179,25 @@
         const auth = getAuth(app);
         let userEmail = "";
 
-        // Autenticación de usuario
+        // Verificar si el usuario está autenticado
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 userEmail = user.email;
                 document.getElementById('emailInput').value = userEmail;
             } else {
-                // Si el usuario no está autenticado, redirigir a la página de inicio de sesión
-                window.location.href = 'index.html';
+                alert("Por favor, inicia sesión para subir archivos.");
+                window.location.href = 'index.html'; // Redirigir a la página de inicio de sesión
             }
         });
 
+        // Mostrar vista previa de imágenes y videos seleccionados
         window.previewFiles = function() {
             const files = document.getElementById('fileInput').files;
             const selectedFilesContainer = document.getElementById('selectedImages');
             selectedFilesContainer.innerHTML = ""; 
 
             if (files.length > 0) {
-                selectedFilesContainer.style.display = 'flex';
+                selectedFilesContainer.style.display = 'flex'; 
                 Array.from(files).forEach(file => {
                     const reader = new FileReader();
                     reader.onload = function(e) {
@@ -227,6 +219,7 @@
             }
         };
 
+        // Subir archivos a Firebase
         window.uploadFiles = async function() {
             const files = document.getElementById('fileInput').files;
             if (files.length === 0) {
@@ -244,18 +237,16 @@
             const progress = document.getElementById('progress');
             const progressMessage = document.getElementById('progressMessage');
 
-            document.querySelector('button').disabled = true;
-            document.querySelectorAll('button')[1].disabled = true;
-            
-            progressBar.style.display = 'block';
+            progressBar.style.display = 'block'; 
 
-            const promises = [];
+            const promises = []; 
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const storageRef = ref(storage, `${userEmail}/${date}-${file.name}`);
                 const uploadTask = uploadBytesResumable(storageRef, file);
 
+                // Monitorear progreso
                 uploadTask.on('state_changed', 
                     (snapshot) => {
                         const progressValue = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -263,7 +254,7 @@
                         progressMessage.textContent = `Subiendo: ${progressValue.toFixed(2)}%`;
                     }, 
                     (error) => {
-                        console.error("Error: ", error);
+                        console.error("Error al subir archivo: ", error);
                         alert("Error al subir archivo.");
                     }, 
                     () => {
@@ -272,48 +263,29 @@
                         });
                     }
                 );
-                promises.push(uploadTask);
+                promises.push(uploadTask); 
             }
 
             Promise.all(promises)
                 .then(() => {
-                    alert("Todos los archivos han sido subidos.");
-                    progressMessage.textContent = "Todos los archivos han sido subidos.";
+                    alert("Todos los archivos han sido subidos con éxito.");
+                    progressMessage.textContent = "Todos los archivos han sido subidos con éxito.";
 
-                    document.getElementById('fileInput').value = '';
-                    document.getElementById('selectedImages').innerHTML = '';
+                    document.getElementById('fileInput').value = ''; 
+                    document.getElementById('selectedImages').innerHTML = ''; 
                     document.getElementById('selectedImages').style.display = 'none';
 
                     setTimeout(() => {
                         progressBar.style.display = 'none';
                         progress.style.width = '0';
                         progressMessage.textContent = '';
-                        document.querySelector('button').disabled = false;
-                        document.querySelectorAll('button')[1].disabled = false;
                     }, 2000);
                 })
                 .catch((error) => {
-                    console.error("Error: ", error);
+                    console.error("Error al subir archivos: ", error);
                     alert("Error al subir archivos.");
                 });
-        };
-
-        // Cerrar sesión y redirigir al inicio de sesión
-        window.logout = function() {
-            signOut(auth).then(() => {
-                localStorage.removeItem("userEmail");
-                window.location.href = 'index.html';
-            }).catch((error) => {
-                console.error("Error al cerrar sesión: ", error);
-            });
-        };
-
-        // Evitar volver después de cerrar sesión
-        window.addEventListener('popstate', function (event) {
-            if (!localStorage.getItem("userEmail")) {
-                window.location.href = 'index.html';
-            }
-        });
+        }
     </script>
 </body>
 </html>
