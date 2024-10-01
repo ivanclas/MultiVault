@@ -170,7 +170,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "API_KEY",
@@ -194,8 +194,8 @@
                 userEmail = user.email;
                 document.getElementById('emailInput').value = userEmail;
             } else {
-                alert("Por favor, inicia sesión.");
-                window.location.href = 'index.html'; // Redirigir a inicio de sesión si no está autenticado
+                // Si el usuario no está autenticado, redirigir a la página de inicio de sesión
+                window.location.href = 'index.html';
             }
         });
 
@@ -296,6 +296,16 @@
                     console.error("Error: ", error);
                     alert("Error al subir archivos.");
                 });
+        };
+
+        // Cerrar sesión y redirigir al inicio de sesión
+        window.logout = function() {
+            signOut(auth).then(() => {
+                localStorage.removeItem("userEmail");
+                window.location.href = 'index.html';
+            }).catch((error) => {
+                console.error("Error al cerrar sesión: ", error);
+            });
         };
 
         // Evitar volver después de cerrar sesión
