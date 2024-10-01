@@ -6,8 +6,8 @@
     <title>Menú</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
             margin: 0;
             padding: 0;
             display: flex;
@@ -15,24 +15,41 @@
             align-items: center;
             height: 100vh;
         }
+
         .menu-container {
             background-color: #fff;
             border-radius: 15px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 40px;
             max-width: 400px;
             text-align: center;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: fadeIn 0.5s forwards;
         }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         h1 {
             color: #333;
-            font-size: 24px;
-            margin-bottom: 20px;
+            font-size: 28px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            font-weight: bold;
         }
+
         .email-display {
             color: #555;
             font-size: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
+
         button {
             width: 100%;
             padding: 15px;
@@ -42,11 +59,42 @@
             border-radius: 10px;
             cursor: pointer;
             font-size: 16px;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s ease, transform 0.2s ease;
             margin: 10px 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
+
         button:hover {
             background-color: #0056b3;
+            transform: translateY(-3px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .logout-button {
+            background-color: #f44336;
+        }
+
+        .logout-button:hover {
+            background-color: #d32f2f;
+        }
+
+        /* Responsividad */
+        @media (max-width: 768px) {
+            .menu-container {
+                padding: 30px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            button {
+                padding: 12px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -55,7 +103,7 @@
         <h1>Bienvenido</h1>
         <div class="email-display" id="user-email"></div>
         <button onclick="goToUpload()">Guardar mis fotos</button>
-        <button onclick="logout()">Cerrar sesión</button>
+        <button class="logout-button" onclick="logout()">Cerrar sesión</button>
     </div>
 
     <script>
@@ -79,7 +127,15 @@
         function logout() {
             localStorage.removeItem("userEmail"); // Limpiar el correo de localStorage
             window.location.href = 'index.html'; // Redirigir a la página de inicio de sesión
+            history.pushState(null, null, 'index.html'); // Evitar que el usuario use el botón de retroceso
         }
+
+        // Evitar volver atrás después de cerrar sesión
+        window.addEventListener('popstate', function (event) {
+            if (!localStorage.getItem("userEmail")) {
+                window.location.href = 'index.html';
+            }
+        });
     </script>
 </body>
 </html>
