@@ -118,6 +118,32 @@
             font-weight: bold;
         }
 
+        /* Botón flotante de cerrar sesión */
+        .logout-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #ff2222;
+            transform: translateY(-3px);
+        }
+
+        /* Media Queries */
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -133,6 +159,12 @@
 
             #selectedImages img, #selectedImages video {
                 max-width: 80px;
+            }
+
+            .logout-button {
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
             }
         }
     </style>
@@ -157,10 +189,13 @@
         <button onclick="window.location.href='menu.html'">Volver al Menú</button>
     </div>
 
+    <!-- Botón flotante para cerrar sesión -->
+    <button class="logout-button" onclick="logout()">❌</button>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
         // Configuración de Firebase
         const firebaseConfig = {
@@ -285,9 +320,20 @@
                     console.error("Error al subir archivos: ", error);
                     alert("Error al subir archivos.");
                 });
+        };
+
+        // Cerrar sesión
+        window.logout = function() {
+            signOut(auth).then(() => {
+                alert("Sesión cerrada correctamente.");
+                window.location.href = 'index.html'; // Redirigir a la página de inicio de sesión
+            }).catch((error) => {
+                console.error("Error al cerrar sesión: ", error);
+            });
         }
     </script>
 </body>
 </html>
+
 
 
