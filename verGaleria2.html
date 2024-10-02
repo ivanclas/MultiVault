@@ -107,6 +107,16 @@
             color: #333;
         }
 
+        /* Checkbox para selección múltiple */
+        .gallery-checkbox {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 20px;
+            height: 20px;
+            z-index: 1;
+        }
+
         /* Botón de eliminar */
         .delete-btn {
             position: absolute;
@@ -151,7 +161,7 @@
             transform: scale(1.1);
         }
 
-        /* Botón flotante para eliminar archivos */
+        /* Botón flotante para eliminar archivos seleccionados */
         .delete-float-button {
             position: fixed;
             bottom: 20px;
@@ -228,7 +238,7 @@
     <button class="delete-float-button" id="deleteSelectedBtn" onclick="deleteSelectedFiles()">❌</button>
 
     <input type="file" id="fileInput" style="display: none;" multiple accept="image/*,video/*" onchange="uploadFiles(event)">
- 
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getStorage, ref, listAll, getDownloadURL, deleteObject, uploadBytes } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
@@ -244,7 +254,6 @@
             appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
             measurementId: "G-TMWR9JNR18"
         };
-
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
         const auth = getAuth(app);
@@ -285,14 +294,12 @@
                     img.src = url;
                     img.alt = itemRef.name;
                     img.loading = 'lazy'; // Lazy loading para imágenes
-                    img.srcset = `${url}?w=400 400w, ${url}?w=800 800w, ${url}?w=1200 1200w`; // Versiones comprimidas
                     galleryItem.appendChild(img);
                 } else {
                     const video = document.createElement('video');
                     video.src = url;
                     video.controls = true;
                     video.preload = 'metadata'; // Solo carga la metadata hasta que se reproduzca
-                    video.loading = 'lazy'; // Lazy loading para videos
                     galleryItem.appendChild(video);
                 }
 
@@ -329,37 +336,6 @@
             deleteBtn.style.display = selectedItems > 0 ? 'flex' : 'none';
         }
 
-        function filterGallery(type) {
-            galleryItems.forEach(item => {
-                const galleryItem = item.closest('.gallery-item');
-                if (galleryItem) {
-                    galleryItem.style.display = (type === 'all' || galleryItem.dataset.type === type) ? 'block' : 'none';
-                }
-            });
-        }
-
-        async function uploadFiles(event) {
-            const files = event.target.files;
-            const user = auth.currentUser;
-            if (!user) {
-                alert("Por favor, inicia sesión para subir archivos.");
-                return;
-            }
-            const userEmail = user.email;
-
-            try {
-                for (const file of files) {
-                    const fileRef = ref(storage, `${userEmail}/${file.name}`);
-                    await uploadBytes(fileRef, file);
-                }
-                alert('Archivos subidos exitosamente.');
-                loadGallery(userEmail);
-            } catch (error) {
-                console.error("Error al subir los archivos:", error);
-                alert('Hubo un error al subir los archivos.');
-            }
-        }
-
         async function deleteSelectedFiles() {
             const checkboxes = document.querySelectorAll('.gallery-checkbox:checked');
             if (checkboxes.length === 0) {
@@ -386,6 +362,15 @@
                 console.error("Error al eliminar los archivos:", error);
                 alert('Hubo un error al eliminar algunos archivos.');
             }
+        }
+
+        function filterGallery(type) {
+            galleryItems.forEach(item => {
+                const galleryItem = item.closest('.gallery-item');
+                if (galleryItem) {
+                    galleryItem.style.display = (type === 'all' || galleryItem.dataset.type === type) ? 'block' : 'none';
+                }
+            });
         }
 
         window.filterGallery = filterGallery;
