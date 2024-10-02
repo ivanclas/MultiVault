@@ -178,7 +178,7 @@
                 await signInWithEmailAndPassword(auth, email, password);
                 localStorage.setItem("userEmail", email);
                 alert("¡Inicio de sesión exitoso!");
-                window.location.href = 'menu.html';
+                window.location.href = 'formulario.html';
             } catch (error) {
                 alert("Error en el inicio de sesión: " + error.message);
             }
@@ -197,7 +197,7 @@
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
                 alert("¡Registro exitoso!");
-                window.location.href = 'menu.html';
+                window.location.href = 'index.html';
             } catch (error) {
                 alert("Error en el registro: " + error.message);
             }
@@ -242,6 +242,5 @@
     </div>
 </body>
 </html>
-
 
 
