@@ -284,11 +284,15 @@
                     const img = document.createElement('img');
                     img.src = url;
                     img.alt = itemRef.name;
+                    img.loading = 'lazy'; // Lazy loading para imágenes
+                    img.srcset = `${url}?w=400 400w, ${url}?w=800 800w, ${url}?w=1200 1200w`; // Versiones comprimidas
                     galleryItem.appendChild(img);
                 } else {
                     const video = document.createElement('video');
                     video.src = url;
                     video.controls = true;
+                    video.preload = 'metadata'; // Solo carga la metadata hasta que se reproduzca
+                    video.loading = 'lazy'; // Lazy loading para videos
                     galleryItem.appendChild(video);
                 }
 
@@ -390,4 +394,3 @@
     </script>
 </body>
 </html>
-
