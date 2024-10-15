@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Carpeta en Firebase</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 26px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+            font-size: 16px;
+        }
+
+        input[type="text"] {
+            width: 90%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            margin: 15px 0;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 16px;
+            color: green;
+        }
+
+        .link-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 16px;
+            text-decoration: none;
+        }
+
+        .link-btn:hover {
+            background-color: #218838;
+        }
+
+        /* Estilo del botón flotante */
+        .floating-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .floating-btn:hover {
+            background-color: #ff6f00;
+            transform: translateY(-5px);
+        }
+
+        .floating-btn:active {
+            transform: translateY(0);
+        }
+
+        .floating-btn img {
+            width: 24px;
+            height: 24px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            input, button {
+                font-size: 14px;
+            }
+
+            .floating-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Crear Carpeta</h1>
+        <label for="folderName">Introduce el nombre de la carpeta:</label>
+        <input type="text" id="folderName" placeholder="Nombre de la carpeta">
+        <button onclick="createFolder()">Crear Carpeta</button>
+        <div id="message"></div>
+        
+        <!-- Botón que redirecciona a misCarpetas.html -->
+        <button class="link-btn" onclick="goToMyFolders()">Ir a Mis Carpetas</button>
+    </div>
+
+    <!-- Botón flotante que redirige a formulario.html -->
+    <button class="floating-btn" onclick="goToFormulario()">
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/arrow.png" alt="Formulario">
+    </button>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getStorage, ref, uploadBytesResumable } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
+            authDomain: "login-de3fd.firebaseapp.com",
+            databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
+            projectId: "login-de3fd",
+            storageBucket: "login-de3fd.appspot.com",
+            messagingSenderId: "1064113669692",
+            appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
+            measurementId: "G-TMWR9JNR18"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const storage = getStorage(app);
+        const auth = getAuth(app);
+        let userEmail = "";
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userEmail = user.email;
+            } else {
+                window.location.href = 'index.html'; 
+            }
+        });
+
+        // Asignar la función createFolder al objeto window
+        window.createFolder = async function() {
+            const folderName = document.getElementById('folderName').value.trim();
+            const messageDiv = document.getElementById('message');
+
+            if (!folderName) {
+                messageDiv.style.color = "red";
+                messageDiv.textContent = "Por favor, introduce un nombre válido para la carpeta.";
+                return;
+            }
+
+            try {
+                const folderRef = ref(storage, `${userEmail}/${folderName}/.placeholder`);
+                const emptyBlob = new Blob([], { type: 'text/plain' });
+
+                await uploadBytesResumable(folderRef, emptyBlob);
+                messageDiv.style.color = "green";
+                messageDiv.textContent = `Carpeta "${folderName}" creada exitosamente.`;
+            } catch (error) {
+                console.error("Error al crear la carpeta:", error);
+                messageDiv.style.color = "red";
+                messageDiv.textContent = "Error al crear la carpeta.";
+            }
+        };
+
+        // Asignar la función goToMyFolders
+        window.goToMyFolders = function() {
+            window.location.href = "misCarpetas.html";
+        };
+
+        // Función para redirigir a formulario.html
+        window.goToFormulario = function() {
+            window.location.href = "formulario.html";
+        };
+        
+    </script>
+</body>
+</html>

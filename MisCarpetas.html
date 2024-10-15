@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Carpetas</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            z-index: 999;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin: 0;
+            color: #333;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #007bff;
+            border-radius: 25px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: #0056b3;
+        }
+
+        .container {
+            margin-top: 180px;
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-gap: 20px;
+        }
+
+        .folder-item {
+            background-color: #fff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            min-height: 200px;
+        }
+
+        .folder-item img {
+            width: 40px;
+            margin-bottom: 10px;
+        }
+
+        .folder-name {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .folder-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            max-height: 80vh; /* Limitar la altura del modal */
+            overflow: hidden; /* Ocultar cualquier desbordamiento */
+        }
+
+        #previewImages {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+            max-height: 300px; /* Limitar la altura del contenedor de imágenes */
+            overflow-y: auto; /* Activar scroll si el contenido sobrepasa la altura */
+            padding: 10px;
+        }
+
+        #previewImages img {
+            max-width: 80px;
+            margin: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-modal {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .upload-modal-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        /* Estilos para el botón flotante */
+        .floating-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .floating-btn:hover {
+            background-color: #ff6f00;
+            transform: translateY(-5px);
+        }
+
+        .floating-btn:active {
+            transform: translateY(0);
+        }
+
+        .floating-btn img {
+            width: 24px;
+            height: 24px;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 20px;
+            }
+
+            input[type="text"] {
+                width: 90%;
+                font-size: 15px;
+                padding: 12px;
+            }
+
+            .container {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+
+            .folder-item {
+                padding: 20px;
+                text-align: center;
+                min-height: 180px;
+            }
+
+            .folder-actions {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            /* Ajustes adicionales para el modal en dispositivos móviles */
+            .modal-content {
+                max-height: 70vh; /* Limitar la altura del modal en móviles */
+                padding: 15px;
+            }
+
+            #previewImages {
+                max-height: 200px; /* Limitar la altura en móviles */
+            }
+
+            #previewImages img {
+                max-width: 60px; /* Reducir el tamaño de las imágenes en móviles */
+            }
+
+            .floating-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+        }
+
+    </style>
+
+    <!-- Incluir los scripts de Firebase - versión compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+
+</head>
+<body>
+
+    <div class="header">
+        <h1>Mis Carpetas</h1>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Buscar carpetas...">
+        </div>
+    </div>
+
+    <div class="container" id="foldersContainer">
+        <!-- Aquí se cargarán las carpetas -->
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2>Previsualización de archivos</h2>
+            <div id="previewImages"></div>
+            <button class="upload-modal-btn" onclick="uploadFiles()">Subir Archivos</button>
+            <button class="close-modal" onclick="closeModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" multiple style="display: none;" accept="image/*,video/*,.zip,.rar" onchange="showPreview(event)">
+
+    <!-- Botón flotante con ícono de flecha hacia atrás -->
+    <button class="floating-btn" onclick="goToNuevo()">
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/arrow.png" alt="Back Icon">
+    </button>
+
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
+            authDomain: "login-de3fd.firebaseapp.com",
+            databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
+            projectId: "login-de3fd",
+            storageBucket: "login-de3fd.appspot.com",
+            messagingSenderId: "1064113669692",
+            appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
+            measurementId: "G-TMWR9JNR18"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const storage = firebase.storage();
+        const auth = firebase.auth();
+        let userEmail = "";
+        let currentFolder = '';
+        let selectedFiles = [];
+
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                userEmail = user.email;
+                loadFolders();
+            } else {
+                window.location.href = 'index.html'; 
+            }
+        });
+
+        // Función para cargar carpetas
+        async function loadFolders() {
+            const foldersContainer = document.getElementById('foldersContainer');
+            foldersContainer.innerHTML = "";
+            const folderRef = storage.ref(`${userEmail}/`);
+
+            try {
+                const res = await folderRef.listAll();
+                res.prefixes.forEach((folderRef) => {
+                    appendFolder(folderRef.name);
+                });
+            } catch (error) {
+                console.error("Error al cargar las carpetas:", error);
+            }
+        }
+
+        // Mostrar la ventana emergente para seleccionar archivos
+        function uploadFilesToFolder(folderName) {
+            currentFolder = folderName;
+            document.getElementById('fileInput').click();
+        }
+
+        // Mostrar la previsualización de archivos
+        function showPreview(event) {
+            selectedFiles = event.target.files;
+            const previewContainer = document.getElementById('previewImages');
+            previewContainer.innerHTML = '';
+
+            Array.from(selectedFiles).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            openModal();
+        }
+
+        function openModal() {
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        async function uploadFiles() {
+            if (selectedFiles.length === 0) return;
+
+            for (const file of selectedFiles) {
+                const fileRef = storage.ref(`${userEmail}/${currentFolder}/${file.name}`);
+                const uploadTask = fileRef.put(file);
+
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        // Mostrar el progreso de la subida (opcional)
+                    }, 
+                    (error) => {
+                        console.error("Error al subir archivo:", error);
+                    }, 
+                    async () => {
+                        const downloadURL = await fileRef.getDownloadURL();
+                        console.log(`Archivo disponible en: ${downloadURL}`);
+                    }
+                );
+            }
+
+            alert('Archivos subidos exitosamente');
+            closeModal();
+            document.getElementById('previewImages').innerHTML = '';
+        }
+
+        function viewFolder(folderName) {
+            window.location.href = `vergaleria3.html?folder=${encodeURIComponent(folderName)}`;
+        }
+
+        function appendFolder(folderName) {
+            const foldersContainer = document.getElementById('foldersContainer');
+            const folderItem = document.createElement('div');
+            folderItem.className = 'folder-item';
+
+            const folderIcon = document.createElement('img');
+            folderIcon.src = "https://img.icons8.com/color/48/000000/folder-invoices.png";
+            folderIcon.alt = "Carpeta Icono";
+
+            const folderNameDiv = document.createElement('div');
+            folderNameDiv.className = 'folder-name';
+            folderNameDiv.textContent = folderName;
+
+            const folderActions = document.createElement('div');
+            folderActions.className = 'folder-actions';
+
+            const viewBtn = document.createElement('button');
+            viewBtn.textContent = 'Ver Carpeta';
+            viewBtn.onclick = () => viewFolder(folderName);
+
+            const uploadBtn = document.createElement('button');
+            uploadBtn.textContent = 'Seleccionar Archivos';
+            uploadBtn.onclick = () => uploadFilesToFolder(folderName);
+
+            folderActions.appendChild(viewBtn);
+            folderActions.appendChild(uploadBtn);
+
+            folderItem.appendChild(folderIcon);
+            folderItem.appendChild(folderNameDiv);
+            folderItem.appendChild(folderActions);
+
+            foldersContainer.appendChild(folderItem);
+        }
+
+        // Función para redireccionar a nuevo.html
+        function goToNuevo() {
+            window.location.href = 'nuevo.html';
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function () {
+            const searchValue = this.value.toLowerCase();
+            const folderItems = document.getElementsByClassName('folder-item');
+
+            Array.from(folderItems).forEach(item => {
+                const folderName = item.querySelector('.folder-name').textContent.toLowerCase();
+                if (folderName.includes(searchValue)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
