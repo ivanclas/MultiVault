@@ -138,8 +138,8 @@
             max-width: 600px;
             width: 100%;
             text-align: center;
-            max-height: 80vh; /* Limitar la altura del modal */
-            overflow: hidden; /* Ocultar cualquier desbordamiento */
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         #previewImages {
@@ -147,12 +147,12 @@
             flex-wrap: wrap;
             justify-content: center;
             margin-top: 10px;
-            max-height: 300px; /* Limitar la altura del contenedor de imágenes */
-            overflow-y: auto; /* Activar scroll si el contenido sobrepasa la altura */
+            max-height: 300px;
+            overflow-y: auto;
             padding: 10px;
         }
 
-        #previewImages img {
+        #previewImages img, #previewImages video {
             max-width: 80px;
             margin: 10px;
             border-radius: 10px;
@@ -179,7 +179,12 @@
             margin-top: 15px;
         }
 
-        /* Estilos para el botón flotante */
+        progress {
+            width: 100%;
+            height: 20px;
+            margin-top: 20px;
+        }
+
         .floating-btn {
             position: fixed;
             bottom: 80px;
@@ -202,10 +207,6 @@
         .floating-btn:hover {
             background-color: #ff6f00;
             transform: translateY(-5px);
-        }
-
-        .floating-btn:active {
-            transform: translateY(0);
         }
 
         .floating-btn img {
@@ -244,18 +245,17 @@
                 width: 100%;
             }
 
-            /* Ajustes adicionales para el modal en dispositivos móviles */
             .modal-content {
-                max-height: 70vh; /* Limitar la altura del modal en móviles */
+                max-height: 70vh;
                 padding: 15px;
             }
 
             #previewImages {
-                max-height: 200px; /* Limitar la altura en móviles */
+                max-height: 200px;
             }
 
-            #previewImages img {
-                max-width: 60px; /* Reducir el tamaño de las imágenes en móviles */
+            #previewImages img, #previewImages video {
+                max-width: 60px;
             }
 
             .floating-btn {
@@ -290,12 +290,13 @@
         <div class="modal-content">
             <h2>Previsualización de archivos</h2>
             <div id="previewImages"></div>
+            <progress id="uploadProgress" value="0" max="100"></progress>
             <button class="upload-modal-btn" onclick="uploadFiles()">Subir Archivos</button>
             <button class="close-modal" onclick="closeModal()">Cerrar</button>
         </div>
     </div>
 
-    <input type="file" id="fileInput" multiple style="display: none;" accept="image/*,video/*,.zip,.rar" onchange="showPreview(event)">
+    <input type="file" id="fileInput" multiple style="display: none;" accept="image/*,video/*,.pdf,.zip,.rar" onchange="showPreview(event)">
 
     <!-- Botón flotante con ícono de flecha hacia atrás -->
     <button class="floating-btn" onclick="goToNuevo()">
@@ -363,9 +364,23 @@
             Array.from(selectedFiles).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    previewContainer.appendChild(img);
+                    let element;
+                    const fileType = file.type;
+                    if (fileType.includes("image")) {
+                        element = document.createElement('img');
+                        element.src = e.target.result;
+                    } else if (fileType.includes("video")) {
+                        element = document.createElement('video');
+                        element.src = e.target.result;
+                        element.controls = true;
+                    } else if (fileType.includes("pdf")) {
+                        element = document.createElement('img');
+                        element.src = 'https://img.icons8.com/color/48/000000/pdf.png';
+                    } else if (file.name.endsWith(".zip") || file.name.endsWith(".rar")) {
+                        element = document.createElement('img');
+                        element.src = 'https://img.icons8.com/color/48/000000/zip.png';
+                    }
+                    previewContainer.appendChild(element);
                 };
                 reader.readAsDataURL(file);
             });
@@ -381,8 +396,14 @@
             document.getElementById('modal').style.display = 'none';
         }
 
+        // Subir archivos seleccionados con barra de progreso
         async function uploadFiles() {
             if (selectedFiles.length === 0) return;
+
+            const progressBar = document.getElementById('uploadProgress');
+            progressBar.value = 0;
+            let totalProgress = 0;
+            let filesUploaded = 0;
 
             for (const file of selectedFiles) {
                 const fileRef = storage.ref(`${userEmail}/${currentFolder}/${file.name}`);
@@ -390,21 +411,23 @@
 
                 uploadTask.on('state_changed', 
                     (snapshot) => {
-                        // Mostrar el progreso de la subida (opcional)
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        totalProgress += progress / selectedFiles.length;
+                        progressBar.value = totalProgress;
                     }, 
                     (error) => {
                         console.error("Error al subir archivo:", error);
                     }, 
                     async () => {
-                        const downloadURL = await fileRef.getDownloadURL();
-                        console.log(`Archivo disponible en: ${downloadURL}`);
+                        filesUploaded++;
+                        if (filesUploaded === selectedFiles.length) {
+                            alert('Archivos subidos exitosamente');
+                            closeModal();
+                            document.getElementById('previewImages').innerHTML = ''; // Limpiar la previsualización
+                        }
                     }
                 );
             }
-
-            alert('Archivos subidos exitosamente');
-            closeModal();
-            document.getElementById('previewImages').innerHTML = '';
         }
 
         function viewFolder(folderName) {
