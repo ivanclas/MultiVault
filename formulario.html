@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subir Fotos y Videos a Firebase</title>
+    <title>Subir Archivos a Firebase</title>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -85,7 +85,7 @@
             justify-content: center;
         }
 
-        #selectedImages img, #selectedImages video {
+        #selectedImages img, #selectedImages video, #selectedImages .file-icon {
             max-width: 100px;
             height: auto;
             border-radius: 10px;
@@ -111,14 +111,13 @@
         }
 
         #progressMessage {
-            position:absolute;
+            position: absolute;
             width: 100%;
             text-align: center;
             color: #fff;
             font-weight: bold;
         }
 
-        /* Botón flotante de cerrar sesión */
         .logout-button {
             position: fixed;
             bottom: 20px;
@@ -143,7 +142,11 @@
             transform: translateY(-3px);
         }
 
-        /* Media Queries */
+        .file-icon img {
+            width: 60px;
+            height: auto;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -157,7 +160,7 @@
                 font-size: 14px;
             }
 
-            #selectedImages img, #selectedImages video {
+            #selectedImages img, #selectedImages video, #selectedImages .file-icon {
                 max-width: 80px;
             }
 
@@ -167,16 +170,45 @@
                 font-size: 18px;
             }
         }
+
+        .folder-button {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.folder-button:hover {
+    background-color: #388e3c;
+    transform: translateY(-3px);
+}
+
+.folder-button:active {
+    transform: translateY(0);
+}
+
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Subir Fotos y Videos</h1>
+        <h1>Subir Archivos</h1>
         <label for="emailInput">Correo Electrónico:</label>
         <input type="email" id="emailInput" placeholder="Tu correo electrónico" required readonly>
         
-        <label for="fileInput">Seleccionar Archivos (Imágenes y Videos):</label>
-        <input type="file" id="fileInput" accept="image/*, video/*" multiple onchange="previewFiles()">
+        <label for="fileInput">Seleccionar Archivos (Imágenes, Videos, PDF, Word, ZIP):</label>
+        <input type="file" id="fileInput" accept="image/*, video/*, .pdf, .doc, .docx, .zip, .rar" multiple onchange="previewFiles()">
 
         <div id="selectedImages"></div>
         <div id="progressBar">
@@ -186,10 +218,13 @@
 
         <button onclick="uploadFiles()">Subir Archivos</button>
         <button onclick="window.location.href='verGaleria2.html'">Ver Galería</button>
-    
+        <button onclick="window.location.href='verGaleria.html'">Ver Documentos</button>
+        
     </div>
+<!-- Botón flotante para crear una nueva carpeta -->
+<button class="folder-button" onclick="window.location.href='nuevo.html'">📁</button>
 
-    <!-- Botón flotante para cerrar sesión -->
+
     <button class="logout-button" onclick="logout()">❌</button>
 
     <script type="module">
@@ -197,7 +232,6 @@
         import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
-        // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
             authDomain: "login-de3fd.firebaseapp.com",
@@ -214,18 +248,15 @@
         const auth = getAuth(app);
         let userEmail = "";
 
-        // Verificar si el usuario está autenticado
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 userEmail = user.email;
                 document.getElementById('emailInput').value = userEmail;
             } else {
-                alert("Por favor, inicia sesión para subir archivos.");
-                window.location.href = 'index.html'; // Redirigir a la página de inicio de sesión
+                window.location.href = 'index.html'; 
             }
         });
 
-        // Mostrar vista previa de imágenes y videos seleccionados
         window.previewFiles = function() {
             const files = document.getElementById('fileInput').files;
             const selectedFilesContainer = document.getElementById('selectedImages');
@@ -234,6 +265,7 @@
             if (files.length > 0) {
                 selectedFilesContainer.style.display = 'flex'; 
                 Array.from(files).forEach(file => {
+                    const extension = file.name.split('.').pop().toLowerCase();
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         if (file.type.startsWith('image/')) {
@@ -245,6 +277,26 @@
                             video.src = e.target.result;
                             video.controls = true;
                             selectedFilesContainer.appendChild(video);
+                        } else if (extension === 'pdf') {
+                            const fileIcon = document.createElement('div');
+                            fileIcon.classList.add('file-icon');
+                            fileIcon.innerHTML = '<img src="https://img.icons8.com/color/48/000000/pdf.png" alt="PDF Icon">';
+                            selectedFilesContainer.appendChild(fileIcon);
+                        } else if (extension === 'doc' || extension === 'docx') {
+                            const fileIcon = document.createElement('div');
+                            fileIcon.classList.add('file-icon');
+                            fileIcon.innerHTML = '<img src="https://img.icons8.com/color/48/000000/ms-word.png" alt="Word Icon">';
+                            selectedFilesContainer.appendChild(fileIcon);
+                        } else if (extension === 'zip' || extension === 'rar') {
+                            const fileIcon = document.createElement('div');
+                            fileIcon.classList.add('file-icon');
+                            fileIcon.innerHTML = '<img src="https://img.icons8.com/color/48/000000/zip.png" alt="ZIP Icon">';
+                            selectedFilesContainer.appendChild(fileIcon);
+                        } else {
+                            const fileIcon = document.createElement('div');
+                            fileIcon.classList.add('file-icon');
+                            fileIcon.textContent = extension.toUpperCase();
+                            selectedFilesContainer.appendChild(fileIcon);
                         }
                     };
                     reader.readAsDataURL(file);
@@ -254,7 +306,6 @@
             }
         };
 
-        // Subir archivos a Firebase
         window.uploadFiles = async function() {
             const files = document.getElementById('fileInput').files;
             if (files.length === 0) {
@@ -281,7 +332,6 @@
                 const storageRef = ref(storage, `${userEmail}/${date}-${file.name}`);
                 const uploadTask = uploadBytesResumable(storageRef, file);
 
-                // Monitorear progreso
                 uploadTask.on('state_changed', 
                     (snapshot) => {
                         const progressValue = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -322,22 +372,17 @@
                 });
         };
 
-        // Cerrar sesión
         window.logout = function() {
-            signOut(auth).then(() => {
-                alert("Sesión cerrada correctamente.");
-                window.location.href = 'index.html'; // Redirigir a la página de inicio de sesión
-            }).catch((error) => {
-                console.error("Error al cerrar sesión: ", error);
-            });
+            const confirmLogout = confirm("¿Estás seguro de que deseas salir?");
+            if (confirmLogout) {
+                signOut(auth).then(() => {
+                    alert("Sesión cerrada correctamente.");
+                    window.location.href = 'index.html'; 
+                }).catch((error) => {
+                    console.error("Error al cerrar sesión: ", error);
+                });
+            }
         }
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
