@@ -23,6 +23,7 @@
             width: 100%;
             max-width: 400px;
             text-align: center;
+            position: relative;
         }
 
         h1 {
@@ -42,11 +43,41 @@
             font-size: 16px;
             transition: border-color 0.3s ease;
             box-sizing: border-box;
+            position: relative;
         }
 
         input:focus {
             border-color: #007bff;
             outline: none;
+        }
+
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-wrapper input {
+            padding-right: 40px; /* Deja espacio para el ícono del ojito */
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            width: 20px;
+            height: 20px;
+        }
+
+        .toggle-password svg {
+            fill: #999;
+            width: 100%;
+            height: 100%;
+        }
+
+        .toggle-password:hover svg {
+            fill: #333;
         }
 
         button {
@@ -143,9 +174,17 @@
 <body>
     <div class="login-container">
         <h1>Iniciar Sesión</h1>
-        <input type="email" id="login-email" placeholder="Correo electrónico" required />
-        <input type="password" id="login-password" placeholder="Contraseña" required />
+        <div class="input-wrapper">
+            <input type="email" id="login-email" placeholder="Correo electrónico" required />
+        </div>
+        <div class="input-wrapper">
+            <input type="password" id="login-password" placeholder="Contraseña" required />
+            <span class="toggle-password" onclick="togglePassword('login-password')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/></svg>
+            </span>
+        </div>
         <button onclick="login()">Iniciar Sesión</button>
+        <p><a href="javascript:void(0);" onclick="resetPassword()">¿Olvidaste tu contraseña?</a></p>
         <p>¿No tienes una cuenta? <a href="javascript:void(0);" onclick="openModal()">Regístrate aquí</a>.</p>
     </div>
 
@@ -154,15 +193,22 @@
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
             <h1>Registrarse</h1>
-            <input type="email" id="register-email" placeholder="Correo electrónico" required />
-            <input type="password" id="register-password" placeholder="Contraseña" required />
+            <div class="input-wrapper">
+                <input type="email" id="register-email" placeholder="Correo electrónico" required />
+            </div>
+            <div class="input-wrapper">
+                <input type="password" id="register-password" placeholder="Contraseña" required />
+                <span class="toggle-password" onclick="togglePassword('register-password')">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/></svg>
+                </span>
+            </div>
             <button onclick="register()">Registrarse</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
@@ -179,7 +225,7 @@
         const auth = getAuth(app);
 
         window.login = async () => {
-            const email = document.getElementById("login-email").value;
+            const email = document.getElementById("login-email").value.trim();
             const password = document.getElementById("login-password").value;
             if (!email || !password) {
                 alert("Por favor, completa todos los campos.");
@@ -195,7 +241,7 @@
         };
 
         window.register = async () => {
-            const email = document.getElementById("register-email").value;
+            const email = document.getElementById("register-email").value.trim();
             const password = document.getElementById("register-password").value;
             if (!email || !password) {
                 alert("Por favor, completa todos los campos.");
@@ -210,6 +256,20 @@
             }
         };
 
+        window.resetPassword = async () => {
+            const email = document.getElementById("login-email").value.trim();
+            if (!email) {
+                alert("Por favor, ingresa tu correo electrónico para restablecer la contraseña.");
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("Correo de restablecimiento de contraseña enviado. Por favor, revisa tu bandeja de entrada.");
+            } catch (error) {
+                alert("Error al enviar el correo de restablecimiento: " + error.message);
+            }
+        };
+
         window.openModal = () => {
             const modal = document.getElementById("registerModal");
             modal.style.display = "flex";
@@ -219,8 +279,15 @@
             const modal = document.getElementById("registerModal");
             modal.style.display = "none";
         };
+
+        window.togglePassword = (fieldId) => {
+            const field = document.getElementById(fieldId);
+            if (field.type === "password") {
+                field.type = "text";
+            } else {
+                field.type = "password";
+            }
+        };
     </script>
 </body>
 </html>
-
-
