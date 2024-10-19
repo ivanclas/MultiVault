@@ -3,15 +3,15 @@ const CACHE_NAME = 'galeria-cache-v1';
 // Archivos a cachear
 const urlsToCache = [
     '/',                   
-    '/index.html',         
-    '/formulario.html',    
-    '/verGaleria.html',    
-    '/verGaleria2.html',   
-    '/verGaleria3.html',   
-    '/nuevo.html',         
-    '/MisCarpetas.html',   
-    '/offline.html',       // Página de fallback
-    '/service-worker.js',  
+    'index.html',         
+    'formulario.html',    
+    'verGaleria.html',    
+    'verGaleria2.html',   
+    'verGaleria3.html',   
+    'nuevo.html',         
+    'MisCarpetas.html',   
+    'offline.html',       // Página de fallback
+    'service-worker.js',  
     'https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap'
 ];
 
