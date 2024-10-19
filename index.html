@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login con Firebase</title>
     <style>
+        /* Tus estilos existentes */
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #00c6ff, #0072ff);
@@ -57,7 +58,7 @@
         }
 
         .input-wrapper input {
-            padding-right: 40px; /* Deja espacio para el ícono del ojito */
+            padding-right: 40px;
         }
 
         .toggle-password {
@@ -155,6 +156,39 @@
             color: #333;
         }
 
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .loading-overlay p {
+            color: white;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
             .login-container {
                 padding: 30px;
@@ -180,7 +214,10 @@
         <div class="input-wrapper">
             <input type="password" id="login-password" placeholder="Contraseña" required />
             <span class="toggle-password" onclick="togglePassword('login-password')">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/></svg>
+                <!-- SVG icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/>
+                </svg>
             </span>
         </div>
         <button onclick="login()">Iniciar Sesión</button>
@@ -192,18 +229,27 @@
     <div id="registerModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
-            <h1>Registrarse</h1>
+            <h1>Registro</h1>
             <div class="input-wrapper">
                 <input type="email" id="register-email" placeholder="Correo electrónico" required />
             </div>
             <div class="input-wrapper">
                 <input type="password" id="register-password" placeholder="Contraseña" required />
                 <span class="toggle-password" onclick="togglePassword('register-password')">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/></svg>
+                    <!-- SVG icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/>
+                    </svg>
                 </span>
             </div>
-            <button onclick="register()">Registrarse</button>
+            <button onclick="register()">Registrar</button>
         </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Por favor, espere...</p>
     </div>
 
     <script type="module">
@@ -224,51 +270,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        window.login = async () => {
-            const email = document.getElementById("login-email").value.trim();
-            const password = document.getElementById("login-password").value;
-            if (!email || !password) {
-                alert("Por favor, completa todos los campos.");
-                return;
-            }
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                alert("¡Inicio de sesión exitoso!");
-                window.location.href = 'formulario.html';
-            } catch (error) {
-                alert("Error en el inicio de sesión: " + error.message);
-            }
-        };
-
-        window.register = async () => {
-            const email = document.getElementById("register-email").value.trim();
-            const password = document.getElementById("register-password").value;
-            if (!email || !password) {
-                alert("Por favor, completa todos los campos.");
-                return;
-            }
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-                alert("¡Registro exitoso!");
-                closeModal();
-            } catch (error) {
-                alert("Error en el registro: " + error.message);
-            }
-        };
-
-        window.resetPassword = async () => {
-            const email = document.getElementById("login-email").value.trim();
-            if (!email) {
-                alert("Por favor, ingresa tu correo electrónico para restablecer la contraseña.");
-                return;
-            }
-            try {
-                await sendPasswordResetEmail(auth, email);
-                alert("Correo de restablecimiento de contraseña enviado. Por favor, revisa tu bandeja de entrada.");
-            } catch (error) {
-                alert("Error al enviar el correo de restablecimiento: " + error.message);
-            }
-        };
+        const loadingOverlay = document.getElementById("loadingOverlay");
 
         window.openModal = () => {
             const modal = document.getElementById("registerModal");
@@ -280,13 +282,64 @@
             modal.style.display = "none";
         };
 
+        window.login = async () => {
+            const email = document.getElementById("login-email").value.trim();
+            const password = document.getElementById("login-password").value;
+            if (!email || !password) {
+                alert("Por favor, completa todos los campos.");
+                return;
+            }
+            loadingOverlay.style.display = "flex";
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                alert("¡Inicio de sesión exitoso!");
+                window.location.href = 'formulario.html';
+            } catch (error) {
+                alert("Error en el inicio de sesión: " + error.message);
+            } finally {
+                loadingOverlay.style.display = "none";
+            }
+        };
+
+        window.register = async () => {
+            const email = document.getElementById("register-email").value.trim();
+            const password = document.getElementById("register-password").value;
+            if (!email || !password) {
+                alert("Por favor, completa todos los campos.");
+                return;
+            }
+            loadingOverlay.style.display = "flex"; // Mostrar cargando
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                alert("¡Registro exitoso!");
+                // Limpiar los campos después del registro
+                document.getElementById("register-email").value = "";
+                document.getElementById("register-password").value = "";
+                closeModal();
+            } catch (error) {
+                alert("Error en el registro: " + error.message);
+            } finally {
+                loadingOverlay.style.display = "none"; // Ocultar cargando
+            }
+        };
+
+        window.resetPassword = async () => {
+            const email = document.getElementById("login-email").value.trim();
+            if (!email) {
+                alert("Por favor, ingresa tu correo electrónico para restablecer la contraseña.");
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("Correo de restablecimiento enviado.");
+            } catch (error) {
+                alert("Error al enviar el correo: " + error.message);
+            }
+        };
+
         window.togglePassword = (fieldId) => {
             const field = document.getElementById(fieldId);
-            if (field.type === "password") {
-                field.type = "text";
-            } else {
-                field.type = "password";
-            }
+            field.type = field.type === "password" ? "text" : "password";
         };
     </script>
 </body>
