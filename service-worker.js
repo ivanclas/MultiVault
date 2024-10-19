@@ -2,27 +2,28 @@ const CACHE_NAME = 'galeria-cache-v1';
 
 // Archivos a cachear
 const urlsToCache = [
-                   
-    'index.html',         
-    'formulario.html',    
-    'verGaleria.html',    
-    'verGaleria2.html',   
-    'verGaleria3.html',   
-    'nuevo.html',         
-    'MisCarpetas.html',   
-    'offline.html',       // Página de fallback
-    'service-worker.js',  
+    'index.html',
+    'formulario.html',
+    'verGaleria.html',
+    'verGaleria2.html',
+    'verGaleria3.html',
+    'nuevo.html',
+    'MisCarpetas.html',
+    'offline.html',
+    'service-worker.js',
     'https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap'
 ];
 
-// Instalación: Cachear los archivos
+// Instalación: Cachear los archivos necesarios
 self.addEventListener('install', (event) => {
     console.log('Service Worker: Instalando y cacheando archivos...');
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(urlsToCache).catch((error) => {
-                console.error('Error al cachear archivos:', error);
-            });
+            return cache.addAll(urlsToCache)
+                .then(() => console.log('Archivos cacheados correctamente'))
+                .catch((error) => {
+                    console.error('Error al cachear archivos:', error);
+                });
         })
     );
 });
@@ -31,16 +32,16 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
     console.log('Service Worker: Activado');
     event.waitUntil(
-        caches.keys().then((cacheNames) =>
-            Promise.all(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
                 cacheNames.map((cache) => {
                     if (cache !== CACHE_NAME) {
                         console.log('Service Worker: Eliminando caché antigua:', cache);
                         return caches.delete(cache);
                     }
                 })
-            )
-        )
+            );
+        })
     );
 });
 
@@ -54,11 +55,15 @@ self.addEventListener('fetch', (event) => {
             }
             console.log('Service Worker: Recurso no encontrado en caché, solicitando...', event.request.url);
             return fetch(event.request).then((networkResponse) => {
+                if (!networkResponse || networkResponse.status !== 200) {
+                    console.error('Error al obtener el recurso:', event.request.url);
+                    return caches.match('offline.html'); // Fallback si no hay conexión
+                }
                 return caches.open(CACHE_NAME).then((cache) => {
                     cache.put(event.request, networkResponse.clone());
                     return networkResponse;
                 });
             });
-        }).catch(() => caches.match('/offline.html')) // Mostrar fallback si no hay conexión
+        }).catch(() => caches.match('offline.html'))
     );
 });
