@@ -392,6 +392,20 @@
             document.getElementById('deleteSelectedBtn').addEventListener('click', deleteSelectedFiles);
         });
 
+
+        if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then((registration) => {
+                console.log('Service Worker registrado con éxito:', registration);
+            })
+            .catch((error) => {
+                console.error('Registro de Service Worker fallido:', error);
+            });
+    });
+}
+
+
     </script>
 </body>
 </html>
