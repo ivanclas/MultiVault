@@ -384,5 +384,19 @@
             }
         }
     </script>
+
+<script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(function(registration) {
+            console.log('Service Worker registrado');
+          })
+          .catch(function(error) {
+            console.log('Registro de Service Worker fallido:', error);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
