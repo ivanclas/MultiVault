@@ -18,11 +18,11 @@ const urlsToCache = [
 self.addEventListener('install', (event) => {
     console.log('Service Worker: Instalando y cacheando archivos...');
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(urlsToCache).catch((error) => {
+        caches.open(CACHE_NAME)
+            .then((cache) => cache.addAll(urlsToCache))
+            .catch((error) => {
                 console.error('Error al cachear archivos:', error);
-            });
-        })
+            })
     );
 });
 
@@ -45,9 +45,10 @@ self.addEventListener('activate', (event) => {
 
 // Interceptar solicitudes y servir desde la caché
 self.addEventListener('fetch', (event) => {
+    // Ignorar solicitudes no-GET
     if (event.request.method !== 'GET') {
         console.warn('Service Worker: Ignorando solicitud no-GET:', event.request.method, event.request.url);
-        return; // Ignorar solicitudes que no sean GET
+        return;
     }
 
     event.respondWith(
@@ -56,17 +57,16 @@ self.addEventListener('fetch', (event) => {
                 console.log('Service Worker: Usando recurso en caché:', event.request.url);
                 return response;
             }
-            console.log('Service Worker: Recurso no encontrado en caché, solicitando...', event.request.url);
 
+            console.log('Service Worker: Recurso no encontrado en caché, solicitando...', event.request.url);
             return fetch(event.request)
                 .then((networkResponse) => {
-                    // Verificar si la respuesta es válida antes de almacenarla
+                    // Verificar que la respuesta es válida antes de cachearla
                     if (!networkResponse || networkResponse.status !== 200) {
                         console.warn('Service Worker: Respuesta no válida:', event.request.url);
                         return networkResponse;
                     }
 
-                    // Almacenar la respuesta en caché para futuras solicitudes
                     return caches.open(CACHE_NAME).then((cache) => {
                         cache.put(event.request, networkResponse.clone());
                         return networkResponse;
@@ -74,7 +74,8 @@ self.addEventListener('fetch', (event) => {
                 })
                 .catch((error) => {
                     console.error('Service Worker: Error al obtener recurso:', error);
-                    return caches.match('offline.html'); // Mostrar fallback si no hay conexión
+                    // Mostrar página de fallback en caso de error o sin conexión
+                    return caches.match('offline.html');
                 });
         })
     );
