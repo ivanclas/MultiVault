@@ -2,7 +2,7 @@ const CACHE_NAME = 'galeria-cache-v1';
 
 // Archivos a cachear
 const urlsToCache = [
-    '/',                   
+                   
     'index.html',         
     'formulario.html',    
     'verGaleria.html',    
