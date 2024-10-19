@@ -1,6 +1,6 @@
 const CACHE_NAME = 'galeria-cache-v1';
 
-// Archivos a cachear
+// Archivos a cachear (solo solicitudes GET permitidas)
 const urlsToCache = [
     'index.html',
     'formulario.html',
@@ -14,16 +14,14 @@ const urlsToCache = [
     'https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap'
 ];
 
-// Instalación: Cachear los archivos necesarios
+// Instalación: Cachear los archivos permitidos
 self.addEventListener('install', (event) => {
     console.log('Service Worker: Instalando y cacheando archivos...');
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(urlsToCache)
-                .then(() => console.log('Archivos cacheados correctamente'))
-                .catch((error) => {
-                    console.error('Error al cachear archivos:', error);
-                });
+            return cache.addAll(urlsToCache).catch((error) => {
+                console.error('Error al cachear archivos:', error);
+            });
         })
     );
 });
@@ -32,21 +30,26 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
     console.log('Service Worker: Activado');
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
+        caches.keys().then((cacheNames) =>
+            Promise.all(
                 cacheNames.map((cache) => {
                     if (cache !== CACHE_NAME) {
                         console.log('Service Worker: Eliminando caché antigua:', cache);
                         return caches.delete(cache);
                     }
                 })
-            );
-        })
+            )
+        )
     );
 });
 
 // Interceptar solicitudes y servir desde la caché
 self.addEventListener('fetch', (event) => {
+    if (event.request.method !== 'GET') {
+        console.warn('Service Worker: Ignorando solicitud no-GET:', event.request.method, event.request.url);
+        return; // Ignorar solicitudes que no sean GET
+    }
+
     event.respondWith(
         caches.match(event.request).then((response) => {
             if (response) {
@@ -54,16 +57,25 @@ self.addEventListener('fetch', (event) => {
                 return response;
             }
             console.log('Service Worker: Recurso no encontrado en caché, solicitando...', event.request.url);
-            return fetch(event.request).then((networkResponse) => {
-                if (!networkResponse || networkResponse.status !== 200) {
-                    console.error('Error al obtener el recurso:', event.request.url);
-                    return caches.match('offline.html'); // Fallback si no hay conexión
-                }
-                return caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, networkResponse.clone());
-                    return networkResponse;
+
+            return fetch(event.request)
+                .then((networkResponse) => {
+                    // Verificar si la respuesta es válida antes de almacenarla
+                    if (!networkResponse || networkResponse.status !== 200) {
+                        console.warn('Service Worker: Respuesta no válida:', event.request.url);
+                        return networkResponse;
+                    }
+
+                    // Almacenar la respuesta en caché para futuras solicitudes
+                    return caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, networkResponse.clone());
+                        return networkResponse;
+                    });
+                })
+                .catch((error) => {
+                    console.error('Service Worker: Error al obtener recurso:', error);
+                    return caches.match('offline.html'); // Mostrar fallback si no hay conexión
                 });
-            });
-        }).catch(() => caches.match('offline.html'))
+        })
     );
 });
