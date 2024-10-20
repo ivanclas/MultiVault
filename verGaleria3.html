@@ -116,7 +116,7 @@
 
         if (!folderName) {
             alert("No se especificó ninguna carpeta.");
-            window.location.href = "misCarpetas.html"; // Redirigir si no hay carpeta especificada
+            window.location.href = "MisCarpetas.html"; // Redirigir si no hay carpeta especificada
         }
 
         auth.onAuthStateChanged(user => {
@@ -279,17 +279,18 @@
         window.deleteSelectedFiles = deleteSelectedFiles;
     </script>
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/service-worker.js')
-            .then(function(registration) {
-              console.log('Service Worker registrado');
-            })
-            .catch(function(error) {
-              console.log('Registro de Service Worker fallido:', error);
-            });
+   
+        if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('service-worker.js')
+                .then((registration) => {
+                    console.log('Service Worker registrado con éxito:', registration);
+                })
+                .catch((error) => {
+                    console.error('Error al registrar el Service Worker:', error);
+                });
         });
-      }
-    </script>
+    }
+      </script>
 </body>
 </html>
