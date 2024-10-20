@@ -1,4 +1,4 @@
-const CACHE_NAME = 'galeria-cache-v1';
+const CACHE_NAME = 'galeria-cache-v2';
 
 // Archivos a cachear (solo solicitudes GET permitidas)
 const urlsToCache = [
