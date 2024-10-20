@@ -1,4 +1,4 @@
-const CACHE_NAME = 'galeria-cache-v2';
+const CACHE_NAME = 'galeria-cache-v3'; // Aumenta el número de versión para asegurarte de que se reemplazará la caché anterior
 
 // Archivos a cachear (solo solicitudes GET permitidas)
 const urlsToCache = [
@@ -17,7 +17,10 @@ self.addEventListener('install', (event) => {
     console.log('Service Worker: Instalando y cacheando archivos...');
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then((cache) => cache.addAll(urlsToCache))
+            .then((cache) => {
+                console.log('Service Worker: Archivos cacheados correctamente');
+                return cache.addAll(urlsToCache);
+            })
             .catch((error) => {
                 console.error('Error al cachear archivos:', error);
             })
@@ -41,7 +44,7 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Interceptar solicitudes y servir desde la caché
+// Interceptar solicitudes y servir con estrategia de actualización en segundo plano
 self.addEventListener('fetch', (event) => {
     // Ignorar solicitudes no-GET
     if (event.request.method !== 'GET') {
@@ -55,13 +58,16 @@ self.addEventListener('fetch', (event) => {
         return fetch(event.request);
     }
 
+    // Estrategia "network-first": Intenta obtener el recurso de la red primero, si falla, usa la caché.
     event.respondWith(
         fetch(event.request)
             .then((networkResponse) => {
                 // Verificar que la respuesta es válida (status 200) antes de cachearla
                 if (networkResponse && networkResponse.status === 200) {
                     return caches.open(CACHE_NAME).then((cache) => {
+                        // Actualiza la caché en segundo plano
                         cache.put(event.request, networkResponse.clone());
+                        console.log('Service Worker: Recurso actualizado en la caché:', event.request.url);
                         return networkResponse;
                     });
                 } else {
