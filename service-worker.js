@@ -37,11 +37,11 @@ self.addEventListener('activate', (event) => {
                     }
                 })
             )
-        )
+        ).then(() => self.clients.claim()) // Reclama control de las pestañas activas inmediatamente
     );
 });
 
-// Interceptar solicitudes y servir desde la caché
+// Estrategia de Red Primero con Fallback a Caché
 self.addEventListener('fetch', (event) => {
     // Ignorar solicitudes no-GET
     if (event.request.method !== 'GET') {
@@ -50,31 +50,29 @@ self.addEventListener('fetch', (event) => {
     }
 
     event.respondWith(
-        caches.match(event.request).then((response) => {
-            if (response) {
-                console.log('Service Worker: Usando recurso en caché:', event.request.url);
-                return response;
-            }
+        fetch(event.request)
+            .then((networkResponse) => {
+                // Verificar que la respuesta es válida antes de cachearla
+                if (!networkResponse || networkResponse.status !== 200) {
+                    console.warn('Service Worker: Respuesta no válida:', event.request.url);
+                    return networkResponse;
+                }
 
-            console.log('Service Worker: Recurso no encontrado en caché, solicitando...', event.request.url);
-            return fetch(event.request)
-                .then((networkResponse) => {
-                    // Verificar que la respuesta es válida antes de cachearla
-                    if (!networkResponse || networkResponse.status !== 200) {
-                        console.warn('Service Worker: Respuesta no válida:', event.request.url);
-                        return networkResponse;
+                return caches.open(CACHE_NAME).then((cache) => {
+                    cache.put(event.request, networkResponse.clone()); // Cachear la respuesta para futuras solicitudes
+                    return networkResponse; // Devolver la respuesta de la red
+                });
+            })
+            .catch(() => {
+                // Si la red falla, buscar en la caché
+                return caches.match(event.request).then((response) => {
+                    if (response) {
+                        console.log('Service Worker: Usando recurso en caché:', event.request.url);
+                        return response;
                     }
-
-                    return caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, networkResponse.clone());
-                        return networkResponse;
-                    });
-                })
-                .catch((error) => {
-                    console.error('Service Worker: Error al obtener recurso:', error);
-                    // Mostrar página de fallback en caso de error o sin conexión
+                    // Si no se encuentra en la caché, mostrar la página offline
                     return caches.match('offline.html');
                 });
-        })
+            })
     );
 });
