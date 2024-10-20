@@ -1,4 +1,4 @@
-const CACHE_NAME = 'galeria-cache-v3'; // Aumenta el número de versión para asegurarte de que se reemplazará la caché anterior
+const CACHE_NAME = 'galeria-cache-v1';
 
 // Archivos a cachear (solo solicitudes GET permitidas)
 const urlsToCache = [
@@ -12,41 +12,84 @@ const urlsToCache = [
     'https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap'
 ];
 
+// Instalación: Cachear los archivos permitidos
+self.addEventListener('install', (event) => {
+    console.log('Service Worker: Instalando y cacheando archivos...');
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then((cache) => cache.addAll(urlsToCache))
+            .catch((error) => {
+                console.error('Error al cachear archivos:', error);
+            })
+    );
+});
+
+// Activación: Eliminar cachés antiguas
+self.addEventListener('activate', (event) => {
+    console.log('Service Worker: Activado');
+    event.waitUntil(
+        caches.keys().then((cacheNames) =>
+            Promise.all(
+                cacheNames.map((cache) => {
+                    if (cache !== CACHE_NAME) {
+                        console.log('Service Worker: Eliminando caché antigua:', cache);
+                        return caches.delete(cache);
+                    }
+                })
+            )
+        )
+    );
+});
+
+// Interceptar solicitudes y servir desde la caché, pero actualizar en segundo plano
 self.addEventListener('fetch', (event) => {
     // Ignorar solicitudes no-GET
     if (event.request.method !== 'GET') {
+        console.warn('Service Worker: Ignorando solicitud no-GET:', event.request.method, event.request.url);
         return;
     }
 
-    // No cachear archivos de Firebase Storage u otros servicios externos
-    if (event.request.url.includes('firebasestorage.googleapis.com') || event.request.url.includes('googleapis.com')) {
-        return fetch(event.request).catch((error) => {
-            console.error('Error al obtener recurso de la red:', error);
-            return caches.match('offline.html');
-        });
-    }
-
-    // Estrategia "network-first" para el resto de recursos
     event.respondWith(
-        fetch(event.request)
-            .then((networkResponse) => {
-                if (networkResponse && networkResponse.status === 200) {
+        caches.match(event.request).then((cachedResponse) => {
+            // Si encontramos el recurso en la caché, lo devolvemos
+            if (cachedResponse) {
+                // Intentamos actualizar en segundo plano
+                fetch(event.request).then((networkResponse) => {
+                    // Solo actualizamos la caché si obtenemos una respuesta válida de la red
+                    if (networkResponse && networkResponse.status === 200) {
+                        caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(event.request, networkResponse.clone());
+                            console.log('Service Worker: Caché actualizada para', event.request.url);
+                        });
+                    }
+                }).catch((error) => {
+                    console.error('Service Worker: Error al actualizar recurso en segundo plano:', error);
+                });
+
+                // Retornar la versión cacheada
+                return cachedResponse;
+            }
+
+            // Si no está en la caché, lo obtenemos de la red y lo cacheamos
+            console.log('Service Worker: Recurso no encontrado en caché, solicitando...', event.request.url);
+            return fetch(event.request)
+                .then((networkResponse) => {
+                    // Verificar que la respuesta es válida antes de cachearla
+                    if (!networkResponse || networkResponse.status !== 200) {
+                        console.warn('Service Worker: Respuesta no válida:', event.request.url);
+                        return networkResponse;
+                    }
+
                     return caches.open(CACHE_NAME).then((cache) => {
                         cache.put(event.request, networkResponse.clone());
                         return networkResponse;
                     });
-                } else {
-                    return networkResponse;
-                }
-            })
-            .catch((error) => {
-                console.error('Error al obtener recurso de la red:', error);
-                return caches.match(event.request).then((cachedResponse) => {
-                    if (cachedResponse) {
-                        return cachedResponse;
-                    }
+                })
+                .catch((error) => {
+                    console.error('Service Worker: Error al obtener recurso:', error);
+                    // Mostrar página de fallback en caso de error o sin conexión
                     return caches.match('offline.html');
                 });
-            })
+        })
     );
 });
