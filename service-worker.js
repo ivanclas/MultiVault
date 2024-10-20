@@ -17,9 +17,7 @@ self.addEventListener('install', (event) => {
     console.log('Service Worker: Instalando y cacheando archivos...');
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then((cache) => {
-                return cache.addAll(urlsToCache);
-            })
+            .then((cache) => cache.addAll(urlsToCache))
             .catch((error) => {
                 console.error('Error al cachear archivos:', error);
             })
@@ -39,7 +37,7 @@ self.addEventListener('activate', (event) => {
                     }
                 })
             )
-        ).then(() => self.clients.claim()) // Tomar control de las pestañas abiertas
+        ).then(() => self.clients.claim())
     );
 });
 
@@ -47,25 +45,31 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     // Ignorar solicitudes no-GET
     if (event.request.method !== 'GET') {
-        console.warn('Service Worker: Ignorando solicitud no-GET:', event.request.method, event.request.url);
+        console.info('Service Worker: Ignorando solicitud no-GET:', event.request.method, event.request.url);
         return;
     }
 
     event.respondWith(
         fetch(event.request)
             .then((networkResponse) => {
-                if (networkResponse.status === 200) {
-                    caches.open(CACHE_NAME).then((cache) => {
+                // Verificar que la respuesta es válida y con estado 200 antes de cachearla
+                if (networkResponse.ok) {
+                    return caches.open(CACHE_NAME).then((cache) => {
                         cache.put(event.request, networkResponse.clone());
+                        return networkResponse;
                     });
+                } else {
+                    console.warn('Service Worker: Respuesta no válida:', event.request.url);
+                    return networkResponse;
                 }
-                return networkResponse;
             })
-            .catch(() => {
-                return caches.match(event.request).then((response) => {
-                    if (response) {
+            .catch((error) => {
+                console.error('Service Worker: Error al obtener recurso:', error);
+                // Intentar servir desde la caché o mostrar la página offline
+                return caches.match(event.request).then((cachedResponse) => {
+                    if (cachedResponse) {
                         console.log('Service Worker: Usando recurso en caché:', event.request.url);
-                        return response;
+                        return cachedResponse;
                     }
                     console.warn('Service Worker: Mostrando página offline');
                     return caches.match('offline.html');
