@@ -17,7 +17,9 @@ self.addEventListener('install', (event) => {
     console.log('Service Worker: Instalando y cacheando archivos...');
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then((cache) => cache.addAll(urlsToCache))
+            .then((cache) => {
+                return cache.addAll(urlsToCache);
+            })
             .catch((error) => {
                 console.error('Error al cachear archivos:', error);
             })
@@ -37,11 +39,11 @@ self.addEventListener('activate', (event) => {
                     }
                 })
             )
-        ).then(() => self.clients.claim()) // Reclama control de las pestañas activas inmediatamente
+        ).then(() => self.clients.claim()) // Tomar control de las pestañas abiertas
     );
 });
 
-// Estrategia de Red Primero con Fallback a Caché
+// Interceptar solicitudes y servir desde la caché
 self.addEventListener('fetch', (event) => {
     // Ignorar solicitudes no-GET
     if (event.request.method !== 'GET') {
@@ -52,25 +54,20 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
         fetch(event.request)
             .then((networkResponse) => {
-                // Verificar que la respuesta es válida antes de cachearla
-                if (!networkResponse || networkResponse.status !== 200) {
-                    console.warn('Service Worker: Respuesta no válida:', event.request.url);
-                    return networkResponse;
+                if (networkResponse.status === 200) {
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, networkResponse.clone());
+                    });
                 }
-
-                return caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, networkResponse.clone()); // Cachear la respuesta para futuras solicitudes
-                    return networkResponse; // Devolver la respuesta de la red
-                });
+                return networkResponse;
             })
             .catch(() => {
-                // Si la red falla, buscar en la caché
                 return caches.match(event.request).then((response) => {
                     if (response) {
                         console.log('Service Worker: Usando recurso en caché:', event.request.url);
                         return response;
                     }
-                    // Si no se encuentra en la caché, mostrar la página offline
+                    console.warn('Service Worker: Mostrando página offline');
                     return caches.match('offline.html');
                 });
             })
