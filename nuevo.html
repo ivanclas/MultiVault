@@ -204,29 +204,33 @@
         });
 
         // Asignar la función createFolder al objeto window
-        window.createFolder = async function() {
-            const folderName = document.getElementById('folderName').value.trim();
-            const messageDiv = document.getElementById('message');
+    window.createFolder = async function() {
+    const folderName = document.getElementById('folderName').value.trim();
+    const messageDiv = document.getElementById('message');
 
-            if (!folderName) {
-                messageDiv.style.color = "red";
-                messageDiv.textContent = "Por favor, introduce un nombre válido para la carpeta.";
-                return;
-            }
+    if (!folderName) {
+        messageDiv.style.color = "red";
+        messageDiv.textContent = "Por favor, introduce un nombre válido para la carpeta.";
+        return;
+    }
 
-            try {
-                const folderRef = ref(storage, `${userEmail}/${folderName}/.placeholder`);
-                const emptyBlob = new Blob([], { type: 'text/plain' });
+    try {
+        const folderRef = ref(storage, `${userEmail}/${folderName}/.placeholder`);
+        const emptyBlob = new Blob([], { type: 'text/plain' });
 
-                await uploadBytesResumable(folderRef, emptyBlob);
-                messageDiv.style.color = "green";
-                messageDiv.textContent = `Carpeta "${folderName}" creada exitosamente.`;
-            } catch (error) {
-                console.error("Error al crear la carpeta:", error);
-                messageDiv.style.color = "red";
-                messageDiv.textContent = "Error al crear la carpeta.";
-            }
-        };
+        await uploadBytesResumable(folderRef, emptyBlob);
+        messageDiv.style.color = "green";
+        messageDiv.textContent = `Carpeta "${folderName}" creada exitosamente.`;
+
+        // Limpia el campo de entrada después de crear la carpeta
+        document.getElementById('folderName').value = "";
+    } catch (error) {
+        console.error("Error al crear la carpeta:", error);
+        messageDiv.style.color = "red";
+        messageDiv.textContent = "Error al crear la carpeta.";
+    }
+};
+
 
         // Asignar la función goToMyFolders
         window.goToMyFolders = function() {
