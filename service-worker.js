@@ -37,7 +37,7 @@ self.addEventListener('activate', (event) => {
                     }
                 })
             )
-        ).then(() => self.clients.claim())  // Forzar la activación inmediata del SW
+        ).then(() => self.clients.claim())
     );
 });
 
@@ -47,6 +47,12 @@ self.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') {
         console.info('Service Worker: Ignorando solicitud no-GET:', event.request.method, event.request.url);
         return;
+    }
+
+    // No cachear archivos de Firebase Storage u otros servicios externos
+    if (event.request.url.includes('firebasestorage.googleapis.com') || event.request.url.includes('googleapis.com')) {
+        console.warn('Service Worker: No cacheando recursos externos:', event.request.url);
+        return fetch(event.request);
     }
 
     event.respondWith(
