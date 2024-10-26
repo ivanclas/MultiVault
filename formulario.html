@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- ... (mantengo todo el contenido del head) ... -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subir Archivos a Firebase</title>
     <style>
-        body {
+    body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #00c6ff, #0072ff);
             display: flex;
@@ -83,14 +84,37 @@
             display: none;
             flex-wrap: wrap;
             justify-content: center;
+            max-height: 200px; /* Altura máxima del contenedor */
+            overflow-y: auto; /* Habilitar scroll vertical */
         }
 
-        #selectedImages img, #selectedImages video, #selectedImages .file-icon {
+        .preview-item {
+            position: relative;
+            margin: 5px;
+        }
+
+        .preview-item img, .preview-item video, .preview-item .file-icon {
             max-width: 100px;
             height: auto;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            margin: 5px;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         #progressBar {
@@ -160,7 +184,11 @@
                 font-size: 14px;
             }
 
-            #selectedImages img, #selectedImages video, #selectedImages .file-icon {
+            #selectedImages {
+                max-height: 150px;
+            }
+
+            .preview-item img, .preview-item video, .preview-item .file-icon {
                 max-width: 80px;
             }
 
@@ -172,33 +200,38 @@
         }
 
         .folder-button {
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    font-size: 24px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
 
-.folder-button:hover {
-    background-color: #388e3c;
-    transform: translateY(-3px);
-}
+        .folder-button:hover {
+            background-color: #388e3c;
+            transform: translateY(-3px);
+        }
 
-.folder-button:active {
-    transform: translateY(0);
-}
+        .folder-button:active {
+            transform: translateY(0);
+        }
+        .remove-btn.locked {
+            background-color: #bbb;
+            cursor: default;
+        }
 
+        
     </style>
 </head>
 <body>
@@ -216,14 +249,13 @@
             <div id="progressMessage"></div>
         </div>
 
-        <button onclick="uploadFiles()">Subir Archivos</button>
+        <!-- Añadimos un ID al botón para poder manipularlo -->
+        <button id="uploadButton" onclick="uploadFiles()">Subir Archivos</button>
         <button onclick="window.location.href='verGaleria2.html'">Ver Galería</button>
         <button onclick="window.location.href='verGaleria.html'">Ver Documentos</button>
-        
     </div>
-<!-- Botón flotante para crear una nueva carpeta -->
-<button class="folder-button" onclick="window.location.href='nuevo.html'">📁</button>
-
+    <!-- Botón flotante para crear una nueva carpeta -->
+    <button class="folder-button" onclick="window.location.href='nuevo.html'">📁</button>
 
     <button class="logout-button" onclick="logout()">❌</button>
 
@@ -242,11 +274,12 @@
             appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
             measurementId: "G-TMWR9JNR18"
         };
-
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
         const auth = getAuth(app);
         let userEmail = "";
+        let selectedFilesArray = []; // Lista para almacenar los archivos seleccionados
+        let isUploading = false; // Bandera para saber si se está subiendo
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -259,56 +292,88 @@
 
         window.previewFiles = function() {
             const files = document.getElementById('fileInput').files;
+            selectedFilesArray = Array.from(files); // Guardamos los archivos en el array
+            renderSelectedFiles();
+        };
+
+        function renderSelectedFiles() {
             const selectedFilesContainer = document.getElementById('selectedImages');
             selectedFilesContainer.innerHTML = ""; 
 
-            if (files.length > 0) {
+            if (selectedFilesArray.length > 0) {
                 selectedFilesContainer.style.display = 'flex'; 
-                Array.from(files).forEach(file => {
+                selectedFilesArray.forEach((file, index) => {
                     const extension = file.name.split('.').pop().toLowerCase();
                     const reader = new FileReader();
                     reader.onload = function(e) {
+                        const previewItem = document.createElement('div');
+                        previewItem.classList.add('preview-item');
+
+                        const removeBtn = document.createElement('button');
+                        removeBtn.classList.add('remove-btn');
+
+                        if (isUploading) {
+                            removeBtn.innerHTML = '&#x1f512;'; // Icono de candado
+                            removeBtn.classList.add('locked');
+                        } else {
+                            removeBtn.innerHTML = '&times;';
+                            removeBtn.onclick = function() {
+                                removeFile(index);
+                            };
+                        }
+
+                        previewItem.appendChild(removeBtn);
+
                         if (file.type.startsWith('image/')) {
                             const img = document.createElement('img');
                             img.src = e.target.result;
-                            selectedFilesContainer.appendChild(img);
+                            previewItem.appendChild(img);
                         } else if (file.type.startsWith('video/')) {
                             const video = document.createElement('video');
                             video.src = e.target.result;
                             video.controls = true;
-                            selectedFilesContainer.appendChild(video);
+                            previewItem.appendChild(video);
                         } else if (extension === 'pdf') {
                             const fileIcon = document.createElement('div');
                             fileIcon.classList.add('file-icon');
                             fileIcon.innerHTML = '<img src="https://img.icons8.com/color/48/000000/pdf.png" alt="PDF Icon">';
-                            selectedFilesContainer.appendChild(fileIcon);
+                            previewItem.appendChild(fileIcon);
                         } else if (extension === 'doc' || extension === 'docx') {
                             const fileIcon = document.createElement('div');
                             fileIcon.classList.add('file-icon');
                             fileIcon.innerHTML = '<img src="https://img.icons8.com/color/48/000000/ms-word.png" alt="Word Icon">';
-                            selectedFilesContainer.appendChild(fileIcon);
+                            previewItem.appendChild(fileIcon);
                         } else if (extension === 'zip' || extension === 'rar') {
                             const fileIcon = document.createElement('div');
                             fileIcon.classList.add('file-icon');
                             fileIcon.innerHTML = '<img src="https://img.icons8.com/color/48/000000/zip.png" alt="ZIP Icon">';
-                            selectedFilesContainer.appendChild(fileIcon);
+                            previewItem.appendChild(fileIcon);
                         } else {
                             const fileIcon = document.createElement('div');
                             fileIcon.classList.add('file-icon');
                             fileIcon.textContent = extension.toUpperCase();
-                            selectedFilesContainer.appendChild(fileIcon);
+                            previewItem.appendChild(fileIcon);
                         }
+
+                        selectedFilesContainer.appendChild(previewItem);
                     };
                     reader.readAsDataURL(file);
                 });
             } else {
                 selectedFilesContainer.style.display = 'none';
             }
-        };
+        }
+
+        function removeFile(index) {
+            if (isUploading) {
+                return; // No permitir eliminar durante la carga
+            }
+            selectedFilesArray.splice(index, 1); // Eliminamos el archivo del array
+            renderSelectedFiles(); // Volvemos a renderizar la vista previa
+        }
 
         window.uploadFiles = async function() {
-            const files = document.getElementById('fileInput').files;
-            if (files.length === 0) {
+            if (selectedFilesArray.length === 0) {
                 alert("Por favor, selecciona al menos un archivo.");
                 return;
             }
@@ -317,6 +382,16 @@
                 alert("No se ha detectado un correo electrónico.");
                 return;
             }
+
+            isUploading = true; // Iniciamos la carga
+            document.getElementById('uploadButton').disabled = true; // Deshabilitamos el botón
+
+            const removeButtons = document.querySelectorAll('.remove-btn');
+            removeButtons.forEach(btn => {
+                btn.innerHTML = '&#x1f512;'; // Icono de candado
+                btn.classList.add('locked');
+                btn.onclick = null; // Eliminamos el evento onclick
+            });
 
             const date = new Date().toISOString().replace(/:/g, '-');
             const progressBar = document.getElementById('progressBar');
@@ -327,28 +402,31 @@
 
             const promises = []; 
 
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
+            for (let i = 0; i < selectedFilesArray.length; i++) {
+                const file = selectedFilesArray[i];
                 const storageRef = ref(storage, `${userEmail}/${date}-${file.name}`);
                 const uploadTask = uploadBytesResumable(storageRef, file);
 
-                uploadTask.on('state_changed', 
-                    (snapshot) => {
-                        const progressValue = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        progress.style.width = `${progressValue}%`;
-                        progressMessage.textContent = `Subiendo: ${progressValue.toFixed(2)}%`;
-                    }, 
-                    (error) => {
-                        console.error("Error al subir archivo: ", error);
-                        alert("Error al subir archivo.");
-                    }, 
-                    () => {
-                        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                            console.log("Archivo disponible en: ", downloadURL);
-                        });
-                    }
-                );
-                promises.push(uploadTask); 
+                promises.push(new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed', 
+                        (snapshot) => {
+                            const progressValue = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            progress.style.width = `${progressValue}%`;
+                            progressMessage.textContent = `Subiendo: ${progressValue.toFixed(2)}%`;
+                        }, 
+                        (error) => {
+                            console.error("Error al subir archivo: ", error);
+                            alert("Error al subir archivo.");
+                            reject(error);
+                        }, 
+                        () => {
+                            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                                console.log("Archivo disponible en: ", downloadURL);
+                                resolve();
+                            });
+                        }
+                    );
+                }));
             }
 
             Promise.all(promises)
@@ -357,8 +435,11 @@
                     progressMessage.textContent = "Todos los archivos han sido subidos con éxito.";
 
                     document.getElementById('fileInput').value = ''; 
-                    document.getElementById('selectedImages').innerHTML = ''; 
-                    document.getElementById('selectedImages').style.display = 'none';
+                    selectedFilesArray = []; // Limpiar el array de archivos seleccionados
+                    isUploading = false; // Finalizamos la carga
+                    renderSelectedFiles(); // Actualizar la vista previa
+
+                    document.getElementById('uploadButton').disabled = false; // Rehabilitamos el botón
 
                     setTimeout(() => {
                         progressBar.style.display = 'none';
@@ -369,6 +450,8 @@
                 .catch((error) => {
                     console.error("Error al subir archivos: ", error);
                     alert("Error al subir archivos.");
+                    isUploading = false; // Aseguramos que se pueda volver a intentar
+                    document.getElementById('uploadButton').disabled = false; // Rehabilitamos el botón
                 });
         };
 
@@ -385,19 +468,19 @@
         }
     </script>
 
-<script>
-   
-    if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-            .then((registration) => {
-                console.log('Service Worker registrado con éxito:', registration);
-            })
-            .catch((error) => {
-                console.error('Error al registrar el Service Worker:', error);
+    <!-- Opcional: Registro de Service Worker si lo necesitas -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then((registration) => {
+                        console.log('Service Worker registrado con éxito:', registration);
+                    })
+                    .catch((error) => {
+                        console.error('Error al registrar el Service Worker:', error);
+                    });
             });
-    });
-}
-  </script>
+        }
+    </script>
 </body>
 </html>
