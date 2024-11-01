@@ -203,6 +203,25 @@
                 font-size: 14px;
             }
         }
+
+        /* Estilos para el botón de Google */
+        .google-login-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .google-login-btn:hover {
+            background-color: #3367D6;
+        }
     </style>
 </head>
 <body>
@@ -221,6 +240,10 @@
             </span>
         </div>
         <button onclick="login()">Iniciar Sesión</button>
+        <!-- Botón de inicio de sesión con Google -->
+        <button onclick="loginWithGoogle()" class="google-login-btn">
+            Iniciar sesión con Google
+        </button>
         <p><a href="javascript:void(0);" onclick="resetPassword()">¿Olvidaste tu contraseña?</a></p>
         <p>¿No tienes una cuenta? <a href="javascript:void(0);" onclick="openModal()">Regístrate aquí</a>.</p>
     </div>
@@ -254,21 +277,22 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
-            authDomain: "login-de3fd.firebaseapp.com",
-            databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
-            projectId: "login-de3fd",
-            storageBucket: "login-de3fd.appspot.com",
-            messagingSenderId: "1064113669692",
-            appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
-            measurementId: "G-TMWR9JNR18"
-        };
+  apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
+  authDomain: "login-de3fd.firebaseapp.com",
+  databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
+  projectId: "login-de3fd",
+  storageBucket: "login-de3fd.appspot.com",
+  messagingSenderId: "1064113669692",
+  appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
+  measurementId: "G-TMWR9JNR18"
+};
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
         const loadingOverlay = document.getElementById("loadingOverlay");
 
@@ -308,18 +332,17 @@
                 alert("Por favor, completa todos los campos.");
                 return;
             }
-            loadingOverlay.style.display = "flex"; // Mostrar cargando
+            loadingOverlay.style.display = "flex";
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
                 alert("¡Registro exitoso!");
-                // Limpiar los campos después del registro
                 document.getElementById("register-email").value = "";
                 document.getElementById("register-password").value = "";
                 closeModal();
             } catch (error) {
                 alert("Error en el registro: " + error.message);
             } finally {
-                loadingOverlay.style.display = "none"; // Ocultar cargando
+                loadingOverlay.style.display = "none";
             }
         };
 
@@ -341,21 +364,33 @@
             const field = document.getElementById(fieldId);
             field.type = field.type === "password" ? "text" : "password";
         };
+
+        window.loginWithGoogle = async () => {
+            loadingOverlay.style.display = "flex";
+            try {
+                await signInWithPopup(auth, provider);
+                alert("¡Inicio de sesión con Google exitoso!");
+                window.location.href = 'formulario.html';
+            } catch (error) {
+                alert("Error al iniciar sesión con Google: " + error.message);
+            } finally {
+                loadingOverlay.style.display = "none";
+            }
+        };
     </script>
 
-<script>
-   
-    if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-            .then((registration) => {
-                console.log('Service Worker registrado con éxito:', registration);
-            })
-            .catch((error) => {
-                console.error('Error al registrar el Service Worker:', error);
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then((registration) => {
+                        console.log('Service Worker registrado con éxito:', registration);
+                    })
+                    .catch((error) => {
+                        console.error('Error al registrar el Service Worker:', error);
+                    });
             });
-    });
-}
-  </script>
+        }
+    </script>
 </body>
 </html>
