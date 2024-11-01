@@ -3,394 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login con Firebase</title>
+    <title>GalleryPhotos - Organiza y Almacena tus Recuerdos</title>
     <style>
-     
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+        }
+        header {
+            background-color: #0073e6;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2em;
             margin: 0;
         }
-
-        .login-container {
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            position: relative;
-        }
-
-        h1 {
-            color: #333;
-            font-size: 28px;
-            margin-bottom: 20px;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        input {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-            box-sizing: border-box;
-            position: relative;
-        }
-
-        input:focus {
-            border-color: #007bff;
-            outline: none;
-        }
-
-        .input-wrapper {
-            position: relative;
-            width: 100%;
-        }
-
-        .input-wrapper input {
-            padding-right: 40px;
-        }
-
-        .toggle-password {
-            position: absolute;
-            top: 50%;
-            right: 10px;
-            transform: translateY(-50%);
-            cursor: pointer;
-            width: 20px;
-            height: 20px;
-        }
-
-        .toggle-password svg {
-            fill: #999;
-            width: 100%;
-            height: 100%;
-        }
-
-        .toggle-password:hover svg {
-            fill: #333;
-        }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
-            letter-spacing: 0.5px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
         p {
-            margin-top: 20px;
-            color: #666;
+            margin: 1em 0;
         }
-
-        a {
-            color: #007bff;
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #0073e6;
+            color: white;
             text-decoration: none;
+            border-radius: 5px;
             font-weight: bold;
         }
-
-        a:hover {
+        footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+            text-align: center;
+        }
+        footer a {
+            color: #0073e6;
+            text-decoration: none;
+        }
+        footer a:hover {
             text-decoration: underline;
         }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 400px;
+        .login-button {
+            margin-top: 30px;
+            display: block;
             text-align: center;
-            position: relative;
-        }
-
-        .modal-content h1 {
-            margin-bottom: 20px;
-        }
-
-        .close {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .close:hover {
-            color: #333;
-        }
-
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 2;
-        }
-
-        .loading-overlay p {
-            color: white;
-            font-size: 18px;
-            margin-top: 10px;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .login-container {
-                padding: 30px;
-            }
-
-            h1 {
-                font-size: 24px;
-            }
-
-            input, button {
-                padding: 12px;
-                font-size: 14px;
-            }
-        }
-
-        /* Estilos para el botón de Google */
-        .google-login-btn {
-            width: 100%;
-            padding: 15px;
-            background-color: #4285F4;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
-            letter-spacing: 0.5px;
-        }
-
-        .google-login-btn:hover {
-            background-color: #3367D6;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>Iniciar Sesión</h1>
-        <div class="input-wrapper">
-            <input type="email" id="login-email" placeholder="Correo electrónico" required />
-        </div>
-        <div class="input-wrapper">
-            <input type="password" id="login-password" placeholder="Contraseña" required />
-            <span class="toggle-password" onclick="togglePassword('login-password')">
-                <!-- SVG icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/>
-                </svg>
-            </span>
-        </div>
-        <button onclick="login()">Iniciar Sesión</button>
-        <!-- Botón de inicio de sesión con Google -->
-        <button onclick="loginWithGoogle()" class="google-login-btn">
-            Iniciar sesión con Google
-        </button>
-        <p><a href="javascript:void(0);" onclick="resetPassword()">¿Olvidaste tu contraseña?</a></p>
-        <p>¿No tienes una cuenta? <a href="javascript:void(0);" onclick="openModal()">Regístrate aquí</a>.</p>
-    </div>
+    <header>
+        <h1>Bienvenido a GalleryPhotos</h1>
+        <p>La mejor aplicación para organizar y almacenar tus fotos y videos</p>
+    </header>
 
-    <!-- Modal de registro -->
-    <div id="registerModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h1>Registro</h1>
-            <div class="input-wrapper">
-                <input type="email" id="register-email" placeholder="Correo electrónico" required />
-            </div>
-            <div class="input-wrapper">
-                <input type="password" id="register-password" placeholder="Contraseña" required />
-                <span class="toggle-password" onclick="togglePassword('register-password')">
-                    <!-- SVG icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/>
-                    </svg>
-                </span>
-            </div>
-            <button onclick="register()">Registrar</button>
+    <div class="container">
+        <h2>¿Qué es GalleryPhotos?</h2>
+        <p>GalleryPhotos es una aplicación que te permite almacenar, organizar y compartir tus fotos y videos de forma segura usando Google Firebase. Con una interfaz amigable y una configuración sencilla, es ideal para mantener tus recuerdos organizados y accesibles en cualquier momento.</p>
+
+        <h2>Características Principales</h2>
+        <ul>
+            <li>Almacenamiento seguro en la nube.</li>
+            <li>Organización fácil y rápida de fotos y videos.</li>
+            <li>Interfaz intuitiva para una experiencia de usuario fluida.</li>
+            <li>Acceso en cualquier momento desde cualquier dispositivo.</li>
+        </ul>
+
+        <a href="privacidad.html" class="button">Política de Privacidad</a>
+        <a href="condiciones.html" class="button">Condiciones del Servicio</a>
+        
+        <!-- Botón para ir al login -->
+        <div class="login-button">
+            <a href="login.html" class="button">Iniciar Sesión</a>
         </div>
     </div>
 
-    <!-- Loading overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-        <p>Por favor, espere...</p>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-
-        const firebaseConfig = {
-  apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
-  authDomain: "login-de3fd.firebaseapp.com",
-  databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
-  projectId: "login-de3fd",
-  storageBucket: "login-de3fd.appspot.com",
-  messagingSenderId: "1064113669692",
-  appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
-  measurementId: "G-TMWR9JNR18"
-};
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
-        const loadingOverlay = document.getElementById("loadingOverlay");
-
-        window.openModal = () => {
-            const modal = document.getElementById("registerModal");
-            modal.style.display = "flex";
-        };
-
-        window.closeModal = () => {
-            const modal = document.getElementById("registerModal");
-            modal.style.display = "none";
-        };
-
-        window.login = async () => {
-            const email = document.getElementById("login-email").value.trim();
-            const password = document.getElementById("login-password").value;
-            if (!email || !password) {
-                alert("Por favor, completa todos los campos.");
-                return;
-            }
-            loadingOverlay.style.display = "flex";
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                alert("¡Inicio de sesión exitoso!");
-                window.location.href = 'formulario.html';
-            } catch (error) {
-                alert("Error en el inicio de sesión: " + error.message);
-            } finally {
-                loadingOverlay.style.display = "none";
-            }
-        };
-
-        window.register = async () => {
-            const email = document.getElementById("register-email").value.trim();
-            const password = document.getElementById("register-password").value;
-            if (!email || !password) {
-                alert("Por favor, completa todos los campos.");
-                return;
-            }
-            loadingOverlay.style.display = "flex";
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-                alert("¡Registro exitoso!");
-                document.getElementById("register-email").value = "";
-                document.getElementById("register-password").value = "";
-                closeModal();
-            } catch (error) {
-                alert("Error en el registro: " + error.message);
-            } finally {
-                loadingOverlay.style.display = "none";
-            }
-        };
-
-        window.resetPassword = async () => {
-            const email = document.getElementById("login-email").value.trim();
-            if (!email) {
-                alert("Por favor, ingresa tu correo electrónico para restablecer la contraseña.");
-                return;
-            }
-            try {
-                await sendPasswordResetEmail(auth, email);
-                alert("Correo de restablecimiento enviado.");
-            } catch (error) {
-                alert("Error al enviar el correo: " + error.message);
-            }
-        };
-
-        window.togglePassword = (fieldId) => {
-            const field = document.getElementById(fieldId);
-            field.type = field.type === "password" ? "text" : "password";
-        };
-
-        window.loginWithGoogle = async () => {
-            loadingOverlay.style.display = "flex";
-            try {
-                await signInWithPopup(auth, provider);
-                alert("¡Inicio de sesión con Google exitoso!");
-                window.location.href = 'formulario.html';
-            } catch (error) {
-                alert("Error al iniciar sesión con Google: " + error.message);
-            } finally {
-                loadingOverlay.style.display = "none";
-            }
-        };
-    </script>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then((registration) => {
-                        console.log('Service Worker registrado con éxito:', registration);
-                    })
-                    .catch((error) => {
-                        console.error('Error al registrar el Service Worker:', error);
-                    });
-            });
-        }
-    </script>
+    <footer>
+        <p>&copy; 2024 GalleryPhotos - Todos los derechos reservados</p>
+        <p>¿Tienes preguntas? <a href="mailto:jhanmonsalve235@gmail.com">Contáctanos</a></p>
+    </footer>
 </body>
 </html>
