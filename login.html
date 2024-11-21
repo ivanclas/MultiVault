@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Meta y título -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login con Firebase</title>
-    <!-- Estilos CSS -->
     <style>
         /* Tus estilos existentes */
         body {
@@ -251,7 +249,6 @@
             <span class="toggle-password" onclick="togglePassword('login-password')">
                 <!-- SVG icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <!-- ... (Contenido del SVG) ... -->
                     <path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/>
                 </svg>
             </span>
@@ -282,7 +279,6 @@
                 <span class="toggle-password" onclick="togglePassword('register-password')">
                     <!-- SVG icon -->
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <!-- ... (Contenido del SVG) ... -->
                         <path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/>
                     </svg>
                 </span>
@@ -300,15 +296,11 @@
         <p>Por favor, espere...</p>
     </div>
 
-    <!-- Scripts -->
     <script type="module">
-        // Importaciones de Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-functions.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
         const firebaseConfig = {
-            // ... (mantengo la configuración de Firebase existente) ...
             apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
             authDomain: "login-de3fd.firebaseapp.com",
             databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
@@ -319,11 +311,8 @@
             measurementId: "G-TMWR9JNR18"
         };
 
-
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const functions = getFunctions(app, 'us-central1'); // Especifica la región de tus funciones
-
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({
             prompt: 'select_account'
@@ -333,7 +322,6 @@
 
         const loadingOverlay = document.getElementById("loadingOverlay");
 
-        // Funciones para abrir y cerrar el modal
         window.openModal = () => {
             const modal = document.getElementById("registerModal");
             modal.style.display = "flex";
@@ -344,13 +332,6 @@
             modal.style.display = "none";
         };
 
-        // Función para mostrar/ocultar contraseña
-        window.togglePassword = (fieldId) => {
-            const field = document.getElementById(fieldId);
-            field.type = field.type === "password" ? "text" : "password";
-        };
-
-        // Función de inicio de sesión
         window.login = async () => {
             const email = document.getElementById("login-email").value.trim();
             const password = document.getElementById("login-password").value;
@@ -361,51 +342,15 @@
             loadingOverlay.style.display = "flex";
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-
-                // Obtener información del dispositivo y tiempo
-                const deviceInfo = navigator.userAgent;
-                const timeStamp = new Date().toLocaleString();
-
-                // Llamar a la función en la nube
-                const sendLoginEmail = httpsCallable(functions, 'sendLoginEmail');
-                await sendLoginEmail({ email, deviceInfo, timeStamp });
-
                 alert("¡Inicio de sesión exitoso!");
                 window.location.href = 'formulario.html';
             } catch (error) {
-                console.error("Error en el inicio de sesión:", error);
                 alert("Error en el inicio de sesión: " + error.message);
             } finally {
                 loadingOverlay.style.display = "none";
             }
         };
 
-        // Función de inicio de sesión con Google
-        window.loginWithGoogle = async () => {
-            loadingOverlay.style.display = "flex";
-            try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-
-                // Obtener información del dispositivo y tiempo
-                const deviceInfo = navigator.userAgent;
-                const timeStamp = new Date().toLocaleString();
-
-                // Llamar a la función en la nube
-                const sendLoginEmail = httpsCallable(functions, 'sendLoginEmail');
-                await sendLoginEmail({ email: user.email, deviceInfo, timeStamp });
-
-                alert("¡Inicio de sesión con Google exitoso!");
-                window.location.href = 'formulario.html';
-            } catch (error) {
-                console.error("Error al iniciar sesión con Google:", error);
-                alert("Error al iniciar sesión con Google: " + error.message);
-            } finally {
-                loadingOverlay.style.display = "none";
-            }
-        };
-
-        // Función de registro
         window.register = async () => {
             const email = document.getElementById("register-email").value.trim();
             const password = document.getElementById("register-password").value;
@@ -421,14 +366,12 @@
                 document.getElementById("register-password").value = "";
                 closeModal();
             } catch (error) {
-                console.error("Error en el registro:", error);
                 alert("Error en el registro: " + error.message);
             } finally {
                 loadingOverlay.style.display = "none";
             }
         };
 
-        // Función para restablecer contraseña
         window.resetPassword = async () => {
             const email = document.getElementById("login-email").value.trim();
             if (!email) {
@@ -439,14 +382,29 @@
                 await sendPasswordResetEmail(auth, email);
                 alert("Correo de restablecimiento enviado.");
             } catch (error) {
-                console.error("Error al enviar el correo de restablecimiento:", error);
                 alert("Error al enviar el correo: " + error.message);
+            }
+        };
+
+        window.togglePassword = (fieldId) => {
+            const field = document.getElementById(fieldId);
+            field.type = field.type === "password" ? "text" : "password";
+        };
+
+        window.loginWithGoogle = async () => {
+            loadingOverlay.style.display = "flex";
+            try {
+                await signInWithPopup(auth, provider);
+                alert("¡Inicio de sesión con Google exitoso!");
+                window.location.href = 'formulario.html';
+            } catch (error) {
+                alert("Error al iniciar sesión con Google: " + error.message);
+            } finally {
+                loadingOverlay.style.display = "none";
             }
         };
     </script>
 
-    <!-- Opcional: Registro del Service Worker (si lo necesitas) -->
-    <!--
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -460,6 +418,5 @@
             });
         }
     </script>
-    -->
 </body>
 </html>
