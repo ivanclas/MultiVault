@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- ... (mantengo todo el contenido del head) ... -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Carpetas</title>
@@ -153,11 +152,35 @@
             padding: 10px;
         }
 
-        #previewImages img, #previewImages video {
-            max-width: 80px;
+        .preview-item {
+            position: relative;
+            display: inline-block;
             margin: 10px;
+        }
+
+        .preview-item img,
+        .preview-item video,
+        .preview-item audio {
+            max-width: 80px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 20px;
+            padding: 0;
         }
 
         .close-modal {
@@ -255,7 +278,9 @@
                 max-height: 200px;
             }
 
-            #previewImages img, #previewImages video {
+            .preview-item img,
+            .preview-item video,
+            .preview-item audio {
                 max-width: 60px;
             }
 
@@ -269,7 +294,6 @@
     </style>
 
 
-    <!-- Incluir los scripts de Firebase - versión compat -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
@@ -285,7 +309,6 @@
     </div>
 
     <div class="container" id="foldersContainer">
-        <!-- Aquí se cargarán las carpetas -->
     </div>
 
     <div id="modal" class="modal">
@@ -298,18 +321,14 @@
         </div>
     </div>
 
-    <!-- Actualización del atributo accept para incluir archivos Word -->
-    <input type="file" id="fileInput" multiple style="display: none;" accept="image/*,video/*,.pdf,.zip,.rar,.doc,.docx" onchange="showPreview(event)">
+    <input type="file" id="fileInput" multiple style="display: none;" accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.doc,.docx" onchange="showPreview(event)">
 
-    <!-- Botón flotante con ícono de flecha hacia atrás -->
     <button class="floating-btn" onclick="goToNuevo()">
         <img src="https://img.icons8.com/ios-filled/50/ffffff/arrow.png" alt="Back Icon">
     </button>
 
     <script>
-        // Configuración de Firebase
         const firebaseConfig = {
-            // ... (mantengo la configuración de Firebase existente) ...
             apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
             authDomain: "login-de3fd.firebaseapp.com",
             databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
@@ -320,13 +339,13 @@
             measurementId: "G-TMWR9JNR18"
         };
 
-        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const storage = firebase.storage();
         const auth = firebase.auth();
         let userEmail = "";
         let currentFolder = '';
         let selectedFiles = [];
+        let isUploading = false;
 
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
@@ -337,7 +356,6 @@
             }
         });
 
-        // Función para cargar carpetas
         async function loadFolders() {
             const foldersContainer = document.getElementById('foldersContainer');
             foldersContainer.innerHTML = "";
@@ -353,21 +371,37 @@
             }
         }
 
-        // Mostrar la ventana emergente para seleccionar archivos
         function uploadFilesToFolder(folderName) {
             currentFolder = folderName;
             document.getElementById('fileInput').click();
         }
 
-        // Mostrar la previsualización de archivos
         function showPreview(event) {
-            selectedFiles = event.target.files;
+            selectedFiles = Array.from(event.target.files);
+            renderPreview();
+            openModal();
+        }
+
+        function renderPreview() {
             const previewContainer = document.getElementById('previewImages');
             previewContainer.innerHTML = '';
 
-            Array.from(selectedFiles).forEach(file => {
+            selectedFiles.forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+
+                    // Botón para eliminar el archivo
+                    const removeBtn = document.createElement('span');
+                    removeBtn.className = 'remove-btn';
+                    removeBtn.textContent = '×';
+                    removeBtn.onclick = function() {
+                        if (!isUploading) {
+                            removeSelectedFile(index);
+                        }
+                    };
+
                     let element;
                     const fileType = file.type;
                     const fileName = file.name.toLowerCase();
@@ -377,6 +411,10 @@
                         element.src = e.target.result;
                     } else if (fileType.includes("video")) {
                         element = document.createElement('video');
+                        element.src = e.target.result;
+                        element.controls = true;
+                    } else if (fileType.includes("audio")) {
+                        element = document.createElement('audio');
                         element.src = e.target.result;
                         element.controls = true;
                     } else if (fileType.includes("pdf")) {
@@ -389,16 +427,29 @@
                         element = document.createElement('img');
                         element.src = 'https://img.icons8.com/color/48/000000/ms-word.png';
                     } else {
-                        // Si el tipo de archivo no está soportado, mostramos un ícono genérico
                         element = document.createElement('img');
                         element.src = 'https://img.icons8.com/ios-filled/50/000000/file.png';
                     }
-                    previewContainer.appendChild(element);
+
+                    previewItem.appendChild(removeBtn);
+                    previewItem.appendChild(element);
+                    previewContainer.appendChild(previewItem);
                 };
                 reader.readAsDataURL(file);
             });
 
-            openModal();
+            // Deshabilitar el botón de subir si no hay archivos seleccionados
+            const uploadBtn = document.querySelector('.upload-modal-btn');
+            if (selectedFiles.length === 0) {
+                uploadBtn.disabled = true;
+            } else {
+                uploadBtn.disabled = false;
+            }
+        }
+
+        function removeSelectedFile(index) {
+            selectedFiles.splice(index, 1);
+            renderPreview();
         }
 
         function openModal() {
@@ -406,12 +457,24 @@
         }
 
         function closeModal() {
-            document.getElementById('modal').style.display = 'none';
+            if (!isUploading) {
+                document.getElementById('modal').style.display = 'none';
+                selectedFiles = [];
+                document.getElementById('fileInput').value = '';
+            }
         }
 
-        // Subir archivos seleccionados con barra de progreso
         async function uploadFiles() {
             if (selectedFiles.length === 0) return;
+
+            isUploading = true;
+
+            // Deshabilitar botones de eliminar y cerrar
+            const removeButtons = document.querySelectorAll('.remove-btn');
+            removeButtons.forEach(btn => {
+                btn.style.display = 'none';
+            });
+            document.querySelector('.close-modal').disabled = true;
 
             const progressBar = document.getElementById('uploadProgress');
             progressBar.value = 0;
@@ -424,8 +487,8 @@
 
                 uploadTask.on('state_changed', 
                     (snapshot) => {
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        totalProgress = (filesUploaded + progress / 100) / selectedFiles.length * 100;
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes);
+                        totalProgress = (filesUploaded + progress) / selectedFiles.length * 100;
                         progressBar.value = totalProgress;
                     }, 
                     (error) => {
@@ -435,9 +498,13 @@
                         filesUploaded++;
                         if (filesUploaded === selectedFiles.length) {
                             alert('Archivos subidos exitosamente');
+                            isUploading = false;
                             closeModal();
                             document.getElementById('previewImages').innerHTML = ''; // Limpiar la previsualización
-                            progressBar.value = 0; // Resetear la barra de progreso
+                            progressBar.value = 0; 
+                            document.querySelector('.close-modal').disabled = false;
+                            selectedFiles = [];
+                            document.getElementById('fileInput').value = '';
                         }
                     }
                 );
@@ -482,7 +549,6 @@
             foldersContainer.appendChild(folderItem);
         }
 
-        // Función para redireccionar a nuevo.html
         function goToNuevo() {
             window.location.href = 'nuevo.html';
         }
