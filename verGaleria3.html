@@ -123,6 +123,7 @@
             transition: all 0.4s ease;
             box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
             position: relative;
+            padding-bottom: 20px;
         }
 
         .gallery-item img, .gallery-item video {
@@ -132,7 +133,7 @@
             border-bottom: 5px solid #3f51b5;
         }
 
-        .gallery-item:hover img, .gallery-item:hover video {
+        .gallery-item:hover img, .gallery-item:hover video, .gallery-item:hover .audio-icon {
             transform: scale(1.05);
         }
 
@@ -236,6 +237,18 @@
             transform: scale(1.1);
         }
 
+        .audio-icon {
+            width: 50%;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .audio-icon.playing {
+            filter: hue-rotate(200deg) saturate(1.5);
+        }
+
         @media (max-width: 600px) {
             h1 {
                 font-size: 28px;
@@ -300,32 +313,34 @@
         <button onclick="filterGallery('photo')">Fotos</button>
         <button onclick="filterGallery('video')">Videos</button>
         <button onclick="filterGallery('document')">Documentos</button>
+        <button onclick="filterGallery('audio')">Audios</button>
     </div>
 
     <!-- Ícono de búsqueda y campo de búsqueda -->
     <div class="search-container">
         <span class="search-icon" onclick="toggleSearch()">&#128269;</span>
-        <input type="text" class="search-input" id="searchInput" placeholder="Buscar documentos..." oninput="searchDocuments()">
+        <input type="text" class="search-input" id="searchInput" placeholder="Buscar archivos..." oninput="searchDocuments()">
     </div>
 
     <!-- Galería -->
     <div class="gallery" id="gallery"></div>
 
-    <!-- Botón flotante para agregar archivos -->
-    <button class="float-button" onclick="window.location.href='MisCarpetas.html'">+</button>
+    <!-- Botón flotante para regresar -->
+    <button class="float-button" onclick="window.location.href='MisCarpetas.html'">←</button>
 
     <!-- Botón flotante para eliminar archivos seleccionados -->
     <button class="delete-float-button" id="deleteSelectedBtn" onclick="deleteSelectedFiles()">❌</button>
 
-    <input type="file" id="fileInput" style="display: none;" multiple accept="image/*,video/*,application/pdf,.zip,.rar,.doc,.docx" onchange="uploadFiles(event)">
+    <!-- Input para subir archivos (no visible en este caso) -->
+    <input type="file" id="fileInput" style="display: none;" multiple accept="image/*,video/*,audio/*,application/pdf,.zip,.rar,.doc,.docx">
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getStorage, ref, listAll, getDownloadURL, deleteObject, getMetadata } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
-     
         const firebaseConfig = {
+            // Tu configuración de Firebase aquí
             apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
             authDomain: "login-de3fd.firebaseapp.com",
             databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
@@ -335,7 +350,6 @@
             appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
             measurementId: "G-TMWR9JNR18"
         };
-
 
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
@@ -413,15 +427,65 @@
                     dateText.textContent = `Subido el ${uploadDate.toLocaleDateString("es-ES")}`;
                     galleryItem.appendChild(mediaElement);
                     galleryItem.appendChild(dateText);
+                } else if (['mp3', 'wav', 'ogg'].includes(fileType)) {
+                    galleryItem.dataset.type = 'audio';
+
+                    // Crear elemento de ícono de audio
+                    mediaElement = document.createElement('img');
+                    mediaElement.src = 'https://img.icons8.com/color/96/000000/musical-notes.png';
+                    mediaElement.className = 'audio-icon';
+
+                    // Crear elemento de audio oculto
+                    const audioPlayer = document.createElement('audio');
+                    audioPlayer.src = url;
+                    audioPlayer.dataset.playing = 'false'; // Estado de reproducción
+
+                    // Añadir evento al ícono para reproducir/pausar
+                    mediaElement.addEventListener('click', () => {
+                        if (audioPlayer.paused) {
+                            audioPlayer.play();
+                            mediaElement.classList.add('playing');
+                        } else {
+                            audioPlayer.pause();
+                            mediaElement.classList.remove('playing');
+                        }
+                    });
+
+                    // Detener otros audios cuando se reproduce uno nuevo
+                    audioPlayer.addEventListener('play', () => {
+                        document.querySelectorAll('audio').forEach(a => {
+                            if (a !== audioPlayer) {
+                                a.pause();
+                                a.parentElement.querySelector('.audio-icon').classList.remove('playing');
+                            }
+                        });
+                    });
+
+                    audioPlayer.addEventListener('pause', () => {
+                        mediaElement.classList.remove('playing');
+                    });
+
+                    const fileNameText = document.createElement('h4');
+                    fileNameText.textContent = itemRef.name;
+
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = url;
+                    downloadLink.textContent = "Descargar";
+                    downloadLink.target = "_blank";
+
+                    galleryItem.appendChild(mediaElement);
+                    galleryItem.appendChild(fileNameText);
+                    galleryItem.appendChild(audioPlayer); // Agregar el elemento de audio al DOM
+                    galleryItem.appendChild(downloadLink);
                 } else if (['pdf', 'zip', 'rar', 'doc', 'docx'].includes(fileType)) {
                     galleryItem.dataset.type = 'document';
                     mediaElement = document.createElement('img');
                     if (fileType === 'pdf') {
-                        mediaElement.src = 'https://img.icons8.com/color/48/000000/pdf.png';
+                        mediaElement.src = 'https://img.icons8.com/color/96/000000/pdf.png';
                     } else if (fileType === 'zip' || fileType === 'rar') {
-                        mediaElement.src = 'https://img.icons8.com/color/48/000000/zip.png';
+                        mediaElement.src = 'https://img.icons8.com/color/96/000000/zip.png';
                     } else if (fileType === 'doc' || fileType === 'docx') {
-                        mediaElement.src = 'https://img.icons8.com/color/48/000000/ms-word.png';
+                        mediaElement.src = 'https://img.icons8.com/color/96/000000/ms-word.png';
                     }
 
                     const fileNameText = document.createElement('h4');
@@ -519,12 +583,13 @@
             }
         }
 
-        // Función para buscar documentos por nombre
+        // Función para buscar archivos por nombre
         function searchDocuments() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             galleryItems.forEach(item => {
-                if (item.dataset.type === 'document') {
-                    const fileName = item.querySelector('h4').textContent.toLowerCase();
+                const fileNameElement = item.querySelector('h4');
+                if (fileNameElement) {
+                    const fileName = fileNameElement.textContent.toLowerCase();
                     if (fileName.includes(query)) {
                         item.style.display = 'block';
                     } else {
