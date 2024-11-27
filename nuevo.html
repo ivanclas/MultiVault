@@ -165,13 +165,13 @@
         <button onclick="createFolder()">Crear Carpeta</button>
         <div id="message"></div>
         
-        <!-- Botón que redirecciona a misCarpetas.html -->
+        <!-- Botón que redirecciona a MisCarpetas.html -->
         <button class="link-btn" onclick="goToMyFolders()">Ir a Mis Carpetas</button>
     </div>
 
-    <!-- Botón flotante que redirige a formulario.html -->
-    <button class="floating-btn" onclick="goToFormulario()">
-        <img src="https://img.icons8.com/ios-filled/50/ffffff/arrow.png" alt="Formulario">
+    <!-- Botón flotante que redirige a nuevo.html -->
+    <button class="floating-btn" onclick="goToNuevo()">
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/left.png" alt="Nuevo">
     </button>
 
     <script type="module">
@@ -204,59 +204,57 @@
         });
 
         // Asignar la función createFolder al objeto window
-    window.createFolder = async function() {
-    const folderName = document.getElementById('folderName').value.trim();
-    const messageDiv = document.getElementById('message');
+        window.createFolder = async function() {
+            const folderName = document.getElementById('folderName').value.trim();
+            const messageDiv = document.getElementById('message');
 
-    if (!folderName) {
-        messageDiv.style.color = "red";
-        messageDiv.textContent = "Por favor, introduce un nombre válido para la carpeta.";
-        return;
-    }
+            if (!folderName) {
+                messageDiv.style.color = "red";
+                messageDiv.textContent = "Por favor, introduce un nombre válido para la carpeta.";
+                return;
+            }
 
-    try {
-        const folderRef = ref(storage, `${userEmail}/${folderName}/.placeholder`);
-        const emptyBlob = new Blob([], { type: 'text/plain' });
+            try {
+                const folderRef = ref(storage, `${userEmail}/${folderName}/.placeholder`);
+                const emptyBlob = new Blob([], { type: 'text/plain' });
 
-        await uploadBytesResumable(folderRef, emptyBlob);
-        messageDiv.style.color = "green";
-        messageDiv.textContent = `Carpeta "${folderName}" creada exitosamente.`;
+                await uploadBytesResumable(folderRef, emptyBlob);
+                messageDiv.style.color = "green";
+                messageDiv.textContent = `Carpeta "${folderName}" creada exitosamente.`;
 
-        // Limpia el campo de entrada después de crear la carpeta
-        document.getElementById('folderName').value = "";
-    } catch (error) {
-        console.error("Error al crear la carpeta:", error);
-        messageDiv.style.color = "red";
-        messageDiv.textContent = "Error al crear la carpeta.";
-    }
-};
-
+                // Limpia el campo de entrada después de crear la carpeta
+                document.getElementById('folderName').value = "";
+            } catch (error) {
+                console.error("Error al crear la carpeta:", error);
+                messageDiv.style.color = "red";
+                messageDiv.textContent = "Error al crear la carpeta.";
+            }
+        };
 
         // Asignar la función goToMyFolders
         window.goToMyFolders = function() {
             window.location.href = "MisCarpetas.html";
         };
 
-        // Función para redirigir a formulario.html
-        window.goToFormulario = function() {
+        // Función para redirigir a nuevo.html
+        window.goToNuevo = function() {
             window.location.href = "formulario.html";
         };
         
     </script>
 
-<script>
-   
-    if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-            .then((registration) => {
-                console.log('Service Worker registrado con éxito:', registration);
-            })
-            .catch((error) => {
-                console.error('Error al registrar el Service Worker:', error);
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then((registration) => {
+                        console.log('Service Worker registrado con éxito:', registration);
+                    })
+                    .catch((error) => {
+                        console.error('Error al registrar el Service Worker:', error);
+                    });
             });
-    });
-}
-  </script>
+        }
+    </script>
 </body>
 </html>
