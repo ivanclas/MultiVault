@@ -324,8 +324,9 @@
     <input type="file" id="fileInput" multiple style="display: none;" accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.doc,.docx" onchange="showPreview(event)">
 
     <button class="floating-btn" onclick="goToNuevo()">
-        <img src="https://img.icons8.com/ios-filled/50/ffffff/arrow.png" alt="Back Icon">
+        <img src="https://img.icons8.com/ios-filled/50/ffffff/left.png" alt="Nuevo">
     </button>
+
 
     <script>
         const firebaseConfig = {
@@ -549,9 +550,9 @@
             foldersContainer.appendChild(folderItem);
         }
 
-        function goToNuevo() {
-            window.location.href = 'nuevo.html';
-        }
+        window.goToNuevo = function() {
+            window.location.href = "nuevo.html";
+        };
 
         document.getElementById('searchInput').addEventListener('input', function () {
             const searchValue = this.value.toLowerCase();
