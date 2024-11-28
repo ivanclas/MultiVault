@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <!-- ... (mantengo todo el contenido del head) ... -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subir Archivos a Firebase</title>
     <style>
-    body {
+        @import url('https://fonts.googleapis.com/css?family=Poppins&display=swap');
+
+        body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -18,61 +20,70 @@
 
         .container {
             background-color: #fff;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 450px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 420px;
             text-align: center;
             transition: all 0.3s ease;
         }
 
         h1 {
             color: #333;
-            font-size: 26px;
-            margin-bottom: 20px;
+            font-size: 24px;
+            margin-bottom: 16px;
             font-weight: bold;
+        }
+
+        h2 {
+            color: #555;
+            font-size: 18px;
+            margin-bottom: 16px;
         }
 
         label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: #555;
-            font-size: 16px;
+            font-size: 14px;
+            text-align: left;
         }
 
-        input[type="email"], input[type="file"] {
+        input[type="email"],
+        input[type="file"] {
             width: 90%;
-            padding: 12px;
-            margin: 15px 0;
+            padding: 10px;
+            margin: 8px 0;
             border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 14px;
             transition: border-color 0.3s ease;
         }
 
-        input[type="email"]:focus, input[type="file"]:focus {
+        input[type="email"]:focus,
+        input[type="file"]:focus {
             border-color: #007bff;
             outline: none;
         }
 
         button {
             width: 100%;
-            padding: 14px;
-            margin: 15px 0;
+            padding: 12px;
+            margin: 8px 0;
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
             transition: background-color 0.3s ease, transform 0.2s ease;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         button:hover {
             background-color: #0056b3;
-            transform: translateY(-3px);
+            transform: translateY(-2px);
         }
 
         button:active {
@@ -80,12 +91,12 @@
         }
 
         #selectedImages {
-            margin-top: 20px;
+            margin-top: 16px;
             display: none;
             flex-wrap: wrap;
             justify-content: center;
-            max-height: 200px; /* Altura máxima del contenedor */
-            overflow-y: auto; /* Habilitar scroll vertical */
+            max-height: 150px;
+            overflow-y: auto;
         }
 
         .preview-item {
@@ -93,10 +104,12 @@
             margin: 5px;
         }
 
-        .preview-item img, .preview-item video, .preview-item .file-icon {
-            max-width: 100px;
+        .preview-item img,
+        .preview-item video,
+        .preview-item .file-icon {
+            max-width: 80px;
             height: auto;
-            border-radius: 10px;
+            border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
@@ -122,7 +135,7 @@
             background-color: #ddd;
             border-radius: 10px;
             overflow: hidden;
-            display: none; 
+            display: none;
             margin-top: 10px;
             position: relative;
         }
@@ -150,9 +163,9 @@
             color: white;
             border: none;
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 20px;
+            width: 50px;
+            height: 50px;
+            font-size: 18px;
             cursor: pointer;
             display: flex;
             justify-content: center;
@@ -163,39 +176,46 @@
 
         .logout-button:hover {
             background-color: #ff2222;
-            transform: translateY(-3px);
+            transform: translateY(-2px);
         }
 
         .file-icon img {
-            width: 60px;
+            width: 50px;
             height: auto;
         }
 
         @media (max-width: 600px) {
             .container {
-                padding: 20px;
+                padding: 16px;
             }
 
             h1 {
-                font-size: 22px;
+                font-size: 20px;
             }
 
-            input, button {
-                font-size: 14px;
+            h2 {
+                font-size: 16px;
+            }
+
+            input,
+            button {
+                font-size: 12px;
             }
 
             #selectedImages {
-                max-height: 150px;
+                max-height: 120px;
             }
 
-            .preview-item img, .preview-item video, .preview-item .file-icon {
-                max-width: 80px;
+            .preview-item img,
+            .preview-item video,
+            .preview-item .file-icon {
+                max-width: 60px;
             }
 
             .logout-button {
-                width: 50px;
-                height: 50px;
-                font-size: 18px;
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
             }
         }
 
@@ -207,9 +227,9 @@
             color: white;
             border: none;
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 24px;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
             cursor: pointer;
             display: flex;
             justify-content: center;
@@ -220,26 +240,29 @@
 
         .folder-button:hover {
             background-color: #388e3c;
-            transform: translateY(-3px);
+            transform: translateY(-2px);
         }
 
         .folder-button:active {
             transform: translateY(0);
         }
+
         .remove-btn.locked {
             background-color: #bbb;
             cursor: default;
         }
-
-        
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Subir Archivos</h1>
+        <!-- Encabezado para mostrar el nombre del usuario -->
+        <h2 id="welcomeMessage">Bienvenido</h2>
+
         <label for="emailInput">Correo Electrónico:</label>
         <input type="email" id="emailInput" placeholder="Tu correo electrónico" required readonly>
-        
+
         <label for="fileInput">Seleccionar Archivos (Imágenes, Videos, PDF, Word, ZIP):</label>
         <input type="file" id="fileInput" accept="image/*, video/*, .pdf, .doc, .docx, .zip, .rar" multiple onchange="previewFiles()">
 
@@ -249,11 +272,11 @@
             <div id="progressMessage"></div>
         </div>
 
-        <!-- Añadimos un ID al botón para poder manipularlo -->
         <button id="uploadButton" onclick="uploadFiles()">Subir Archivos</button>
         <button onclick="window.location.href='verGaleria2.html'">Ver Galería</button>
         <button onclick="window.location.href='verGaleria.html'">Ver Documentos</button>
     </div>
+
     <!-- Botón flotante para crear una nueva carpeta -->
     <button class="folder-button" onclick="window.location.href='nuevo.html'">📁</button>
 
@@ -265,6 +288,7 @@
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
         const firebaseConfig = {
+            // Tu configuración de Firebase aquí
             apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
             authDomain: "login-de3fd.firebaseapp.com",
             databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
@@ -274,34 +298,40 @@
             appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
             measurementId: "G-TMWR9JNR18"
         };
+
+
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
         const auth = getAuth(app);
         let userEmail = "";
-        let selectedFilesArray = []; // Lista para almacenar los archivos seleccionados
-        let isUploading = false; // Bandera para saber si se está subiendo
+        let userName = "";
+        let selectedFilesArray = [];
+        let isUploading = false;
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 userEmail = user.email;
+                userName = user.displayName || "Usuario";
+
                 document.getElementById('emailInput').value = userEmail;
+                document.getElementById('welcomeMessage').textContent = `Bienvenido, ${userName}`;
             } else {
-                window.location.href = 'index.html'; 
+                window.location.href = 'index.html';
             }
         });
 
         window.previewFiles = function() {
             const files = document.getElementById('fileInput').files;
-            selectedFilesArray = Array.from(files); // Guardamos los archivos en el array
+            selectedFilesArray = Array.from(files);
             renderSelectedFiles();
         };
 
         function renderSelectedFiles() {
             const selectedFilesContainer = document.getElementById('selectedImages');
-            selectedFilesContainer.innerHTML = ""; 
+            selectedFilesContainer.innerHTML = "";
 
             if (selectedFilesArray.length > 0) {
-                selectedFilesContainer.style.display = 'flex'; 
+                selectedFilesContainer.style.display = 'flex';
                 selectedFilesArray.forEach((file, index) => {
                     const extension = file.name.split('.').pop().toLowerCase();
                     const reader = new FileReader();
@@ -313,7 +343,7 @@
                         removeBtn.classList.add('remove-btn');
 
                         if (isUploading) {
-                            removeBtn.innerHTML = '&#x1f512;'; // Icono de candado
+                            removeBtn.innerHTML = '&#x1f512;';
                             removeBtn.classList.add('locked');
                         } else {
                             removeBtn.innerHTML = '&times;';
@@ -333,25 +363,32 @@
                             video.src = e.target.result;
                             video.controls = true;
                             previewItem.appendChild(video);
-                        } else if (extension === 'pdf') {
-                            const fileIcon = document.createElement('div');
-                            fileIcon.classList.add('file-icon');
-                            fileIcon.innerHTML = '<img src="https://img.icons8.com/color/48/000000/pdf.png" alt="PDF Icon">';
-                            previewItem.appendChild(fileIcon);
-                        } else if (extension === 'doc' || extension === 'docx') {
-                            const fileIcon = document.createElement('div');
-                            fileIcon.classList.add('file-icon');
-                            fileIcon.innerHTML = '<img src="https://img.icons8.com/color/48/000000/ms-word.png" alt="Word Icon">';
-                            previewItem.appendChild(fileIcon);
-                        } else if (extension === 'zip' || extension === 'rar') {
-                            const fileIcon = document.createElement('div');
-                            fileIcon.classList.add('file-icon');
-                            fileIcon.innerHTML = '<img src="https://img.icons8.com/color/48/000000/zip.png" alt="ZIP Icon">';
-                            previewItem.appendChild(fileIcon);
                         } else {
                             const fileIcon = document.createElement('div');
                             fileIcon.classList.add('file-icon');
-                            fileIcon.textContent = extension.toUpperCase();
+                            let iconUrl = '';
+
+                            switch (extension) {
+                                case 'pdf':
+                                    iconUrl = 'https://img.icons8.com/color/48/000000/pdf.png';
+                                    break;
+                                case 'doc':
+                                case 'docx':
+                                    iconUrl = 'https://img.icons8.com/color/48/000000/ms-word.png';
+                                    break;
+                                case 'zip':
+                                case 'rar':
+                                    iconUrl = 'https://img.icons8.com/color/48/000000/zip.png';
+                                    break;
+                                default:
+                                    fileIcon.textContent = extension.toUpperCase();
+                                    break;
+                            }
+
+                            if (iconUrl) {
+                                fileIcon.innerHTML = `<img src="${iconUrl}" alt="${extension.toUpperCase()} Icon">`;
+                            }
+
                             previewItem.appendChild(fileIcon);
                         }
 
@@ -366,10 +403,10 @@
 
         function removeFile(index) {
             if (isUploading) {
-                return; // No permitir eliminar durante la carga
+                return;
             }
-            selectedFilesArray.splice(index, 1); // Eliminamos el archivo del array
-            renderSelectedFiles(); // Volvemos a renderizar la vista previa
+            selectedFilesArray.splice(index, 1);
+            renderSelectedFiles();
         }
 
         window.uploadFiles = async function() {
@@ -383,14 +420,14 @@
                 return;
             }
 
-            isUploading = true; // Iniciamos la carga
-            document.getElementById('uploadButton').disabled = true; // Deshabilitamos el botón
+            isUploading = true;
+            document.getElementById('uploadButton').disabled = true;
 
             const removeButtons = document.querySelectorAll('.remove-btn');
             removeButtons.forEach(btn => {
-                btn.innerHTML = '&#x1f512;'; // Icono de candado
+                btn.innerHTML = '&#x1f512;';
                 btn.classList.add('locked');
-                btn.onclick = null; // Eliminamos el evento onclick
+                btn.onclick = null;
             });
 
             const date = new Date().toISOString().replace(/:/g, '-');
@@ -398,27 +435,24 @@
             const progress = document.getElementById('progress');
             const progressMessage = document.getElementById('progressMessage');
 
-            progressBar.style.display = 'block'; 
+            progressBar.style.display = 'block';
 
-            const promises = []; 
-
-            for (let i = 0; i < selectedFilesArray.length; i++) {
-                const file = selectedFilesArray[i];
+            const promises = selectedFilesArray.map((file) => {
                 const storageRef = ref(storage, `${userEmail}/${date}-${file.name}`);
                 const uploadTask = uploadBytesResumable(storageRef, file);
 
-                promises.push(new Promise((resolve, reject) => {
-                    uploadTask.on('state_changed', 
+                return new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed',
                         (snapshot) => {
                             const progressValue = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                             progress.style.width = `${progressValue}%`;
                             progressMessage.textContent = `Subiendo: ${progressValue.toFixed(2)}%`;
-                        }, 
+                        },
                         (error) => {
                             console.error("Error al subir archivo: ", error);
                             alert("Error al subir archivo.");
                             reject(error);
-                        }, 
+                        },
                         () => {
                             getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
                                 console.log("Archivo disponible en: ", downloadURL);
@@ -426,20 +460,20 @@
                             });
                         }
                     );
-                }));
-            }
+                });
+            });
 
             Promise.all(promises)
                 .then(() => {
                     alert("Todos los archivos han sido subidos con éxito.");
                     progressMessage.textContent = "Todos los archivos han sido subidos con éxito.";
 
-                    document.getElementById('fileInput').value = ''; 
-                    selectedFilesArray = []; // Limpiar el array de archivos seleccionados
-                    isUploading = false; // Finalizamos la carga
-                    renderSelectedFiles(); // Actualizar la vista previa
+                    document.getElementById('fileInput').value = '';
+                    selectedFilesArray = [];
+                    isUploading = false;
+                    renderSelectedFiles();
 
-                    document.getElementById('uploadButton').disabled = false; // Rehabilitamos el botón
+                    document.getElementById('uploadButton').disabled = false;
 
                     setTimeout(() => {
                         progressBar.style.display = 'none';
@@ -450,8 +484,8 @@
                 .catch((error) => {
                     console.error("Error al subir archivos: ", error);
                     alert("Error al subir archivos.");
-                    isUploading = false; // Aseguramos que se pueda volver a intentar
-                    document.getElementById('uploadButton').disabled = false; // Rehabilitamos el botón
+                    isUploading = false;
+                    document.getElementById('uploadButton').disabled = false;
                 });
         };
 
@@ -460,15 +494,15 @@
             if (confirmLogout) {
                 signOut(auth).then(() => {
                     alert("Sesión cerrada correctamente.");
-                    window.location.href = 'index.html'; 
+                    window.location.href = 'index.html';
                 }).catch((error) => {
                     console.error("Error al cerrar sesión: ", error);
                 });
             }
-        }
+        };
     </script>
 
-    <!-- Opcional: Registro de Service Worker si lo necesitas -->
+    <!-- Registro del Service Worker (Opcional) -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -483,4 +517,5 @@
         }
     </script>
 </body>
+
 </html>
