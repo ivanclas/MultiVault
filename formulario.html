@@ -3,6 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
+    <!-- Evitar caché del navegador -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subir Archivos a Firebase</title>
     <style>
@@ -283,6 +287,13 @@
     <button class="logout-button" onclick="logout()">❌</button>
 
     <script type="module">
+        // Forzar recarga al navegar hacia atrás
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+                window.location.reload();
+            }
+        });
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
@@ -298,7 +309,6 @@
             appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
             measurementId: "G-TMWR9JNR18"
         };
-
 
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
@@ -493,6 +503,12 @@
             const confirmLogout = confirm("¿Estás seguro de que deseas salir?");
             if (confirmLogout) {
                 signOut(auth).then(() => {
+                    // Limpiar variables locales
+                    userEmail = "";
+                    userName = "";
+                    selectedFilesArray = [];
+                    isUploading = false;
+
                     alert("Sesión cerrada correctamente.");
                     window.location.href = 'index.html';
                 }).catch((error) => {
