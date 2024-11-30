@@ -290,10 +290,9 @@
                 font-size: 24px;
             }
         }
-
     </style>
 
-
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
@@ -321,14 +320,15 @@
         </div>
     </div>
 
-    <input type="file" id="fileInput" multiple style="display: none;" accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.doc,.docx" onchange="showPreview(event)">
+    <!-- Agregar extensiones .xls y .xlsx al atributo accept -->
+    <input type="file" id="fileInput" multiple style="display: none;" accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.doc,.docx,.xls,.xlsx" onchange="showPreview(event)">
 
     <button class="floating-btn" onclick="goToNuevo()">
         <img src="https://img.icons8.com/ios-filled/50/ffffff/left.png" alt="Nuevo">
     </button>
 
-
     <script>
+        // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
             authDomain: "login-de3fd.firebaseapp.com",
@@ -339,6 +339,7 @@
             appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
             measurementId: "G-TMWR9JNR18"
         };
+
 
         firebase.initializeApp(firebaseConfig);
         const storage = firebase.storage();
@@ -406,6 +407,7 @@
                     let element;
                     const fileType = file.type;
                     const fileName = file.name.toLowerCase();
+                    const extension = fileName.split('.').pop();
 
                     if (fileType.includes("image")) {
                         element = document.createElement('img');
@@ -418,18 +420,28 @@
                         element = document.createElement('audio');
                         element.src = e.target.result;
                         element.controls = true;
-                    } else if (fileType.includes("pdf")) {
-                        element = document.createElement('img');
-                        element.src = 'https://img.icons8.com/color/48/000000/pdf.png';
-                    } else if (fileName.endsWith(".zip") || fileName.endsWith(".rar")) {
-                        element = document.createElement('img');
-                        element.src = 'https://img.icons8.com/color/48/000000/zip.png';
-                    } else if (fileName.endsWith(".doc") || fileName.endsWith(".docx")) {
-                        element = document.createElement('img');
-                        element.src = 'https://img.icons8.com/color/48/000000/ms-word.png';
                     } else {
                         element = document.createElement('img');
-                        element.src = 'https://img.icons8.com/ios-filled/50/000000/file.png';
+                        switch (extension) {
+                            case 'pdf':
+                                element.src = 'https://img.icons8.com/color/48/000000/pdf.png';
+                                break;
+                            case 'doc':
+                            case 'docx':
+                                element.src = 'https://img.icons8.com/color/48/000000/ms-word.png';
+                                break;
+                            case 'xls':
+                            case 'xlsx':
+                                element.src = 'https://img.icons8.com/color/48/000000/ms-excel.png';
+                                break;
+                            case 'zip':
+                            case 'rar':
+                                element.src = 'https://img.icons8.com/color/48/000000/zip.png';
+                                break;
+                            default:
+                                element.src = 'https://img.icons8.com/ios-filled/50/000000/file.png';
+                                break;
+                        }
                     }
 
                     previewItem.appendChild(removeBtn);
@@ -441,11 +453,7 @@
 
             // Deshabilitar el botón de subir si no hay archivos seleccionados
             const uploadBtn = document.querySelector('.upload-modal-btn');
-            if (selectedFiles.length === 0) {
-                uploadBtn.disabled = true;
-            } else {
-                uploadBtn.disabled = false;
-            }
+            uploadBtn.disabled = selectedFiles.length === 0;
         }
 
         function removeSelectedFile(index) {
@@ -560,11 +568,7 @@
 
             Array.from(folderItems).forEach(item => {
                 const folderName = item.querySelector('.folder-name').textContent.toLowerCase();
-                if (folderName.includes(searchValue)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
-                }
+                item.style.display = folderName.includes(searchValue) ? 'flex' : 'none';
             });
         });
     </script>
