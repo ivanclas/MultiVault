@@ -249,6 +249,13 @@
             filter: hue-rotate(200deg) saturate(1.5);
         }
 
+        .file-icon {
+            width: 96px;
+            height: auto;
+            margin: 20px auto;
+            display: block;
+        }
+
         @media (max-width: 600px) {
             h1 {
                 font-size: 28px;
@@ -332,7 +339,7 @@
     <button class="delete-float-button" id="deleteSelectedBtn" onclick="deleteSelectedFiles()">❌</button>
 
     <!-- Input para subir archivos (no visible en este caso) -->
-    <input type="file" id="fileInput" style="display: none;" multiple accept="image/*,video/*,audio/*,application/pdf,.zip,.rar,.doc,.docx">
+    <input type="file" id="fileInput" style="display: none;" multiple accept="image/*,video/*,audio/*,application/pdf,.zip,.rar,.doc,.docx,.xls,.xlsx">
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -340,7 +347,6 @@
         import { getAuth } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
         const firebaseConfig = {
-            // Tu configuración de Firebase aquí
             apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
             authDomain: "login-de3fd.firebaseapp.com",
             databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
@@ -477,15 +483,18 @@
                     galleryItem.appendChild(fileNameText);
                     galleryItem.appendChild(audioPlayer); // Agregar el elemento de audio al DOM
                     galleryItem.appendChild(downloadLink);
-                } else if (['pdf', 'zip', 'rar', 'doc', 'docx'].includes(fileType)) {
+                } else if (['pdf', 'zip', 'rar', 'doc', 'docx', 'xls', 'xlsx'].includes(fileType)) {
                     galleryItem.dataset.type = 'document';
                     mediaElement = document.createElement('img');
+                    mediaElement.className = 'file-icon';
                     if (fileType === 'pdf') {
                         mediaElement.src = 'https://img.icons8.com/color/96/000000/pdf.png';
                     } else if (fileType === 'zip' || fileType === 'rar') {
                         mediaElement.src = 'https://img.icons8.com/color/96/000000/zip.png';
                     } else if (fileType === 'doc' || fileType === 'docx') {
                         mediaElement.src = 'https://img.icons8.com/color/96/000000/ms-word.png';
+                    } else if (fileType === 'xls' || fileType === 'xlsx') {
+                        mediaElement.src = 'https://img.icons8.com/color/96/000000/ms-excel.png';
                     }
 
                     const fileNameText = document.createElement('h4');
@@ -571,7 +580,6 @@
             });
         }
 
-        // Función para mostrar/ocultar el campo de búsqueda
         function toggleSearch() {
             const searchInput = document.getElementById('searchInput');
             searchInput.classList.toggle('active');
@@ -583,7 +591,6 @@
             }
         }
 
-        // Función para buscar archivos por nombre
         function searchDocuments() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             galleryItems.forEach(item => {
