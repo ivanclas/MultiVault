@@ -267,8 +267,8 @@
         <label for="emailInput">Correo Electrónico:</label>
         <input type="email" id="emailInput" placeholder="Tu correo electrónico" required readonly>
 
-        <label for="fileInput">Seleccionar Archivos (Imágenes, Videos, PDF, Word, ZIP):</label>
-        <input type="file" id="fileInput" accept="image/*, video/*, .pdf, .doc, .docx, .zip, .rar" multiple onchange="previewFiles()">
+        <label for="fileInput">Seleccionar Archivos (Imágenes, Videos, PDF, Word, Excel, ZIP):</label>
+        <input type="file" id="fileInput" accept="image/*, video/*, .pdf, .doc, .docx, .xls, .xlsx, .zip, .rar" multiple onchange="previewFiles()">
 
         <div id="selectedImages"></div>
         <div id="progressBar">
@@ -299,7 +299,6 @@
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
         const firebaseConfig = {
-            // Tu configuración de Firebase aquí
             apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
             authDomain: "login-de3fd.firebaseapp.com",
             databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
@@ -309,7 +308,6 @@
             appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
             measurementId: "G-TMWR9JNR18"
         };
-
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
         const auth = getAuth(app);
@@ -385,6 +383,10 @@
                                 case 'doc':
                                 case 'docx':
                                     iconUrl = 'https://img.icons8.com/color/48/000000/ms-word.png';
+                                    break;
+                                case 'xls':
+                                case 'xlsx':
+                                    iconUrl = 'https://img.icons8.com/color/48/000000/ms-excel.png';
                                     break;
                                 case 'zip':
                                 case 'rar':
