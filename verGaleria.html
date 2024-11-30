@@ -205,7 +205,7 @@
     <!-- Galería -->
     <div class="gallery" id="gallery"></div>
 
-    <!-- Botón flotante para agregar archivos -->
+    <!-- Botón flotante para regresar -->
     <button class="float-button" onclick="window.location.href='formulario.html'">←</button>
 
     <!-- Botón flotante para eliminar archivos seleccionados -->
@@ -251,12 +251,12 @@
             galleryItems = [];
             loadedItems = [];
 
-            // Filtrar archivos PDF, Word, ZIP, y RAR, y mostrar solo el nombre del archivo sin fecha ni hora
+            // Filtrar archivos PDF, Word, Excel, ZIP y RAR, y mostrar solo el nombre del archivo sin fecha ni hora
             listResult.items.forEach(async (itemRef) => {
                 const extension = itemRef.name.split('.').pop().toLowerCase();
                 const originalFileName = itemRef.name.replace(/^.*-/, ''); // Elimina todo antes del guión
 
-                if (['pdf', 'doc', 'docx', 'zip', 'rar'].includes(extension)) {
+                if (['pdf', 'doc', 'docx', 'xls', 'xlsx', 'zip', 'rar'].includes(extension)) {
                     const url = await getDownloadURL(itemRef);
                     const metadata = await getMetadata(itemRef);
 
@@ -269,6 +269,8 @@
                         icon.src = 'https://img.icons8.com/color/48/000000/pdf.png';
                     } else if (extension === 'doc' || extension === 'docx') {
                         icon.src = 'https://img.icons8.com/color/48/000000/ms-word.png';
+                    } else if (extension === 'xls' || extension === 'xlsx') {
+                        icon.src = 'https://img.icons8.com/color/48/000000/ms-excel.png';
                     } else if (extension === 'zip') {
                         icon.src = 'https://img.icons8.com/color/48/000000/zip.png';
                     } else if (extension === 'rar') {
@@ -392,20 +394,18 @@
             document.getElementById('deleteSelectedBtn').addEventListener('click', deleteSelectedFiles);
         });
 
-
+        // Registro del Service Worker (Opcional)
         if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-        navigator.serviceWorker.register('service-worker.js')
-            .then((registration) => {
-                console.log('Service Worker registrado con éxito:', registration);
-            })
-            .catch((error) => {
-                console.error('Registro de Service Worker fallido:', error);
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then((registration) => {
+                        console.log('Service Worker registrado con éxito:', registration);
+                    })
+                    .catch((error) => {
+                        console.error('Registro de Service Worker fallido:', error);
+                    });
             });
-    });
-}
-
-
+        }
     </script>
 </body>
 </html>
