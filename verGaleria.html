@@ -211,7 +211,6 @@
     <!-- Botón flotante para eliminar archivos seleccionados -->
     <button class="delete-float-button" id="deleteSelectedBtn">❌</button>
 
-    <!-- Mover el script al final del body con el atributo defer -->
     <script type="module" defer>
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getStorage, ref, listAll, getDownloadURL, getMetadata, deleteObject } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
@@ -251,12 +250,13 @@
             galleryItems = [];
             loadedItems = [];
 
-            // Filtrar archivos PDF, Word, Excel, ZIP y RAR, y mostrar solo el nombre del archivo sin fecha ni hora
+            // Ahora incluimos ppt y pptx
             listResult.items.forEach(async (itemRef) => {
                 const extension = itemRef.name.split('.').pop().toLowerCase();
-                const originalFileName = itemRef.name.replace(/^.*-/, ''); // Elimina todo antes del guión
+                const originalFileName = itemRef.name.replace(/^.*-/, '');
 
-                if (['pdf', 'doc', 'docx', 'xls', 'xlsx', 'zip', 'rar'].includes(extension)) {
+                // Agregamos 'ppt' y 'pptx' a la lista de extensiones soportadas
+                if (['pdf', 'doc', 'docx', 'xls', 'xlsx', 'zip', 'rar', 'ppt', 'pptx'].includes(extension)) {
                     const url = await getDownloadURL(itemRef);
                     const metadata = await getMetadata(itemRef);
 
@@ -275,6 +275,8 @@
                         icon.src = 'https://img.icons8.com/color/48/000000/zip.png';
                     } else if (extension === 'rar') {
                         icon.src = 'https://img.icons8.com/color/48/000000/winrar.png';
+                    } else if (extension === 'ppt' || extension === 'pptx') {
+                        icon.src = 'https://img.icons8.com/color/48/000000/ms-powerpoint.png';
                     }
                     galleryItem.appendChild(icon);
 
@@ -300,7 +302,6 @@
                     checkbox.addEventListener('change', toggleDeleteButton);
                     galleryItem.appendChild(checkbox);
 
-                    // Botón individual de eliminar
                     const deleteBtn = document.createElement('button');
                     deleteBtn.className = 'delete-individual-button';
                     deleteBtn.textContent = 'Eliminar';
