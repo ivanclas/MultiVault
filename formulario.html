@@ -159,28 +159,31 @@
             font-weight: bold;
         }
 
+        /* Botón de Cerrar Sesión ajustado a la parte superior derecha y más pequeño */
         .logout-button {
             position: fixed;
-            bottom: 20px;
+            width: 28%;
+            top: 20px;
             right: 20px;
             background-color: #ff4444;
             color: white;
             border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 18px;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
             cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             transition: background-color 0.3s ease, transform 0.2s ease;
+            white-space: nowrap; /* Evita que el texto se divida en varias líneas */
         }
 
         .logout-button:hover {
             background-color: #ff2222;
             transform: translateY(-2px);
+        }
+
+        .logout-button:active {
+            transform: translateY(0);
         }
 
         .file-icon img {
@@ -217,15 +220,14 @@
             }
 
             .logout-button {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
+                padding: 5px 8px;
+                font-size: 11px;
             }
         }
 
         .folder-button {
             position: fixed;
-            bottom: 80px;
+            bottom: 20px;
             right: 20px;
             background-color: #4caf50;
             color: white;
@@ -284,7 +286,8 @@
     <!-- Botón flotante para crear una nueva carpeta -->
     <button class="folder-button" onclick="window.location.href='nuevo.html'">📁</button>
 
-    <button class="logout-button" onclick="logout()">❌</button>
+    <!-- Botón de Cerrar Sesión en la parte superior derecha y más pequeño -->
+    <button class="logout-button" onclick="logout()">Cerrar Sesión</button>
 
     <script type="module">
         // Forzar recarga al navegar hacia atrás
