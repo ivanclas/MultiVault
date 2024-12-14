@@ -6,10 +6,33 @@
     <title>Galería de Fotos y Videos</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
      <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #f0f2f5; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; color: #333; }
-        h1 { position: fixed; top: 0; left: 0; width: 100%; margin: 0; padding: 20px; background-color: rgba(63, 81, 181, 0.8); color: white; font-size: 36px; text-align: center; z-index: 1000; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); }
+        body {
+            font-family: 'Poppins', sans-serif; 
+            background-color: #f0f2f5; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            color: #333; 
+        }
+        h1 {
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: rgba(63, 81, 181, 0.8); 
+            color: white; 
+            font-size: 36px; 
+            text-align: center; 
+            z-index: 1000; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
         
-        /* Scroll View más amplio para los botones de filtro */
         .filter-buttons {
             position: fixed;
             top: 80px;
@@ -40,46 +63,170 @@
             box-shadow: 0 4px 6px rgba(63, 81, 181, 0.2);
             flex-shrink: 0;
         }
-        .filter-buttons button:hover { background-color: #3f51b5; color: white; transform: translateY(-3px); }
+        .filter-buttons button:hover { 
+            background-color: #3f51b5; 
+            color: white; 
+            transform: translateY(-3px); 
+        }
         
-        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 30px; padding: 150px 30px; width: 100%; max-width: 1400px; }
-        .gallery-item { background-color: #fff; border-radius: 15px; overflow: hidden; transition: all 0.4s ease; box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1); position: relative; }
-        .gallery-item img, .gallery-item video { width: 100%; height: auto; transition: transform 0.3s ease; border-bottom: 5px solid #3f51b5; }
-        .gallery-item:hover img, .gallery-item:hover video { transform: scale(1.05); }
-        .gallery-item video { max-height: 310px; } /* Videos más grandes */
-        .gallery-item h4 { text-align: center; font-size: 18px; margin: 15px 0 5px 0; color: #333; }
-        .gallery-item a { display: block; text-align: center; font-size: 14px; margin: 5px 0; color: #3f51b5; text-decoration: none; font-weight: bold; }
-        .gallery-item a:hover { text-decoration: underline; }
-        .gallery-checkbox { position: absolute; top: 10px; left: 10px; width: 20px; height: 20px; z-index: 1; }
-        .delete-btn { position: absolute; top: 10px; right: 10px; background-color: #f44336; color: white; border: none; border-radius: 5px; padding: 8px 12px; cursor: pointer; font-size: 14px; transition: background-color 0.3s ease; }
-        .delete-btn:hover { background-color: #d32f2f; }
-        .float-button { position: fixed; bottom: 80px; right: 30px; background-color: #3f51b5; color: white; border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 24px; cursor: pointer; box-shadow: 0 8px 15px rgba(63, 81, 181, 0.4); transition: all 0.3s ease; display: flex; justify-content: center; align-items: center; }
-        .float-button:hover { background-color: #303f9f; transform: scale(1.1); }
-        .delete-float-button { position: fixed; bottom: 20px; right: 30px; background-color: #f44336; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer; display: none; justify-content: center; align-items: center; box-shadow: 0 8px 15px rgba(244, 67, 54, 0.4); transition: all 0.3s ease; }
-        .delete-float-button:hover { background-color: #d32f2f; transform: scale(1.1); }
+        .gallery { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+            gap: 30px; 
+            padding: 150px 30px; 
+            width: 100%; 
+            max-width: 1400px; 
+        }
+        .gallery-item { 
+            background-color: #fff; 
+            border-radius: 15px; 
+            overflow: hidden; 
+            transition: all 0.4s ease; 
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1); 
+            position: relative; 
+            padding-bottom: 20px; 
+        }
+        .gallery-item img, .gallery-item video { 
+            width: 100%; 
+            height: auto; 
+            transition: transform 0.3s ease; 
+            border-bottom: 5px solid #3f51b5; 
+        }
+        .gallery-item:hover img, .gallery-item:hover video { 
+            transform: scale(1.05); 
+        }
+        .gallery-item video { 
+            max-height: 310px; 
+        }
+        .gallery-item h4 { 
+            text-align: center; 
+            font-size: 18px; 
+            margin: 15px 0 5px 0; 
+            color: #333; 
+        }
+        .gallery-item a.download-link { 
+            display: block; 
+            text-align: center; 
+            font-size: 14px; 
+            margin: 5px 0;
+            color: #3f51b5; 
+            text-decoration: none; 
+            font-weight: bold; 
+        }
+        .gallery-item a.download-link:hover { 
+            text-decoration: underline; 
+        }
+        .gallery-checkbox { 
+            position: absolute; 
+            top: 10px; 
+            left: 10px; 
+            width: 20px; 
+            height: 20px; 
+            z-index: 1; 
+        }
+        .delete-btn { 
+            position: absolute; 
+            top: 10px; 
+            right: 10px; 
+            background-color: #f44336; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            padding: 8px 12px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            transition: background-color 0.3s ease; 
+        }
+        .delete-btn:hover { 
+            background-color: #d32f2f; 
+        }
+        .float-button { 
+            position: fixed; 
+            bottom: 80px; 
+            right: 30px; 
+            background-color: #3f51b5; 
+            color: white; 
+            border: none; 
+            border-radius: 50%; 
+            width: 60px; 
+            height: 60px; 
+            font-size: 24px; 
+            cursor: pointer; 
+            box-shadow: 0 8px 15px rgba(63, 81, 181, 0.4); 
+            transition: all 0.3s ease; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        .float-button:hover { 
+            background-color: #303f9f; 
+            transform: scale(1.1); 
+        }
+        .delete-float-button { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 30px; 
+            background-color: #f44336; 
+            color: white; 
+            border: none; 
+            border-radius: 50%; 
+            width: 50px; 
+            height: 50px; 
+            font-size: 24px; 
+            cursor: pointer; 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            box-shadow: 0 8px 15px rgba(244, 67, 54, 0.4); 
+            transition: all 0.3s ease; 
+        }
+        .delete-float-button:hover { 
+            background-color: #d32f2f; 
+            transform: scale(1.1); 
+        }
         @media (max-width: 600px) { 
-            h1 { font-size: 28px; padding: 15px; } 
-            .filter-buttons button { padding: 8px 16px; font-size: 14px; min-width: 100px; } 
-            .gallery { width: 90%; margin: 0 auto; padding: 150px 15px; gap: 20px; } 
-            .gallery-item h4 { font-size: 12px; } 
-            .float-button { width: 50px; height: 50px; font-size: 20px; } 
-            .gallery-item video { max-height: 250px; } /* Ajustar tamaño en móviles */
+            h1 { 
+                font-size: 28px; 
+                padding: 15px; 
+            } 
+            .filter-buttons button { 
+                padding: 8px 16px; 
+                font-size: 14px; 
+                min-width: 100px; 
+            } 
+            .gallery { 
+                width: 90%; 
+                margin: 0 auto; 
+                padding: 150px 15px; 
+                gap: 20px; 
+            } 
+            .gallery-item h4 { 
+                font-size: 12px; 
+            } 
+            .float-button { 
+                width: 50px; 
+                height: 50px; 
+                font-size: 20px; 
+            } 
+            .gallery-item video { 
+                max-height: 250px; 
+            }
         }
     </style>
 </head>
 <body>
     <h1>Mis Recuerdos</h1>
 
+    <!-- Botones de filtro con IDs para actualizar conteo -->
     <div class="filter-buttons">
-        <button onclick="filterGallery('all')">Todo</button>
-        <button onclick="filterGallery('photo')">Fotos</button>
-        <button onclick="filterGallery('video')">Videos</button>
+        <button onclick="filterGallery('all')" id="filterAll">Todo</button>
+        <button onclick="filterGallery('photo')" id="filterPhoto">Fotos</button>
+        <button onclick="filterGallery('video')" id="filterVideo">Videos</button>
     </div>
 
     <div class="gallery" id="gallery"></div>
 
     <button class="float-button" onclick="window.location.href='formulario.html'">←</button>
-
 
     <button class="delete-float-button" id="deleteSelectedBtn" onclick="deleteSelectedFiles()">❌</button>
 
@@ -100,7 +247,6 @@
             appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
             measurementId: "G-TMWR9JNR18"
         };
-
         const app = initializeApp(firebaseConfig);
         const storage = getStorage(app);
         const auth = getAuth(app);
@@ -122,14 +268,20 @@
             gallery.innerHTML = '';
             galleryItems = [];
 
-            listResult.items.forEach(async (itemRef) => {
+            const promises = listResult.items.map(async (itemRef) => {
                 const url = await getDownloadURL(itemRef);
                 const metadata = await getMetadata(itemRef);
                 const uploadDate = new Date(metadata.timeCreated);
 
                 const galleryItem = document.createElement('div');
                 galleryItem.className = 'gallery-item';
-                galleryItem.dataset.type = itemRef.name.match(/\.(jpg|jpeg|png)$/i) ? 'photo' : 'video';
+
+                let fileType = 'video';
+                if (itemRef.name.match(/\.(jpg|jpeg|png)$/i)) {
+                    fileType = 'photo';
+                }
+
+                galleryItem.dataset.type = fileType;
 
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
@@ -139,7 +291,7 @@
                 galleryItem.appendChild(checkbox);
                 galleryItems.push(checkbox);
 
-                if (galleryItem.dataset.type === 'photo') {
+                if (fileType === 'photo') {
                     const img = document.createElement('img');
                     img.src = url;
                     img.alt = `Subido el ${uploadDate.toLocaleDateString("es-ES")}`;
@@ -164,6 +316,14 @@
                 title.textContent = `Subido el ${uploadDate.toLocaleDateString("es-ES")}`;
                 galleryItem.appendChild(title);
 
+                // Agregar enlace de descarga
+                const downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.textContent = "Descargar";
+                downloadLink.className = 'download-link';
+                downloadLink.download = itemRef.name; // Sugerir nombre de archivo
+                galleryItem.appendChild(downloadLink);
+
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-btn';
                 deleteBtn.textContent = 'Eliminar';
@@ -185,6 +345,26 @@
 
                 gallery.appendChild(galleryItem);
             });
+
+            await Promise.all(promises);
+
+            // Contar cuántos elementos hay de cada tipo
+            const galleryItemsElements = document.querySelectorAll('.gallery-item');
+            let countAll = 0;
+            let countPhoto = 0;
+            let countVideo = 0;
+
+            galleryItemsElements.forEach(item => {
+                countAll++;
+                const type = item.dataset.type;
+                if (type === 'photo') countPhoto++;
+                if (type === 'video') countVideo++;
+            });
+
+            // Actualizar textos de los botones de filtro con el conteo
+            document.getElementById('filterAll').textContent = `Todo (${countAll})`;
+            document.getElementById('filterPhoto').textContent = `Fotos (${countPhoto})`;
+            document.getElementById('filterVideo').textContent = `Videos (${countVideo})`;
         }
 
         function toggleDeleteButton() {
@@ -222,11 +402,9 @@
         }
 
         function filterGallery(type) {
-            galleryItems.forEach(item => {
-                const galleryItem = item.closest('.gallery-item');
-                if (galleryItem) {
-                    galleryItem.style.display = (type === 'all' || galleryItem.dataset.type === type) ? 'block' : 'none';
-                }
+            const galleryItemsElements = document.querySelectorAll('.gallery-item');
+            galleryItemsElements.forEach(item => {
+                item.style.display = (type === 'all' || item.dataset.type === type) ? 'block' : 'none';
             });
         }
 
@@ -234,18 +412,17 @@
         window.deleteSelectedFiles = deleteSelectedFiles;
     </script>
 <script>
-   
     if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-            .then((registration) => {
-                console.log('Service Worker registrado con éxito:', registration);
-            })
-            .catch((error) => {
-                console.error('Error al registrar el Service Worker:', error);
-            });
-    });
-}
-  </script>
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('service-worker.js')
+                .then((registration) => {
+                    console.log('Service Worker registrado con éxito:', registration);
+                })
+                .catch((error) => {
+                    console.error('Error al registrar el Service Worker:', error);
+                });
+        });
+    }
+</script>
 </body>
 </html>
