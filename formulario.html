@@ -267,8 +267,8 @@
         <label for="emailInput">Correo Electrónico:</label>
         <input type="email" id="emailInput" placeholder="Tu correo electrónico" required readonly>
 
-        <label for="fileInput">Seleccionar Archivos (Imágenes, Videos, PDF, Word, Excel, ZIP):</label>
-        <input type="file" id="fileInput" accept="image/*, video/*, .pdf, .doc, .docx, .xls, .xlsx, .zip, .rar" multiple onchange="previewFiles()">
+        <label for="fileInput">Seleccionar Archivos (Imágenes, Videos, PDF, Word, Excel, ZIP, PowerPoint):</label>
+        <input type="file" id="fileInput" accept="image/*, video/*, .pdf, .doc, .docx, .xls, .xlsx, .zip, .rar, .ppt, .pptx" multiple onchange="previewFiles()">
 
         <div id="selectedImages"></div>
         <div id="progressBar">
@@ -391,6 +391,10 @@
                                 case 'zip':
                                 case 'rar':
                                     iconUrl = 'https://img.icons8.com/color/48/000000/zip.png';
+                                    break;
+                                case 'ppt':
+                                case 'pptx':
+                                    iconUrl = 'https://img.icons8.com/color/48/000000/ms-powerpoint.png';
                                     break;
                                 default:
                                     fileIcon.textContent = extension.toUpperCase();
