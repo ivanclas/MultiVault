@@ -301,7 +301,6 @@
                 width: 150px;
             }
 
-            /* Mover el buscador más abajo en móviles */
             .search-container {
                 top: 130px;
                 right: auto;
@@ -314,13 +313,13 @@
 <body>
     <h1>Mis Archivos</h1>
 
-    <!-- Botones de filtro -->
+    <!-- Botones de filtro con IDs para actualizar conteo -->
     <div class="filter-buttons">
-        <button onclick="filterGallery('all')">Todo</button>
-        <button onclick="filterGallery('photo')">Fotos</button>
-        <button onclick="filterGallery('video')">Videos</button>
-        <button onclick="filterGallery('document')">Documentos</button>
-        <button onclick="filterGallery('audio')">Audios</button>
+        <button onclick="filterGallery('all')" id="filterAll">Todo</button>
+        <button onclick="filterGallery('photo')" id="filterPhoto">Fotos</button>
+        <button onclick="filterGallery('video')" id="filterVideo">Videos</button>
+        <button onclick="filterGallery('document')" id="filterDocument">Documentos</button>
+        <button onclick="filterGallery('audio')" id="filterAudio">Audios</button>
     </div>
 
     <!-- Ícono de búsqueda y campo de búsqueda -->
@@ -339,7 +338,7 @@
     <button class="delete-float-button" id="deleteSelectedBtn" onclick="deleteSelectedFiles()">❌</button>
 
     <!-- Input para subir archivos (no visible en este caso) -->
-    <input type="file" id="fileInput" style="display: none;" multiple accept="image/*,video/*,audio/*,application/pdf,.zip,.rar,.doc,.docx,.xls,.xlsx">
+    <input type="file" id="fileInput" style="display: none;" multiple accept="image/*,video/*,audio/*,application/pdf,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -387,7 +386,7 @@
             gallery.innerHTML = '';
             galleryItems = [];
 
-            listResult.items.forEach(async (itemRef) => {
+            const promises = listResult.items.map(async (itemRef) => {
                 const url = await getDownloadURL(itemRef);
                 const metadata = await getMetadata(itemRef);
                 const uploadDate = new Date(metadata.timeCreated);
@@ -441,12 +440,10 @@
                     mediaElement.src = 'https://img.icons8.com/color/96/000000/musical-notes.png';
                     mediaElement.className = 'audio-icon';
 
-                    // Crear elemento de audio oculto
                     const audioPlayer = document.createElement('audio');
                     audioPlayer.src = url;
-                    audioPlayer.dataset.playing = 'false'; // Estado de reproducción
+                    audioPlayer.dataset.playing = 'false';
 
-                    // Añadir evento al ícono para reproducir/pausar
                     mediaElement.addEventListener('click', () => {
                         if (audioPlayer.paused) {
                             audioPlayer.play();
@@ -457,7 +454,6 @@
                         }
                     });
 
-                    // Detener otros audios cuando se reproduce uno nuevo
                     audioPlayer.addEventListener('play', () => {
                         document.querySelectorAll('audio').forEach(a => {
                             if (a !== audioPlayer) {
@@ -481,12 +477,13 @@
 
                     galleryItem.appendChild(mediaElement);
                     galleryItem.appendChild(fileNameText);
-                    galleryItem.appendChild(audioPlayer); // Agregar el elemento de audio al DOM
+                    galleryItem.appendChild(audioPlayer); 
                     galleryItem.appendChild(downloadLink);
-                } else if (['pdf', 'zip', 'rar', 'doc', 'docx', 'xls', 'xlsx'].includes(fileType)) {
+                } else if (['pdf', 'zip', 'rar', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(fileType)) {
                     galleryItem.dataset.type = 'document';
                     mediaElement = document.createElement('img');
                     mediaElement.className = 'file-icon';
+
                     if (fileType === 'pdf') {
                         mediaElement.src = 'https://img.icons8.com/color/96/000000/pdf.png';
                     } else if (fileType === 'zip' || fileType === 'rar') {
@@ -495,6 +492,8 @@
                         mediaElement.src = 'https://img.icons8.com/color/96/000000/ms-word.png';
                     } else if (fileType === 'xls' || fileType === 'xlsx') {
                         mediaElement.src = 'https://img.icons8.com/color/96/000000/ms-excel.png';
+                    } else if (fileType === 'ppt' || fileType === 'pptx') {
+                        mediaElement.src = 'https://img.icons8.com/color/96/000000/ms-powerpoint.png';
                     }
 
                     const fileNameText = document.createElement('h4');
@@ -535,6 +534,31 @@
 
                 gallery.appendChild(galleryItem);
             });
+
+            await Promise.all(promises);
+
+            // Contar cuántos elementos hay de cada tipo
+            let countAll = 0;
+            let countPhoto = 0;
+            let countVideo = 0;
+            let countDocument = 0;
+            let countAudio = 0;
+
+            galleryItems.forEach(item => {
+                countAll++;
+                const type = item.dataset.type;
+                if (type === 'photo') countPhoto++;
+                if (type === 'video') countVideo++;
+                if (type === 'document') countDocument++;
+                if (type === 'audio') countAudio++;
+            });
+
+            // Actualizar textos de los botones de filtro con el conteo
+            document.getElementById('filterAll').textContent = `Todo (${countAll})`;
+            document.getElementById('filterPhoto').textContent = `Fotos (${countPhoto})`;
+            document.getElementById('filterVideo').textContent = `Videos (${countVideo})`;
+            document.getElementById('filterDocument').textContent = `Documentos (${countDocument})`;
+            document.getElementById('filterAudio').textContent = `Audios (${countAudio})`;
         }
 
         function toggleDeleteButton() {
