@@ -298,7 +298,15 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            sendPasswordResetEmail, 
+            GoogleAuthProvider, 
+            signInWithPopup,
+            sendEmailVerification
+        } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
@@ -361,7 +369,9 @@
             loadingOverlay.style.display = "flex";
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
-                alert("¡Registro exitoso!");
+                // Enviar correo de verificación
+                await sendEmailVerification(auth.currentUser);
+                alert("¡Registro exitoso! Se ha enviado un correo de verificación a tu dirección de email.");
                 document.getElementById("register-email").value = "";
                 document.getElementById("register-password").value = "";
                 closeModal();
