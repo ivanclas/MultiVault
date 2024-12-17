@@ -207,7 +207,6 @@
             }
         }
 
-        /* Estilos para el botón de Google */
         .google-login-btn {
             width: 100%;
             padding: 15px;
@@ -229,13 +228,11 @@
             background-color: #3367D6;
         }
 
-        /* Iconos en los botones */
         button i {
             margin-right: 10px;
             font-size: 18px;
         }
     </style>
-    <!-- Iconos de Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -247,7 +244,6 @@
         <div class="input-wrapper">
             <input type="password" id="login-password" placeholder="Contraseña" required />
             <span class="toggle-password" onclick="togglePassword('login-password')">
-                <!-- SVG icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/>
                 </svg>
@@ -257,7 +253,6 @@
             <i class="fas fa-sign-in-alt"></i>
             Iniciar Sesión
         </button>
-        <!-- Botón de inicio de sesión con Google -->
         <button onclick="loginWithGoogle()" class="google-login-btn">
             <i class="fab fa-google"></i>
             Iniciar sesión con Google
@@ -266,7 +261,6 @@
         <p>¿No tienes una cuenta? <a href="javascript:void(0);" onclick="openModal()">Regístrate aquí</a>.</p>
     </div>
 
-    <!-- Modal de registro -->
     <div id="registerModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
@@ -277,7 +271,6 @@
             <div class="input-wrapper">
                 <input type="password" id="register-password" placeholder="Contraseña" required />
                 <span class="toggle-password" onclick="togglePassword('register-password')">
-                    <!-- SVG icon -->
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                         <path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/>
                     </svg>
@@ -290,7 +283,6 @@
         </div>
     </div>
 
-    <!-- Loading overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
         <p>Por favor, espere...</p>
@@ -318,13 +310,10 @@
             appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
             measurementId: "G-TMWR9JNR18"
         };
-
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({
-            prompt: 'select_account'
-        });
+        provider.setCustomParameters({ prompt: 'select_account' });
         provider.addScope('profile');
         provider.addScope('email');
 
@@ -350,6 +339,14 @@
             loadingOverlay.style.display = "flex";
             try {
                 await signInWithEmailAndPassword(auth, email, password);
+                
+                // Aquí llamamos a la Cloud Function que envía el correo de notificación
+                await fetch('https://us-central1-TU_PROJECT_ID.cloudfunctions.net/sendLoginEmail', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+
                 alert("¡Inicio de sesión exitoso!");
                 window.location.href = 'formulario.html';
             } catch (error) {
@@ -369,7 +366,6 @@
             loadingOverlay.style.display = "flex";
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
-                // Enviar correo de verificación
                 await sendEmailVerification(auth.currentUser);
                 alert("¡Registro exitoso! Se ha enviado un correo de verificación a tu dirección de email.");
                 document.getElementById("register-email").value = "";
@@ -405,6 +401,17 @@
             loadingOverlay.style.display = "flex";
             try {
                 await signInWithPopup(auth, provider);
+                
+                // Notificamos el login por correo
+                const user = auth.currentUser;
+                if (user && user.email) {
+                    await fetch('https://us-central1-TU_PROJECT_ID.cloudfunctions.net/sendLoginEmail', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: user.email })
+                    });
+                }
+
                 alert("¡Inicio de sesión con Google exitoso!");
                 window.location.href = 'formulario.html';
             } catch (error) {
