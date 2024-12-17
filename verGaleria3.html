@@ -313,7 +313,6 @@
 <body>
     <h1>Mis Archivos</h1>
 
-    <!-- Botones de filtro con IDs para actualizar conteo -->
     <div class="filter-buttons">
         <button onclick="filterGallery('all')" id="filterAll">Todo</button>
         <button onclick="filterGallery('photo')" id="filterPhoto">Fotos</button>
@@ -322,23 +321,18 @@
         <button onclick="filterGallery('audio')" id="filterAudio">Audios</button>
     </div>
 
-    <!-- Ícono de búsqueda y campo de búsqueda -->
     <div class="search-container">
         <span class="search-icon" onclick="toggleSearch()">&#128269;</span>
         <input type="text" class="search-input" id="searchInput" placeholder="Buscar archivos..." oninput="searchDocuments()">
     </div>
 
-    <!-- Galería -->
     <div class="gallery" id="gallery"></div>
 
-    <!-- Botón flotante para regresar -->
     <button class="float-button" onclick="window.location.href='MisCarpetas.html'">←</button>
-
-    <!-- Botón flotante para eliminar archivos seleccionados -->
     <button class="delete-float-button" id="deleteSelectedBtn" onclick="deleteSelectedFiles()">❌</button>
 
-    <!-- Input para subir archivos (no visible en este caso) -->
-    <input type="file" id="fileInput" style="display: none;" multiple accept="image/*,video/*,audio/*,application/pdf,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
+    <input type="file" id="fileInput" style="display: none;" multiple 
+           accept="image/*,video/*,audio/*,application/pdf,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.vob">
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -361,13 +355,12 @@
         const auth = getAuth(app);
         let galleryItems = [];
 
-        // Obtener el parámetro 'folder' de la URL
         const urlParams = new URLSearchParams(window.location.search);
         const folderName = urlParams.get('folder');
 
         if (!folderName) {
             alert("No se especificó ninguna carpeta.");
-            window.location.href = "MisCarpetas.html"; // Redirigir si no hay carpeta especificada
+            window.location.href = "MisCarpetas.html";
         }
 
         auth.onAuthStateChanged(user => {
@@ -381,21 +374,42 @@
 
         async function loadGallery(email, folderName) {
             const storageRef = ref(storage, `${email}/${folderName}/`);
-            const listResult = await listAll(storageRef);
+            let listResult;
+            try {
+                listResult = await listAll(storageRef);
+            } catch (error) {
+                console.error("Error al listar los archivos:", error);
+                alert("Hubo un error al cargar la galería.");
+                return;
+            }
+
             const gallery = document.getElementById('gallery');
             gallery.innerHTML = '';
             galleryItems = [];
 
             const promises = listResult.items.map(async (itemRef) => {
-                const url = await getDownloadURL(itemRef);
-                const metadata = await getMetadata(itemRef);
+                let url;
+                try {
+                    url = await getDownloadURL(itemRef);
+                } catch (error) {
+                    console.error("Error al obtener la URL de descarga:", error);
+                    return;
+                }
+
+                let metadata;
+                try {
+                    metadata = await getMetadata(itemRef);
+                } catch (error) {
+                    console.error("Error al obtener los metadatos:", error);
+                    return;
+                }
+
                 const uploadDate = new Date(metadata.timeCreated);
 
                 const galleryItem = document.createElement('div');
                 galleryItem.className = 'gallery-item';
-                const fileType = itemRef.name.split('.').pop().toLowerCase();
+                let fileType = itemRef.name.split('.').pop().toLowerCase();
 
-                // Crear checkbox para seleccionar el archivo
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.className = 'gallery-checkbox';
@@ -415,11 +429,27 @@
                     dateText.textContent = `Subido el ${uploadDate.toLocaleDateString("es-ES")}`;
                     galleryItem.appendChild(mediaElement);
                     galleryItem.appendChild(dateText);
-                } else if (['mp4', 'webm', 'avi'].includes(fileType)) {
+                } else if (['mp4', 'webm', 'avi', 'vob'].includes(fileType)) {
                     galleryItem.dataset.type = 'video';
                     mediaElement = document.createElement('video');
-                    mediaElement.src = url;
                     mediaElement.controls = true;
+
+                    const sourceElement = document.createElement('source');
+                    
+                    // Si el archivo es vob, lo tratamos como mp4
+                    if (fileType === 'vob') {
+                        fileType = 'mp4';
+                    }
+
+                    sourceElement.src = url;
+                    sourceElement.type = 'video/mp4'; // Forzamos el tipo a mp4
+
+                    mediaElement.appendChild(sourceElement);
+
+                    const fallbackText = document.createElement('p');
+                    fallbackText.textContent = "Tu navegador no soporta este formato de video.";
+                    mediaElement.appendChild(fallbackText);
+
                     mediaElement.addEventListener('play', (e) => {
                         document.querySelectorAll('video').forEach(v => {
                             if (v !== e.target && !v.paused) {
@@ -435,7 +465,6 @@
                 } else if (['mp3', 'wav', 'ogg'].includes(fileType)) {
                     galleryItem.dataset.type = 'audio';
 
-                    // Crear elemento de ícono de audio
                     mediaElement = document.createElement('img');
                     mediaElement.src = 'https://img.icons8.com/color/96/000000/musical-notes.png';
                     mediaElement.className = 'audio-icon';
@@ -535,9 +564,12 @@
                 gallery.appendChild(galleryItem);
             });
 
-            await Promise.all(promises);
+            try {
+                await Promise.all(promises);
+            } catch (error) {
+                console.error("Error al cargar algunos archivos:", error);
+            }
 
-            // Contar cuántos elementos hay de cada tipo
             let countAll = 0;
             let countPhoto = 0;
             let countVideo = 0;
@@ -553,7 +585,6 @@
                 if (type === 'audio') countAudio++;
             });
 
-            // Actualizar textos de los botones de filtro con el conteo
             document.getElementById('filterAll').textContent = `Todo (${countAll})`;
             document.getElementById('filterPhoto').textContent = `Fotos (${countPhoto})`;
             document.getElementById('filterVideo').textContent = `Videos (${countVideo})`;
