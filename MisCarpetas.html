@@ -336,7 +336,10 @@
         </div>
     </div>
 
-    <input type="file" id="fileInput" multiple style="display: none;" accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx" onchange="showPreview(event)">
+    <!-- Ajuste: se incluye también .vts y .vob -->
+    <input type="file" id="fileInput" multiple style="display: none;"
+           accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.vts,.vob"
+           onchange="showPreview(event)">
 
     <button class="floating-btn" onclick="goToNuevo()">
         <img src="https://img.icons8.com/ios-filled/50/ffffff/left.png" alt="Nuevo">
@@ -363,6 +366,7 @@
         let selectedFiles = [];
         let isUploading = false;
 
+        // Verifica si hay un usuario logueado
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
                 userEmail = user.email;
@@ -372,6 +376,7 @@
             }
         });
 
+        // Carga la lista de carpetas del usuario
         async function loadFolders() {
             const foldersContainer = document.getElementById('foldersContainer');
             foldersContainer.innerHTML = "";
@@ -379,7 +384,6 @@
 
             try {
                 const res = await folderRef.listAll();
-                // Primero obtenemos todas las carpetas
                 const folderPromises = res.prefixes.map(async (folderRef) => {
                     const folderName = folderRef.name;
                     const fileCount = await countFilesInFolder(folderName);
@@ -395,7 +399,6 @@
         async function countFilesInFolder(folderName) {
             const folderRef = storage.ref(`${userEmail}/${folderName}`);
             const res = await folderRef.listAll();
-            // El count será la cantidad de items (archivos) en la carpeta
             return res.items.length;
         }
 
@@ -434,18 +437,23 @@
                     const fileName = file.name.toLowerCase();
                     const extension = fileName.split('.').pop();
 
-                    if (fileType.includes("image")) {
-                        element = document.createElement('img');
-                        element.src = e.target.result;
-                    } else if (fileType.includes("video")) {
+                    // Ajuste para incluir vob como video
+                    if ((fileType.includes("video") && extension !== "vts") || extension === "vob") {
+                        // Archivos de video (vob incluido; vts se trata como otro tipo)
                         element = document.createElement('video');
                         element.src = e.target.result;
                         element.controls = true;
+                    } else if (fileType.includes("image")) {
+                        // Archivos de imagen
+                        element = document.createElement('img');
+                        element.src = e.target.result;
                     } else if (fileType.includes("audio")) {
+                        // Archivos de audio
                         element = document.createElement('audio');
                         element.src = e.target.result;
                         element.controls = true;
                     } else {
+                        // Otros formatos, incluido .vts
                         element = document.createElement('img');
                         switch (extension) {
                             case 'pdf':
@@ -466,6 +474,14 @@
                             case 'ppt':
                             case 'pptx':
                                 element.src = 'https://img.icons8.com/color/48/000000/ms-powerpoint.png';
+                                break;
+                            case 'vts':
+                                // Ícono de VLC para archivos .vts
+                                element.src = 'https://img.icons8.com/color/48/null/vlc.png';
+                                break;
+                            case 'vob':
+                                // Para vob, también ícono VLC si no reconociera el video, pero ya lo detectamos arriba.
+                                element.src = 'https://img.icons8.com/color/48/null/vlc.png';
                                 break;
                             default:
                                 element.src = 'https://img.icons8.com/ios-filled/50/000000/file.png';
@@ -506,6 +522,7 @@
 
             isUploading = true;
 
+            // Deshabilitamos los botones de borrar para que no se puedan quitar archivos mientras se suben
             const removeButtons = document.querySelectorAll('.remove-btn');
             removeButtons.forEach(btn => {
                 btn.style.display = 'none';
@@ -541,7 +558,7 @@
                             document.querySelector('.close-modal').disabled = false;
                             selectedFiles = [];
                             document.getElementById('fileInput').value = '';
-                            loadFolders(); // Recargar las carpetas para actualizar el conteo de archivos
+                            loadFolders(); // Recarga las carpetas para refrescar el conteo de archivos
                         }
                     }
                 );
@@ -565,7 +582,6 @@
             folderNameDiv.className = 'folder-name';
             folderNameDiv.textContent = folderName;
 
-            // Agregar el icono con el conteo de archivos
             const fileCountBadge = document.createElement('span');
             fileCountBadge.className = 'file-count-badge';
             fileCountBadge.textContent = fileCount; 
