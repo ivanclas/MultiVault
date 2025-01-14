@@ -393,6 +393,7 @@
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-btn';
                 deleteBtn.innerHTML = '&times;'; // Usar el símbolo "×" para una apariencia más limpia
+                deleteBtn.setAttribute('aria-label', 'Eliminar archivo');
                 deleteBtn.onclick = async () => {
                     const confirmSingleDelete = confirm("¿Estás seguro de que deseas eliminar este archivo?");
                     if (!confirmSingleDelete) {
@@ -414,7 +415,7 @@
                 shareBtn.className = 'share-btn';
                 shareBtn.textContent = 'Compartir';
                 shareBtn.onclick = () => {
-                    shareSingleFile(url, itemRef.name);
+                    shareSingleFile(url, itemRef.name, fileType);
                 };
                 galleryItem.appendChild(shareBtn);
 
@@ -483,22 +484,37 @@
             }
         }
 
-        async function shareSingleFile(url, fileName) {
-            if (navigator.share) {
+        async function shareSingleFile(url, fileName, fileType) {
+            if (navigator.canShare && navigator.canShare({ files: [] })) {
                 try {
-                    await navigator.share({
-                        title: 'Compartir Archivo',
-                        text: `Mira este archivo: ${fileName}`,
-                        url: url,
-                    });
+                    // Fetch the file as a Blob
+                    const response = await fetch(url);
+                    const blob = await response.blob();
+
+                    // Crear un objeto File a partir del Blob
+                    const file = new File([blob], fileName, { type: blob.type });
+
+                    // Verificar si el navegador puede compartir este archivo
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: 'Compartir Archivo',
+                            text: `Mira este archivo: ${fileName}`,
+                            files: [file],
+                        });
+                    } else {
+                        // Fallback: Copiar el enlace al portapapeles
+                        await navigator.clipboard.writeText(url);
+                        alert('Tu navegador no soporta compartir archivos. El enlace ha sido copiado al portapapeles.');
+                    }
                 } catch (error) {
-                    console.error('Error al compartir:', error);
+                    console.error('Error al compartir el archivo:', error);
+                    alert('Hubo un error al compartir el archivo.');
                 }
             } else {
-                // Copiar al portapapeles como alternativa
+                // Fallback: Copiar el enlace al portapapeles
                 try {
                     await navigator.clipboard.writeText(url);
-                    alert('Enlace copiado al portapapeles.');
+                    alert('Tu navegador no soporta compartir archivos. El enlace ha sido copiado al portapapeles.');
                 } catch (error) {
                     console.error('Error al copiar al portapapeles:', error);
                     alert('No se pudo copiar el enlace.');
@@ -513,18 +529,13 @@
                 return;
             }
 
-            const urls = [];
-            checkboxes.forEach(checkbox => {
-                // Obtener el enlace de descarga directamente desde el DOM
+            for (const checkbox of checkboxes) {
                 const downloadLink = checkbox.parentElement.querySelector('.download-link').href;
-                urls.push(downloadLink);
-            });
+                const fileName = checkbox.parentElement.querySelector('.download-link').download;
+                const fileType = checkbox.parentElement.dataset.type === 'photo' ? 'image' : 'video';
 
-            const message = `Mira estos archivos:\n${urls.join('\n')}`;
-            const whatsappURL = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-
-            // Abrir WhatsApp en una nueva pestaña
-            window.open(whatsappURL, '_blank');
+                await shareSingleFile(downloadLink, fileName, fileType);
+            }
         }
 
         function filterGallery(type) {
@@ -537,6 +548,26 @@
         window.filterGallery = filterGallery;
         window.deleteSelectedFiles = deleteSelectedFiles;
         window.shareSelectedFiles = shareSelectedFiles;
+
+        // Función de carga de archivos (uploadFiles) - Necesita ser implementada
+        async function uploadFiles(event) {
+            const files = event.target.files;
+            const email = auth.currentUser.email;
+            const storageRef = ref(storage, email);
+
+            for (const file of files) {
+                const fileRef = ref(storageRef, file.name);
+                try {
+                    await uploadBytes(fileRef, file);
+                    alert(`Archivo ${file.name} subido exitosamente.`);
+                } catch (error) {
+                    console.error(`Error al subir el archivo ${file.name}:`, error);
+                    alert(`Hubo un error al subir el archivo ${file.name}.`);
+                }
+            }
+
+            loadGallery(email);
+        }
     </script>
 <script>
     if ('serviceWorker' in navigator) {
