@@ -129,27 +129,8 @@
         .delete-btn { 
             position: absolute; 
             top: 10px; 
-            right: 10px; /* Ajuste para mover el botón más cerca de la esquina */
+            right: 10px; 
             background-color: #f44336; 
-            color: white; 
-            border: none; 
-            border-radius: 50%; /* Hacer el botón circular */
-            padding: 5px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            width: 30px; 
-            height: 30px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            transition: background-color 0.3s ease; 
-        }
-        .delete-btn:hover { 
-            background-color: #d32f2f; 
-        }
-        /* Botón de Compartir debajo de Descargar */
-        .share-btn { 
-            background-color: #4caf50; 
             color: white; 
             border: none; 
             border-radius: 5px; 
@@ -157,12 +138,9 @@
             cursor: pointer; 
             font-size: 14px; 
             transition: background-color 0.3s ease; 
-            margin-top: 5px; /* Espacio encima del botón */
-            display: inline-block; /* Asegurar que sea inline-block para ajustar al contenido */
-            text-align: center;
         }
-        .share-btn:hover { 
-            background-color: #388e3c; 
+        .delete-btn:hover { 
+            background-color: #d32f2f; 
         }
         .float-button { 
             position: fixed; 
@@ -181,7 +159,6 @@
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            z-index: 1001;
         }
         .float-button:hover { 
             background-color: #303f9f; 
@@ -204,35 +181,9 @@
             align-items: center; 
             box-shadow: 0 8px 15px rgba(244, 67, 54, 0.4); 
             transition: all 0.3s ease; 
-            z-index: 1001;
         }
         .delete-float-button:hover { 
             background-color: #d32f2f; 
-            transform: scale(1.1); 
-        }
-        /* Botón flotante para compartir múltiples archivos */
-        .share-float-button { 
-            position: fixed; 
-            bottom: 20px; 
-            right: 100px; /* Ajuste para no superponerse con delete-float-button */
-            background-color: #25D366; /* Color verde de WhatsApp */
-            color: white; 
-            border: none; 
-            border-radius: 50%; 
-            width: 50px; 
-            height: 50px; 
-            font-size: 24px; 
-            cursor: pointer; 
-            display: none; 
-            justify-content: center; 
-            align-items: center; 
-            box-shadow: 0 8px 15px rgba(37, 211, 102, 0.4); 
-            transition: all 0.3s ease; 
-            z-index: 1001;
-            margin-bottom: 10px; /* Espacio entre botones */
-        }
-        .share-float-button:hover { 
-            background-color: #128C7E; 
             transform: scale(1.1); 
         }
         @media (max-width: 600px) { 
@@ -262,17 +213,6 @@
             .gallery-item video { 
                 max-height: 250px; 
             }
-            .delete-btn, .share-btn { 
-                padding: 6px 10px; 
-                font-size: 12px; 
-            }
-            /* Ajuste para botones flotantes en móviles */
-            .delete-float-button {
-                bottom: 140px; /* Ajuste para no superponerse con share-float-button */
-            }
-            .share-float-button {
-                bottom: 80px; /* Mantener espacio adecuado */
-            }
         }
     </style>
 </head>
@@ -281,9 +221,9 @@
 
     <!-- Botones de filtro con IDs para actualizar conteo -->
     <div class="filter-buttons">
-        <button onclick="filterGallery('all')" id="filterAll">Todo (0)</button>
-        <button onclick="filterGallery('photo')" id="filterPhoto">Fotos (0)</button>
-        <button onclick="filterGallery('video')" id="filterVideo">Videos (0)</button>
+        <button onclick="filterGallery('all')" id="filterAll">Todo</button>
+        <button onclick="filterGallery('photo')" id="filterPhoto">Fotos</button>
+        <button onclick="filterGallery('video')" id="filterVideo">Videos</button>
     </div>
 
     <div class="gallery" id="gallery"></div>
@@ -291,9 +231,6 @@
     <button class="float-button" onclick="window.location.href='formulario.html'">←</button>
 
     <button class="delete-float-button" id="deleteSelectedBtn" onclick="deleteSelectedFiles()">❌</button>
-
-    <!-- Botón flotante para compartir múltiples archivos -->
-    <button class="share-float-button" id="shareSelectedBtn" onclick="shareSelectedFiles()">📤</button>
 
     <input type="file" id="fileInput" style="display: none;" multiple accept="image/*,video/*" onchange="uploadFiles(event)">
 
@@ -352,7 +289,7 @@
                 checkbox.type = 'checkbox';
                 checkbox.className = 'gallery-checkbox';
                 checkbox.dataset.ref = itemRef.fullPath;
-                checkbox.addEventListener('change', toggleDeleteShareButtons);
+                checkbox.addEventListener('change', toggleDeleteButton);
                 galleryItem.appendChild(checkbox);
                 galleryItems.push(checkbox);
 
@@ -389,11 +326,9 @@
                 downloadLink.download = itemRef.name; // Sugerir nombre de archivo
                 galleryItem.appendChild(downloadLink);
 
-                // Botón de eliminar
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-btn';
-                deleteBtn.innerHTML = '&times;'; // Usar el símbolo "×" para una apariencia más limpia
-                deleteBtn.setAttribute('aria-label', 'Eliminar archivo');
+                deleteBtn.textContent = 'Eliminar';
                 deleteBtn.onclick = async () => {
                     const confirmSingleDelete = confirm("¿Estás seguro de que deseas eliminar este archivo?");
                     if (!confirmSingleDelete) {
@@ -409,15 +344,6 @@
                     }
                 };
                 galleryItem.appendChild(deleteBtn);
-
-                // Botón de compartir (debajo del enlace de descarga)
-                const shareBtn = document.createElement('button');
-                shareBtn.className = 'share-btn';
-                shareBtn.textContent = 'Compartir';
-                shareBtn.onclick = () => {
-                    shareSingleFile(url, itemRef.name, fileType);
-                };
-                galleryItem.appendChild(shareBtn);
 
                 gallery.appendChild(galleryItem);
             });
@@ -443,17 +369,10 @@
             document.getElementById('filterVideo').textContent = `Videos (${countVideo})`;
         }
 
-        function toggleDeleteShareButtons() {
+        function toggleDeleteButton() {
             const selectedItems = document.querySelectorAll('.gallery-checkbox:checked').length;
             const deleteBtn = document.getElementById('deleteSelectedBtn');
-            const shareBtn = document.getElementById('shareSelectedBtn');
-            if (selectedItems > 0) {
-                deleteBtn.style.display = 'flex';
-                shareBtn.style.display = 'flex';
-            } else {
-                deleteBtn.style.display = 'none';
-                shareBtn.style.display = 'none';
-            }
+            deleteBtn.style.display = selectedItems > 0 ? 'flex' : 'none';
         }
 
         async function deleteSelectedFiles() {
@@ -484,60 +403,6 @@
             }
         }
 
-        async function shareSingleFile(url, fileName, fileType) {
-            if (navigator.canShare && navigator.canShare({ files: [] })) {
-                try {
-                    // Fetch the file as a Blob
-                    const response = await fetch(url);
-                    const blob = await response.blob();
-
-                    // Crear un objeto File a partir del Blob
-                    const file = new File([blob], fileName, { type: blob.type });
-
-                    // Verificar si el navegador puede compartir este archivo
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            title: 'Compartir Archivo',
-                            text: `Mira este archivo: ${fileName}`,
-                            files: [file],
-                        });
-                    } else {
-                        // Fallback: Copiar el enlace al portapapeles
-                        await navigator.clipboard.writeText(url);
-                        alert('Tu navegador no soporta compartir archivos. El enlace ha sido copiado al portapapeles.');
-                    }
-                } catch (error) {
-                    console.error('Error al compartir el archivo:', error);
-                    alert('Hubo un error al compartir el archivo.');
-                }
-            } else {
-                // Fallback: Copiar el enlace al portapapeles
-                try {
-                    await navigator.clipboard.writeText(url);
-                    alert('Tu navegador no soporta compartir archivos. El enlace ha sido copiado al portapapeles.');
-                } catch (error) {
-                    console.error('Error al copiar al portapapeles:', error);
-                    alert('No se pudo copiar el enlace.');
-                }
-            }
-        }
-
-        async function shareSelectedFiles() {
-            const checkboxes = document.querySelectorAll('.gallery-checkbox:checked');
-            if (checkboxes.length === 0) {
-                alert("No hay archivos seleccionados para compartir.");
-                return;
-            }
-
-            for (const checkbox of checkboxes) {
-                const downloadLink = checkbox.parentElement.querySelector('.download-link').href;
-                const fileName = checkbox.parentElement.querySelector('.download-link').download;
-                const fileType = checkbox.parentElement.dataset.type === 'photo' ? 'image' : 'video';
-
-                await shareSingleFile(downloadLink, fileName, fileType);
-            }
-        }
-
         function filterGallery(type) {
             const galleryItemsElements = document.querySelectorAll('.gallery-item');
             galleryItemsElements.forEach(item => {
@@ -547,27 +412,6 @@
 
         window.filterGallery = filterGallery;
         window.deleteSelectedFiles = deleteSelectedFiles;
-        window.shareSelectedFiles = shareSelectedFiles;
-
-        // Función de carga de archivos (uploadFiles) - Necesita ser implementada
-        async function uploadFiles(event) {
-            const files = event.target.files;
-            const email = auth.currentUser.email;
-            const storageRef = ref(storage, email);
-
-            for (const file of files) {
-                const fileRef = ref(storageRef, file.name);
-                try {
-                    await uploadBytes(fileRef, file);
-                    alert(`Archivo ${file.name} subido exitosamente.`);
-                } catch (error) {
-                    console.error(`Error al subir el archivo ${file.name}:`, error);
-                    alert(`Hubo un error al subir el archivo ${file.name}.`);
-                }
-            }
-
-            loadGallery(email);
-        }
     </script>
 <script>
     if ('serviceWorker' in navigator) {
