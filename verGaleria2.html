@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     <link rel="icon" href="iconGaleria.png" type="image/png">
 
-     <style>
+    <style>
         body {
             font-family: 'Poppins', sans-serif; 
             background-color: #f0f2f5; 
@@ -118,6 +118,21 @@
         .gallery-item a.download-link:hover { 
             text-decoration: underline; 
         }
+        .gallery-item a.share-link { 
+            display: block; 
+            text-align: center; 
+            font-size: 14px; 
+            margin: 5px 0;
+            color: #25D366; /* Color verde de WhatsApp */
+            text-decoration: none; 
+            font-weight: bold; 
+        }
+        .gallery-item a.share-link:hover { 
+            text-decoration: underline; 
+        }
+        .gallery-item a.share-link::before {
+            content: "📲 "; /* Puedes reemplazarlo con un icono SVG o FontAwesome */
+        }
         .gallery-checkbox { 
             position: absolute; 
             top: 10px; 
@@ -213,6 +228,11 @@
             .gallery-item video { 
                 max-height: 250px; 
             }
+            .gallery-item a.download-link, 
+            .gallery-item a.share-link { 
+                font-size: 12px; 
+                margin: 3px 0;
+            }
         }
     </style>
 </head>
@@ -279,7 +299,7 @@
                 galleryItem.className = 'gallery-item';
 
                 let fileType = 'video';
-                if (itemRef.name.match(/\.(jpg|jpeg|png)$/i)) {
+                if (itemRef.name.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i)) {
                     fileType = 'photo';
                 }
 
@@ -325,6 +345,17 @@
                 downloadLink.className = 'download-link';
                 downloadLink.download = itemRef.name; // Sugerir nombre de archivo
                 galleryItem.appendChild(downloadLink);
+
+                // Agregar botón de compartir
+                const shareLink = document.createElement('a');
+                shareLink.href = "#"; // Previene la acción por defecto
+                shareLink.textContent = "Compartir";
+                shareLink.className = 'share-link';
+                shareLink.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    await shareFile(url, itemRef.name, fileType);
+                });
+                galleryItem.appendChild(shareLink);
 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-btn';
@@ -403,6 +434,42 @@
             }
         }
 
+        async function shareFile(url, filename, fileType) {
+            if (navigator.share && navigator.canShare) {
+                try {
+                    // Fetch the file as a blob
+                    const response = await fetch(url);
+                    const blob = await response.blob();
+
+                    // Crear un archivo
+                    const filesArray = [
+                        new File([blob], filename, { type: blob.type })
+                    ];
+
+                    // Verificar si se puede compartir archivos
+                    if (navigator.canShare({ files: filesArray })) {
+                        await navigator.share({
+                            files: filesArray,
+                            title: 'Compartir archivo',
+                            text: 'Mira este archivo que quiero compartir contigo.'
+                        });
+                        console.log('Archivo compartido exitosamente');
+                    } else {
+                        throw new Error('No se pueden compartir archivos en este dispositivo.');
+                    }
+                } catch (error) {
+                    console.error('Error al compartir:', error);
+                    // Fallback: Compartir enlace a través de WhatsApp
+                    const whatsappURL = `https://wa.me/?text=${encodeURIComponent("Mira esto: " + url)}`;
+                    window.open(whatsappURL, '_blank');
+                }
+            } else {
+                // Fallback: Compartir enlace a través de WhatsApp
+                const whatsappURL = `https://wa.me/?text=${encodeURIComponent("Mira esto: " + url)}`;
+                window.open(whatsappURL, '_blank');
+            }
+        }
+
         function filterGallery(type) {
             const galleryItemsElements = document.querySelectorAll('.gallery-item');
             galleryItemsElements.forEach(item => {
@@ -413,18 +480,18 @@
         window.filterGallery = filterGallery;
         window.deleteSelectedFiles = deleteSelectedFiles;
     </script>
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('service-worker.js')
-                .then((registration) => {
-                    console.log('Service Worker registrado con éxito:', registration);
-                })
-                .catch((error) => {
-                    console.error('Error al registrar el Service Worker:', error);
-                });
-        });
-    }
-</script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then((registration) => {
+                        console.log('Service Worker registrado con éxito:', registration);
+                    })
+                    .catch((error) => {
+                        console.error('Error al registrar el Service Worker:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
