@@ -1,548 +1,337 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <!-- Evitar caché del navegador -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subir Archivos a Firebase</title>
-    <link rel="icon" href="iconGaleria.png" type="image/png">
-
-    <style>
-        @import url('https://fonts.googleapis.com/css?family=Poppins&display=swap');
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 420px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        h1 {
-            color: #333;
-            font-size: 24px;
-            margin-bottom: 16px;
-            font-weight: bold;
-        }
-
-        h2 {
-            color: #555;
-            font-size: 18px;
-            margin-bottom: 16px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-size: 14px;
-            text-align: left;
-        }
-
-        input[type="email"],
-        input[type="file"] {
-            width: 90%;
-            padding: 10px;
-            margin: 8px 0;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s ease;
-        }
-
-        input[type="email"]:focus,
-        input[type="file"]:focus {
-            border-color: #007bff;
-            outline: none;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        button:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        #selectedImages {
-            margin-top: 16px;
-            display: none;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-height: 150px;
-            overflow-y: auto;
-        }
-
-        .preview-item {
-            position: relative;
-            margin: 5px;
-        }
-
-        .preview-item img,
-        .preview-item video,
-        .preview-item .file-icon {
-            max-width: 80px;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .remove-btn {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #progressBar {
-            width: 100%;
-            background-color: #ddd;
-            border-radius: 10px;
-            overflow: hidden;
-            display: none;
-            margin-top: 10px;
-            position: relative;
-        }
-
-        #progress {
-            height: 20px;
-            background-color: #007bff;
-            width: 0;
-            transition: width 0.3s ease;
-        }
-
-        #progressMessage {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            color: #fff;
-            font-weight: bold;
-        }
-
-        /* Botón de Cerrar Sesión ajustado a la parte superior derecha y más pequeño */
-        .logout-button {
-            position: fixed;
-            width: 25%;
-            top: 20px;
-            right: 20px;
-            background-color: #ff4444;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 6px 10px;
-            font-size: 12px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            white-space: nowrap; /* Evita que el texto se divida en varias líneas */
-        }
-
-        .logout-button:hover {
-            background-color: #ff2222;
-            transform: translateY(-2px);
-        }
-
-        .logout-button:active {
-            transform: translateY(0);
-        }
-
-        .file-icon img {
-            width: 50px;
-            height: auto;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 16px;
-            }
-
-            h1 {
-                font-size: 20px;
-            }
-
-            h2 {
-                font-size: 16px;
-            }
-
-            input,
-            button {
-                font-size: 12px;
-            }
-
-            #selectedImages {
-                max-height: 120px;
-            }
-
-            .preview-item img,
-            .preview-item video,
-            .preview-item .file-icon {
-                max-width: 60px;
-            }
-
-            .logout-button {
-                padding: 5px 8px;
-                font-size: 11px;
-            }
-        }
-
-        .folder-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 20px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-
-        .folder-button:hover {
-            background-color: #388e3c;
-            transform: translateY(-2px);
-        }
-
-        .folder-button:active {
-            transform: translateY(0);
-        }
-
-        .remove-btn.locked {
-            background-color: #bbb;
-            cursor: default;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bienvenido a MultiVault</title>
+  <link rel="icon" href="iconGaleria.png" type="image/png" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    :root { --primary:#4caf50; --accent:#1e88e5; --danger:#e53935; --bg:#f5f7fa; --panel:#fff; --text:#333; --muted:#757575; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 50px;
+      gap: 20px;
+    }
+    /* Header */
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: var(--panel);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      text-align: center;
+      padding: 20px 0;
+      z-index: 100;
+    }
+    header h1 {
+      font-size: 28px;
+      color: var(--text);
+      font-weight: 600;
+    }
+    /* Logout Button */
+    #logoutBtn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      right: 20px;
+      background: var(--danger);
+      color: #fff;
+      padding: 8px 12px;
+      font-size: 12px;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      cursor: pointer;
+      z-index: 110;
+      transition: transform .2s;
+    }
+    #logoutBtn:hover { transform: translateY(-52%); }
+    /* Spacer */
+    .header-spacer { height: 80px; }
+    /* User Card */
+    .user-card {
+      background: var(--panel);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 20px;
+      border-radius: 14px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      width: 90%;
+      max-width: 500px;
+    }
+    .avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      position: relative;
+    }
+    .avatar::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 12px;
+      height: 12px;
+      background: var(--primary);
+      border: 2px solid #fff;
+      border-radius: 50%;
+    }
+    .user-info { display: flex; flex-direction: column; }
+    .user-name { font-size: 15px; font-weight: 600; color: var(--text); }
+    .user-email { font-size: 12px; color: var(--muted); }
+    /* Panel */
+    .panel {
+      background: var(--panel);
+      padding: 30px 20px;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      width: 90%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .btn-grid {
+      display: grid;
+      width: 100%;
+      grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
+      gap: 12px;
+    }
+    .panel-btn {
+      background: var(--accent);
+      color: #fff;
+      padding: 12px;
+      text-align: center;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      transition: transform .2s;
+    }
+    .upload-btn { background: var(--primary); }
+    .panel-btn:hover { transform: translateY(-3px); box-shadow:0 6px 12px rgba(0,0,0,0.12); }
+    /* Previews */
+    #selectedImages {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 8px; width: 100%; max-height: 140px; overflow-y: auto;
+    }
+    .preview-item { position: relative; }
+    .preview-item img, .preview-item video, .preview-item .file-icon {
+      width: 60px; height: 60px; border-radius: 8px;
+      object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .remove-btn {
+      position: absolute; top:-6px; right:-6px;
+      width:20px; height:20px; background:var(--danger);
+      color:#fff; border:none; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:12px; cursor:pointer;
+    }
+    /* Progress */
+    #progressBar { width:100%; height:6px; background:#ddd; border-radius:6px; overflow:hidden; display:none; position:relative; }
+    #progress { height:100%; background:var(--accent); width:0; transition:width .2s; }
+    #progressMessage { position:absolute; top:-20px; width:100%; text-align:center; font-size:11px; color:var(--accent); }
+    /* Footer Links */
+    .external-links { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:20px; }
+    .link-btn, .new-folder-btn {
+      background:var(--panel); color:var(--text);
+      padding:8px 12px; border-radius:12px; text-decoration:none;
+      display:flex; flex-direction:column; align-items:center;
+      font-size:12px; box-shadow:0 2px 6px rgba(0,0,0,0.08);
+      cursor:pointer; transition:transform .2s;
+    }
+    .link-btn:hover, .new-folder-btn:hover { transform:translateY(-3px); box-shadow:0 4px 10px rgba(0,0,0,0.12); }
+    .link-btn img, .new-folder-btn img { width:30px; height:30px; margin-bottom:4px; }
+    /* Toast */
+    .toast { position: fixed; bottom:40px; left:50%; transform:translateX(-50%);
+      background:var(--accent); color:#fff; padding:10px 20px; border-radius:6px;
+      font-size:13px; opacity:0; pointer-events:none;
+      transition:opacity .4s, transform .4s;
+    }
+    .toast.show { opacity:1; transform:translate(-50%,-10px); }
+    /* Responsive */
+    @media(max-width:600px){
+      body { padding-top:50px; gap:10px; }
+      header h1 { font-size:22px; }
+      #logoutBtn { top: 85px; right:12px; padding:6px 10px; font-size:10px; }
+      .user-card { margin-top:20px; width:95%; }
+      .avatar { width:36px; height:36px; }
+      .avatar::after { width:10px; height:10px; }
+      .panel { padding:24px 16px; }
+      .btn-grid { gap:10px; }
+      .link-btn, .new-folder-btn { padding:6px 10px; font-size:11px; }
+    }
+  </style>
 </head>
-
 <body>
-    <div class="container">
-        <h1>Subir Archivos</h1>
-        <!-- Encabezado para mostrar el nombre del usuario -->
-        <h2 id="welcomeMessage">Bienvenido</h2>
-
-        <label for="emailInput">Correo Electrónico:</label>
-        <input type="email" id="emailInput" placeholder="Tu correo electrónico" required readonly>
-
-        <label for="fileInput">Seleccionar Archivos (Imágenes, Videos, PDF, Word, Excel, ZIP, PowerPoint):</label>
-        <input type="file" id="fileInput" accept="image/*, video/*, .pdf, .doc, .docx, .xls, .xlsx, .zip, .rar, .ppt, .pptx" multiple onchange="previewFiles()">
-
-        <div id="selectedImages"></div>
-        <div id="progressBar">
-            <div id="progress"></div>
-            <div id="progressMessage"></div>
-        </div>
-
-        <button id="uploadButton" onclick="uploadFiles()">Subir Archivos</button>
-        <button onclick="window.location.href='verGaleria2.html'">Ver Galería</button>
-        <button onclick="window.location.href='verGaleria.html'">Ver Documentos</button>
+  <header>
+    <h1>Bienvenido a MultiVault</h1>
+    <button id="logoutBtn">Cerrar Sesión</button>
+  </header>
+  <div class="header-spacer"></div>
+  <div id="userCard" class="user-card">
+    <div id="avatar" class="avatar">U</div>
+    <div class="user-info">
+      <span id="uName" class="user-name"></span>
+      <span id="uMail" class="user-email"></span>
     </div>
+  </div>
 
-    <!-- Botón flotante para crear una nueva carpeta -->
-    <button class="folder-button" onclick="window.location.href='nuevo.html'">📁</button>
+  <div class="panel">
+    <div class="btn-grid">
+      <button id="selectBtn" class="panel-btn accent-btn">📂 Seleccionar</button>
+      <button id="uploadBtn" class="panel-btn upload-btn">⬆ Subir</button>
+    </div>
+    <input id="fileInput" type="file" multiple style="display:none;" />
+    <div id="selectedImages"></div>
+    <div id="progressBar"><div id="progress"></div><div id="progressMessage"></div></div>
+  </div>
 
-    <!-- Botón de Cerrar Sesión en la parte superior derecha y más pequeño -->
-    <button class="logout-button" onclick="logout()">Cerrar Sesión</button>
+  <div class="external-links">
+    <div id="newFolderBtn" class="new-folder-btn"><img src="https://img.icons8.com/fluency/48/folder-invoices--v2.png"/><span>Nueva Carpeta</span></div>
+    <a class="link-btn" href="verGaleria2.html"><img src="https://img.icons8.com/fluency/48/picture.png"/><span>Galería</span></a>
+    <a class="link-btn" href="verGaleria.html"><img src="https://img.icons8.com/fluency/48/document.png"/><span>Documentos</span></a>
+  </div>
 
-    <script type="module">
-        // Forzar recarga al navegar hacia atrás
-        window.addEventListener('pageshow', function(event) {
-            if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
-                window.location.reload();
-            }
-        });
+  <div id="toast" class="toast"></div>
 
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
+    import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js';
+    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js';
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
-            authDomain: "login-de3fd.firebaseapp.com",
-            databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
-            projectId: "login-de3fd",
-            storageBucket: "login-de3fd.appspot.com",
-            messagingSenderId: "1064113669692",
-            appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
-            measurementId: "G-TMWR9JNR18"
+    const app = initializeApp({
+      apiKey:'AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80',
+      authDomain:'login-de3fd.firebaseapp.com',
+      databaseURL:'https://login-de3fd-default-rtdb.firebaseio.com',
+      projectId:'login-de3fd',
+      storageBucket:'login-de3fd.appspot.com',
+      messagingSenderId:'1064113669692',
+      appId:'1:1064113669692:web:c45b68b5a8a519536f2539'
+    });
+    const storage = getStorage(app);
+    const auth = getAuth(app);
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    const newFolderBtn = document.getElementById('newFolderBtn');
+    const userCard = document.getElementById('userCard');
+    const avatarEl = document.getElementById('avatar');
+    const nameEl = document.getElementById('uName');
+    const mailEl = document.getElementById('uMail');
+    const fileInput = document.getElementById('fileInput');
+    const selectBtn = document.getElementById('selectBtn');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const selectedContainer = document.getElementById('selectedImages');
+    const progressBar = document.getElementById('progressBar');
+    const progressEl = document.getElementById('progress');
+    const progressMsg = document.getElementById('progressMessage');
+    const toast = document.getElementById('toast');
+    let files = [], uploading = false;
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        const email = user.email;
+        const displayName = user.displayName || email.split('@')[0];
+        avatarEl.textContent = displayName.charAt(0).toUpperCase();
+        nameEl.textContent = displayName;
+        mailEl.textContent = email;
+        userCard.style.display = 'flex';
+      } else {
+        window.location.href = 'index.html';
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      if (confirm('¿Cerrar sesión?')) {
+        signOut(auth).then(() => window.location.href = 'index.html');
+      }
+    });
+    newFolderBtn.addEventListener('click', () => window.location.href = 'nuevo.html');
+    selectBtn.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+      files = Array.from(fileInput.files);
+      renderPreviews();
+    });
+    uploadBtn.addEventListener('click', uploadFiles);
+
+    function renderPreviews() {
+      selectedContainer.innerHTML = ''; if (!files.length) { selectedContainer.style.display = 'none'; return; }
+      selectedContainer.style.display = 'flex';
+      files.forEach((file, idx) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const item = document.createElement('div'); item.className = 'preview-item';
+          const rmBtn = document.createElement('button'); rmBtn.className = 'remove-btn';
+          if (uploading) { rmBtn.textContent = '🔒'; rmBtn.disabled = true; }
+          else { rmBtn.textContent = '✕'; rmBtn.onclick = () => { files.splice(idx, 1); renderPreviews(); }; }
+          item.appendChild(rmBtn);
+          if (file.type.startsWith('image/')) { const img = document.createElement('img'); img.src = e.target.result; item.appendChild(img); }
+          else if (file.type.startsWith('video/')) { const v = document.createElement('video'); v.src = e.target.result; v.controls = true; item.appendChild(v); }
+          else { const ext = file.name.split('.').pop().toLowerCase();
+            const ico = document.createElement('div'); ico.className = 'file-icon';
+            const m = { pdf:'pdf',doc:'ms-word',docx:'ms-word',xls:'ms-excel',xlsx:'ms-excel',zip:'zip',rar:'zip',ppt:'ms-powerpoint',pptx:'ms-powerpoint' };
+            if (m[ext]) ico.innerHTML = `<img src="https://img.icons8.com/color/48/${m[ext]}.png"/>`;
+            else ico.textContent = ext.toUpperCase(); item.appendChild(ico);
+          }
+          selectedContainer.appendChild(item);
         };
-        const app = initializeApp(firebaseConfig);
-        const storage = getStorage(app);
-        const auth = getAuth(app);
-        let userEmail = "";
-        let userName = "";
-        let selectedFilesArray = [];
-        let isUploading = false;
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                userEmail = user.email;
-                userName = user.displayName || "Usuario";
-
-                document.getElementById('emailInput').value = userEmail;
-                document.getElementById('welcomeMessage').textContent = `Bienvenido, ${userName}`;
-            } else {
-                window.location.href = 'index.html';
-            }
-        });
-
-        window.previewFiles = function() {
-            const files = document.getElementById('fileInput').files;
-            selectedFilesArray = Array.from(files);
-            renderSelectedFiles();
-        };
-
-        function renderSelectedFiles() {
-            const selectedFilesContainer = document.getElementById('selectedImages');
-            selectedFilesContainer.innerHTML = "";
-
-            if (selectedFilesArray.length > 0) {
-                selectedFilesContainer.style.display = 'flex';
-                selectedFilesArray.forEach((file, index) => {
-                    const extension = file.name.split('.').pop().toLowerCase();
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const previewItem = document.createElement('div');
-                        previewItem.classList.add('preview-item');
-
-                        const removeBtn = document.createElement('button');
-                        removeBtn.classList.add('remove-btn');
-
-                        if (isUploading) {
-                            removeBtn.innerHTML = '&#x1f512;';
-                            removeBtn.classList.add('locked');
-                        } else {
-                            removeBtn.innerHTML = '&times;';
-                            removeBtn.onclick = function() {
-                                removeFile(index);
-                            };
-                        }
-
-                        previewItem.appendChild(removeBtn);
-
-                        if (file.type.startsWith('image/')) {
-                            const img = document.createElement('img');
-                            img.src = e.target.result;
-                            previewItem.appendChild(img);
-                        } else if (file.type.startsWith('video/')) {
-                            const video = document.createElement('video');
-                            video.src = e.target.result;
-                            video.controls = true;
-                            previewItem.appendChild(video);
-                        } else {
-                            const fileIcon = document.createElement('div');
-                            fileIcon.classList.add('file-icon');
-                            let iconUrl = '';
-
-                            switch (extension) {
-                                case 'pdf':
-                                    iconUrl = 'https://img.icons8.com/color/48/000000/pdf.png';
-                                    break;
-                                case 'doc':
-                                case 'docx':
-                                    iconUrl = 'https://img.icons8.com/color/48/000000/ms-word.png';
-                                    break;
-                                case 'xls':
-                                case 'xlsx':
-                                    iconUrl = 'https://img.icons8.com/color/48/000000/ms-excel.png';
-                                    break;
-                                case 'zip':
-                                case 'rar':
-                                    iconUrl = 'https://img.icons8.com/color/48/000000/zip.png';
-                                    break;
-                                case 'ppt':
-                                case 'pptx':
-                                    iconUrl = 'https://img.icons8.com/color/48/000000/ms-powerpoint.png';
-                                    break;
-                                default:
-                                    fileIcon.textContent = extension.toUpperCase();
-                                    break;
-                            }
-
-                            if (iconUrl) {
-                                fileIcon.innerHTML = `<img src="${iconUrl}" alt="${extension.toUpperCase()} Icon">`;
-                            }
-
-                            previewItem.appendChild(fileIcon);
-                        }
-
-                        selectedFilesContainer.appendChild(previewItem);
-                    };
-                    reader.readAsDataURL(file);
-                });
-            } else {
-                selectedFilesContainer.style.display = 'none';
-            }
-        }
-
-        function removeFile(index) {
-            if (isUploading) {
-                return;
-            }
-            selectedFilesArray.splice(index, 1);
-            renderSelectedFiles();
-        }
-
-        window.uploadFiles = async function() {
-            if (selectedFilesArray.length === 0) {
-                alert("Por favor, selecciona al menos un archivo.");
-                return;
-            }
-
-            if (!userEmail) {
-                alert("No se ha detectado un correo electrónico.");
-                return;
-            }
-
-            isUploading = true;
-            document.getElementById('uploadButton').disabled = true;
-
-            const removeButtons = document.querySelectorAll('.remove-btn');
-            removeButtons.forEach(btn => {
-                btn.innerHTML = '&#x1f512;';
-                btn.classList.add('locked');
-                btn.onclick = null;
-            });
-
-            const date = new Date().toISOString().replace(/:/g, '-');
-            const progressBar = document.getElementById('progressBar');
-            const progress = document.getElementById('progress');
-            const progressMessage = document.getElementById('progressMessage');
-
-            progressBar.style.display = 'block';
-
-            const promises = selectedFilesArray.map((file) => {
-                const storageRef = ref(storage, `${userEmail}/${date}-${file.name}`);
-                const uploadTask = uploadBytesResumable(storageRef, file);
-
-                return new Promise((resolve, reject) => {
-                    uploadTask.on('state_changed',
-                        (snapshot) => {
-                            const progressValue = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                            progress.style.width = `${progressValue}%`;
-                            progressMessage.textContent = `Subiendo: ${progressValue.toFixed(2)}%`;
-                        },
-                        (error) => {
-                            console.error("Error al subir archivo: ", error);
-                            alert("Error al subir archivo.");
-                            reject(error);
-                        },
-                        () => {
-                            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-                                console.log("Archivo disponible en: ", downloadURL);
-                                resolve();
-                            });
-                        }
-                    );
-                });
-            });
-
-            Promise.all(promises)
-                .then(() => {
-                    alert("Todos los archivos han sido subidos con éxito.");
-                    progressMessage.textContent = "Todos los archivos han sido subidos con éxito.";
-
-                    document.getElementById('fileInput').value = '';
-                    selectedFilesArray = [];
-                    isUploading = false;
-                    renderSelectedFiles();
-
-                    document.getElementById('uploadButton').disabled = false;
-
-                    setTimeout(() => {
-                        progressBar.style.display = 'none';
-                        progress.style.width = '0';
-                        progressMessage.textContent = '';
-                    }, 2000);
-                })
-                .catch((error) => {
-                    console.error("Error al subir archivos: ", error);
-                    alert("Error al subir archivos.");
-                    isUploading = false;
-                    document.getElementById('uploadButton').disabled = false;
-                });
-        };
-
-        window.logout = function() {
-            const confirmLogout = confirm("¿Estás seguro de que deseas salir?");
-            if (confirmLogout) {
-                signOut(auth).then(() => {
-                    // Limpiar variables locales
-                    userEmail = "";
-                    userName = "";
-                    selectedFilesArray = [];
-                    isUploading = false;
-
-                    alert("Sesión cerrada correctamente.");
-                    window.location.href = 'index.html';
-                }).catch((error) => {
-                    console.error("Error al cerrar sesión: ", error);
-                });
-            }
-        };
-    </script>
-
-    <!-- Registro del Service Worker (Opcional) -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then((registration) => {
-                        console.log('Service Worker registrado con éxito:', registration);
-                    })
-                    .catch((error) => {
-                        console.error('Error al registrar el Service Worker:', error);
-                    });
-            });
-        }
-    </script>
+        reader.readAsDataURL(file);
+      });
+    }
+    function uploadFiles() {
+      // Bloquea botones de eliminar cuando inicia subida
+      uploading = true;
+      document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.textContent = '🔒';
+        btn.disabled = true;
+      });
+      if (!files.length) return alert('Selecciona al menos un archivo');
+      progressBar.style.display = 'block';
+      progressEl.style.width = '0%';
+      const ts = new Date().toISOString().replace(/:/g,'-');
+      const tasks = files.map(f => new Promise((res, rej) => {
+        const r = ref(storage, `${mailEl.textContent}/${ts}-${f.name}`);
+        const t = uploadBytesResumable(r, f);
+        t.on('state_changed', s => {
+          const p = (s.bytesTransferred/s.totalBytes)*100;
+          progressEl.style.width = p+'%'; progressMsg.textContent = `Subiendo ${Math.round(p)}%`;
+        }, rej, () => getDownloadURL(t.snapshot.ref).then(res));
+      }));
+      Promise.all(tasks).then(() => {
+        toast.textContent = 'Archivos subidos exitosamente ✔'; toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+        reset();
+      }).catch(e => {
+        console.error(e);
+        toast.textContent = 'Error al subir archivos'; toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+        reset();
+      });
+    }
+    function reset() {
+      uploading = false; files = [];
+      fileInput.value = '';
+      renderPreviews();
+      setTimeout(() => { progressBar.style.display = 'none'; progressMsg.textContent = ''; }, 300);
+    }
+  </script>
 </body>
-
 </html>
