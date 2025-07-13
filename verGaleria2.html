@@ -9,14 +9,15 @@
 
     <style>
         body {
-            font-family: 'Poppins', sans-serif; 
-            background-color: #f0f2f5; 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            color: #333; 
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e3f2fd, #e1bee7);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
         }
         h1 {
             position: fixed; 
@@ -79,14 +80,18 @@
             width: 100%; 
             max-width: 1400px; 
         }
-        .gallery-item { 
-            background-color: #fff; 
-            border-radius: 15px; 
-            overflow: hidden; 
-            transition: all 0.4s ease; 
-            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1); 
-            position: relative; 
-            padding-bottom: 20px; 
+        .gallery-item {
+            background-color: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            padding-bottom: 20px;
+        }
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
         }
         .gallery-item img, .gallery-item video { 
             width: 100%; 
@@ -141,55 +146,55 @@
             height: 20px; 
             z-index: 1; 
         }
-        .delete-btn { 
-            position: absolute; 
-            top: 10px; 
-            right: 10px; 
-            background-color: #f44336; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
-            padding: 8px 12px; 
-            cursor: pointer; 
-            font-size: 14px; 
-            transition: background-color 0.3s ease; 
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #f44336, #e57373);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
         }
-        .delete-btn:hover { 
-            background-color: #d32f2f; 
+        .delete-btn:hover {
+            background: linear-gradient(135deg, #d32f2f, #e57373);
         }
-        .float-button { 
-            position: fixed; 
-            bottom: 80px; 
-            right: 30px; 
-            background-color: #3f51b5; 
-            color: white; 
-            border: none; 
-            border-radius: 50%; 
-            width: 60px; 
-            height: 60px; 
-            font-size: 24px; 
-            cursor: pointer; 
-            box-shadow: 0 8px 15px rgba(63, 81, 181, 0.4); 
-            transition: all 0.3s ease; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+        .float-button {
+            position: fixed;
+            bottom: 80px;
+            right: 30px;
+            background: linear-gradient(135deg, #3f51b5, #5c6bc0);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(63, 81, 181, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        .float-button:hover { 
-            background-color: #303f9f; 
-            transform: scale(1.1); 
+        .float-button:hover {
+            background: linear-gradient(135deg, #303f9f, #5c6bc0);
+            transform: scale(1.1);
         }
-        .delete-float-button { 
-            position: fixed; 
-            bottom: 20px; 
-            right: 30px; 
-            background-color: #f44336; 
-            color: white; 
-            border: none; 
-            border-radius: 50%; 
-            width: 50px; 
-            height: 50px; 
-            font-size: 24px; 
+        .delete-float-button {
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            background: linear-gradient(135deg, #f44336, #e57373);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
             cursor: pointer; 
             display: none; 
             justify-content: center; 
@@ -197,9 +202,9 @@
             box-shadow: 0 8px 15px rgba(244, 67, 54, 0.4); 
             transition: all 0.3s ease; 
         }
-        .delete-float-button:hover { 
-            background-color: #d32f2f; 
-            transform: scale(1.1); 
+        .delete-float-button:hover {
+            background: linear-gradient(135deg, #d32f2f, #e57373);
+            transform: scale(1.1);
         }
         @media (max-width: 600px) { 
             h1 { 

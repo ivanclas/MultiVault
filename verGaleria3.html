@@ -10,7 +10,8 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f0f2f5;
+            background: linear-gradient(135deg, #e3f2fd, #e1bee7);
+            min-height: 100vh;
             margin: 0;
             padding: 0;
             display: flex;
@@ -120,12 +121,16 @@
 
         .gallery-item {
             background-color: #fff;
-            border-radius: 15px;
+            border-radius: 20px;
             overflow: hidden;
-            transition: all 0.4s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
             position: relative;
             padding-bottom: 20px;
+        }
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
         }
 
         .gallery-item img, .gallery-item video {
@@ -177,7 +182,7 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            background-color: #f44336;
+            background: linear-gradient(135deg, #f44336, #e57373);
             color: white;
             border: none;
             border-radius: 5px;
@@ -188,14 +193,14 @@
         }
 
         .delete-btn:hover {
-            background-color: #d32f2f;
+            background: linear-gradient(135deg, #d32f2f, #e57373);
         }
 
         .float-button {
             position: fixed;
             bottom: 80px;
             right: 30px;
-            background-color: #3f51b5;
+            background: linear-gradient(135deg, #3f51b5, #5c6bc0);
             color: white;
             border: none;
             border-radius: 50%;
@@ -211,7 +216,7 @@
         }
 
         .float-button:hover {
-            background-color: #303f9f;
+            background: linear-gradient(135deg, #303f9f, #5c6bc0);
             transform: scale(1.1);
         }
 
@@ -219,7 +224,7 @@
             position: fixed;
             bottom: 20px;
             right: 30px;
-            background-color: #f44336;
+            background: linear-gradient(135deg, #f44336, #e57373);
             color: white;
             border: none;
             border-radius: 50%;
@@ -235,7 +240,7 @@
         }
 
         .delete-float-button:hover {
-            background-color: #d32f2f;
+            background: linear-gradient(135deg, #d32f2f, #e57373);
             transform: scale(1.1);
         }
 
