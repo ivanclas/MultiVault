@@ -12,173 +12,37 @@
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
     :root { --primary:#4caf50; --accent:#1e88e5; --danger:#e53935; --bg:#f5f7fa; --panel:#fff; --text:#333; --muted:#757575; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 50px;
-      gap: 20px;
-    }
-    /* Header */
-    header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background: var(--panel);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      text-align: center;
-      padding: 20px 0;
-      z-index: 100;
-    }
-    header h1 {
-      font-size: 28px;
-      color: var(--text);
-      font-weight: 600;
-    }
-    /* Logout Button */
-    #logoutBtn {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      right: 20px;
-      background: var(--danger);
-      color: #fff;
-      padding: 8px 12px;
-      font-size: 12px;
-      border: none;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      cursor: pointer;
-      z-index: 110;
-      transition: transform .2s;
-    }
+    body { font-family: 'Poppins', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding-top: 60px; gap: 15px; }
+    header { position: fixed; top: 0; width: 100%; background: var(--panel); box-shadow: 0 2px 6px rgba(0,0,0,0.1); text-align: center; padding: 20px 0; z-index: 100; }
+    header h1 { font-size: 28px; color: var(--text); font-weight: 600; }
+    #logoutBtn { position: absolute; top:50%; transform: translateY(-50%); right: 20px; background: var(--danger); color:#fff; padding:8px 12px; font-size:12px; border:none; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); cursor:pointer; z-index:110; transition: transform .2s; }
     #logoutBtn:hover { transform: translateY(-52%); }
-    /* Spacer */
     .header-spacer { height: 80px; }
-    /* User Card */
-    .user-card {
-      background: var(--panel);
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 12px 20px;
-      border-radius: 14px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-      width: 90%;
-      max-width: 500px;
-    }
-    .avatar {
-      width: 46px;
-      height: 46px;
-      border-radius: 50%;
-      background: var(--accent);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      position: relative;
-    }
-    .avatar::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      width: 12px;
-      height: 12px;
-      background: var(--primary);
-      border: 2px solid #fff;
-      border-radius: 50%;
-    }
-    .user-info { display: flex; flex-direction: column; }
-    .user-name { font-size: 15px; font-weight: 600; color: var(--text); }
-    .user-email { font-size: 12px; color: var(--muted); }
-    /* Panel */
-    .panel {
-      background: var(--panel);
-      padding: 30px 20px;
-      border-radius: 16px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-      width: 90%;
-      max-width: 500px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-    .btn-grid {
-      display: grid;
-      width: 100%;
-      grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
-      gap: 12px;
-    }
-    .panel-btn {
-      background: var(--accent);
-      color: #fff;
-      padding: 12px;
-      text-align: center;
-      font-weight: 600;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-      transition: transform .2s;
-    }
-    .upload-btn { background: var(--primary); }
-    .panel-btn:hover { transform: translateY(-3px); box-shadow:0 6px 12px rgba(0,0,0,0.12); }
-    /* Previews */
-    #selectedImages {
-      display: flex; flex-wrap: wrap; justify-content: center;
-      gap: 8px; width: 100%; max-height: 140px; overflow-y: auto;
-    }
-    .preview-item { position: relative; }
-    .preview-item img, .preview-item video, .preview-item .file-icon {
-      width: 60px; height: 60px; border-radius: 8px;
-      object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .remove-btn {
-      position: absolute; top:-6px; right:-6px;
-      width:20px; height:20px; background:var(--danger);
-      color:#fff; border:none; border-radius:50%;
-      display:flex; align-items:center; justify-content:center;
-      font-size:12px; cursor:pointer;
-    }
-    /* Progress */
+    .user-card { background: var(--panel); display:flex; align-items:center; gap:14px; padding:12px 20px; border-radius:14px; box-shadow:0 3px 10px rgba(0,0,0,0.08); width:90%; max-width:500px; }
+    .avatar { width:46px; height:46px; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:600; position:relative; }
+    .avatar::after { content:''; position:absolute; bottom:0; right:0; width:12px; height:12px; background:var(--primary); border:2px solid #fff; border-radius:50%; }
+    .user-info { display:flex; flex-direction:column; }
+    .user-name { font-size:15px; font-weight:600; color:var(--text); }
+    .user-email { font-size:12px; color:var(--muted); }
+    .panel { background:var(--panel); padding:30px 20px; border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.06); width:90%; max-width:500px; display:flex; flex-direction:column; align-items:center; gap:20px; }
+    .btn-grid { display:grid; width:100%; gap:12px; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); }
+    .panel-btn { background:var(--accent); color:#fff; padding:12px; text-align:center; font-weight:600; border:none; border-radius:10px; cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,0.08); transition:transform .2s; }
+    .panel-btn.upload-btn { background:var(--primary); }
+    .panel-btn:hover { transform:translateY(-3px); box-shadow:0 6px 12px rgba(0,0,0,0.12); }
+    #selectedImages { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; width:100%; max-height:140px; overflow-y:auto; }
+    .preview-item { position:relative; }
+    .preview-item img, .preview-item video, .preview-item .file-icon { width:60px; height:60px; border-radius:8px; object-fit:cover; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+    .remove-btn { position:absolute; top:-6px; right:-6px; width:20px; height:20px; background:var(--danger); color:#fff; border:none; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; cursor:pointer; }
     #progressBar { width:100%; height:6px; background:#ddd; border-radius:6px; overflow:hidden; display:none; position:relative; }
     #progress { height:100%; background:var(--accent); width:0; transition:width .2s; }
     #progressMessage { position:absolute; top:-20px; width:100%; text-align:center; font-size:11px; color:var(--accent); }
-    /* Footer Links */
     .external-links { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:20px; }
-    .link-btn, .new-folder-btn {
-      background:var(--panel); color:var(--text);
-      padding:8px 12px; border-radius:12px; text-decoration:none;
-      display:flex; flex-direction:column; align-items:center;
-      font-size:12px; box-shadow:0 2px 6px rgba(0,0,0,0.08);
-      cursor:pointer; transition:transform .2s;
-    }
+    .link-btn, .new-folder-btn { background:var(--panel); color:var(--text); padding:8px 12px; border-radius:12px; text-decoration:none; display:flex; flex-direction:column; align-items:center; font-size:12px; box-shadow:0 2px 6px rgba(0,0,0,0.08); cursor:pointer; transition:transform .2s; }
     .link-btn:hover, .new-folder-btn:hover { transform:translateY(-3px); box-shadow:0 4px 10px rgba(0,0,0,0.12); }
     .link-btn img, .new-folder-btn img { width:30px; height:30px; margin-bottom:4px; }
-    /* Toast */
-    .toast { position: fixed; bottom:40px; left:50%; transform:translateX(-50%);
-      background:var(--accent); color:#fff; padding:10px 20px; border-radius:6px;
-      font-size:13px; opacity:0; pointer-events:none;
-      transition:opacity .4s, transform .4s;
-    }
+    .toast { position:fixed; bottom:40px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; padding:10px 20px; border-radius:6px; font-size:13px; opacity:0; pointer-events:none; transition:opacity .4s, transform .4s; }
     .toast.show { opacity:1; transform:translate(-50%,-10px); }
-    /* Responsive */
-    @media(max-width:600px){
-      body { padding-top:50px; gap:10px; }
-      header h1 { font-size:22px; }
-      #logoutBtn { top: 85px; right:12px; padding:6px 10px; font-size:10px; }
-      .user-card { margin-top:20px; width:95%; }
-      .avatar { width:36px; height:36px; }
-      .avatar::after { width:10px; height:10px; }
-      .panel { padding:24px 16px; }
-      .btn-grid { gap:10px; }
-      .link-btn, .new-folder-btn { padding:6px 10px; font-size:11px; }
-    }
+    @media(max-width:600px){ body{padding-top:50px;gap:15px;} header h1{font-size:22px;} #logoutBtn{top:80px;right:12px;padding:6px 10px;font-size:10px;} .user-card{margin-top:20px;width:95%;} .avatar{width:36px;height:36px;} .avatar::after{width:10px;height:10px;} .panel{padding:24px 16px;} .btn-grid{gap:10px;} .link-btn, .new-folder-btn{padding:6px 10px;font-size:11px;} }
   </style>
 </head>
 <body>
@@ -197,10 +61,12 @@
 
   <div class="panel">
     <div class="btn-grid">
-      <button id="selectBtn" class="panel-btn accent-btn">📂 Seleccionar</button>
+      <button id="selectBtn" class="panel-btn accent-btn">📂 Seleccionar Archivos</button>
+      <button id="selectFolderBtn" class="panel-btn accent-btn">📁 Seleccionar Carpeta</button>
       <button id="uploadBtn" class="panel-btn upload-btn">⬆ Subir</button>
     </div>
-    <input id="fileInput" type="file" multiple style="display:none;" />
+    <input id="fileInput" type="file" multiple accept="*/*" style="display:none;" />
+    <input id="folderInput" type="file" webkitdirectory directory multiple style="display:none;" />
     <div id="selectedImages"></div>
     <div id="progressBar"><div id="progress"></div><div id="progressMessage"></div></div>
   </div>
@@ -218,6 +84,7 @@
     import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js';
     import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js';
 
+    // Configuración Firebase
     const app = initializeApp({
       apiKey:'AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80',
       authDomain:'login-de3fd.firebaseapp.com',
@@ -230,6 +97,7 @@
     const storage = getStorage(app);
     const auth = getAuth(app);
 
+    // Elementos
     const logoutBtn = document.getElementById('logoutBtn');
     const newFolderBtn = document.getElementById('newFolderBtn');
     const userCard = document.getElementById('userCard');
@@ -237,15 +105,19 @@
     const nameEl = document.getElementById('uName');
     const mailEl = document.getElementById('uMail');
     const fileInput = document.getElementById('fileInput');
+    const folderInput = document.getElementById('folderInput');
     const selectBtn = document.getElementById('selectBtn');
+    const selectFolderBtn = document.getElementById('selectFolderBtn');
     const uploadBtn = document.getElementById('uploadBtn');
     const selectedContainer = document.getElementById('selectedImages');
     const progressBar = document.getElementById('progressBar');
     const progressEl = document.getElementById('progress');
     const progressMsg = document.getElementById('progressMessage');
     const toast = document.getElementById('toast');
-    let files = [], uploading = false;
+    let files = [];
+    let uploading = false;
 
+    // Auth state
     onAuthStateChanged(auth, user => {
       if (user) {
         const email = user.email;
@@ -259,78 +131,62 @@
       }
     });
 
-    logoutBtn.addEventListener('click', () => {
-      if (confirm('¿Cerrar sesión?')) {
-        signOut(auth).then(() => window.location.href = 'index.html');
-      }
-    });
-    newFolderBtn.addEventListener('click', () => window.location.href = 'nuevo.html');
+    // Botones
+    logoutBtn.addEventListener('click', () => { if (confirm('¿Cerrar sesión?')) signOut(auth).then(() => location.href = 'index.html'); });
+    newFolderBtn.addEventListener('click', () => location.href = 'nuevo.html');
     selectBtn.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', () => {
-      files = Array.from(fileInput.files);
-      renderPreviews();
-    });
+    selectFolderBtn.addEventListener('click', () => folderInput.click());
+    fileInput.addEventListener('change', () => handleSelection(fileInput.files));
+    folderInput.addEventListener('change', () => handleSelection(folderInput.files));
+    // Evento de subida
     uploadBtn.addEventListener('click', uploadFiles);
 
+    function handleSelection(list) {
+      files = Array.from(list);
+      renderPreviews();
+    }
+
     function renderPreviews() {
-      selectedContainer.innerHTML = ''; if (!files.length) { selectedContainer.style.display = 'none'; return; }
+      selectedContainer.innerHTML = '';
+      if (!files.length) { selectedContainer.style.display = 'none'; return; }
       selectedContainer.style.display = 'flex';
-      files.forEach((file, idx) => {
+      files.forEach((file, i) => {
         const reader = new FileReader();
         reader.onload = e => {
           const item = document.createElement('div'); item.className = 'preview-item';
-          const rmBtn = document.createElement('button'); rmBtn.className = 'remove-btn';
-          if (uploading) { rmBtn.textContent = '🔒'; rmBtn.disabled = true; }
-          else { rmBtn.textContent = '✕'; rmBtn.onclick = () => { files.splice(idx, 1); renderPreviews(); }; }
-          item.appendChild(rmBtn);
+          const rm = document.createElement('button'); rm.className = 'remove-btn';
+          rm.textContent = uploading ? '🔒' : '✕'; rm.disabled = uploading;
+          rm.onclick = () => { files.splice(i,1); renderPreviews(); };
+          item.appendChild(rm);
           if (file.type.startsWith('image/')) { const img = document.createElement('img'); img.src = e.target.result; item.appendChild(img); }
-          else if (file.type.startsWith('video/')) { const v = document.createElement('video'); v.src = e.target.result; v.controls = true; item.appendChild(v); }
-          else { const ext = file.name.split('.').pop().toLowerCase();
-            const ico = document.createElement('div'); ico.className = 'file-icon';
-            const m = { pdf:'pdf',doc:'ms-word',docx:'ms-word',xls:'ms-excel',xlsx:'ms-excel',zip:'zip',rar:'zip',ppt:'ms-powerpoint',pptx:'ms-powerpoint' };
-            if (m[ext]) ico.innerHTML = `<img src="https://img.icons8.com/color/48/${m[ext]}.png"/>`;
-            else ico.textContent = ext.toUpperCase(); item.appendChild(ico);
-          }
+          else if (file.type.startsWith('video/')) { const v = document.createElement('video'); v.src = e.target.result; v.controls=true; item.appendChild(v); }
+          else { const ext=file.name.split('.').pop().toLowerCase(); const ico=document.createElement('div'); ico.className='file-icon'; const map={pdf:'pdf',doc:'ms-word',docx:'ms-word',xls:'ms-excel',xlsx:'ms-excel',zip:'zip',rar:'zip',ppt:'ms-powerpoint',pptx:'ms-powerpoint'}; if(map[ext]) ico.innerHTML=`<img src="https://img.icons8.com/color/48/${map[ext]}.png"/>`; else ico.textContent=ext.toUpperCase(); item.appendChild(ico); }
           selectedContainer.appendChild(item);
         };
         reader.readAsDataURL(file);
       });
     }
+
     function uploadFiles() {
-      // Bloquea botones de eliminar cuando inicia subida
+      if (!files.length) return alert('Selecciona archivos o carpeta');
       uploading = true;
-      document.querySelectorAll('.remove-btn').forEach(btn => {
-        btn.textContent = '🔒';
-        btn.disabled = true;
-      });
-      if (!files.length) return alert('Selecciona al menos un archivo');
-      progressBar.style.display = 'block';
-      progressEl.style.width = '0%';
+      document.querySelectorAll('.remove-btn').forEach(b=>{b.textContent='🔒'; b.disabled=true;});
+      progressBar.style.display='block'; progressEl.style.width='0%';
       const ts = new Date().toISOString().replace(/:/g,'-');
       const tasks = files.map(f => new Promise((res, rej) => {
-        const r = ref(storage, `${mailEl.textContent}/${ts}-${f.name}`);
+        const path = `${mailEl.textContent}/${ts}-${f.webkitRelativePath||f.name}`;
+        const r = ref(storage, path);
         const t = uploadBytesResumable(r, f);
-        t.on('state_changed', s => {
-          const p = (s.bytesTransferred/s.totalBytes)*100;
-          progressEl.style.width = p+'%'; progressMsg.textContent = `Subiendo ${Math.round(p)}%`;
-        }, rej, () => getDownloadURL(t.snapshot.ref).then(res));
+        t.on('state_changed', s => { const p=(s.bytesTransferred/s.totalBytes)*100; progressEl.style.width=p+'%'; progressMsg.textContent=`Subiendo ${Math.round(p)}%`; }, rej, () => getDownloadURL(t.snapshot.ref).then(res));
       }));
-      Promise.all(tasks).then(() => {
-        toast.textContent = 'Archivos subidos exitosamente ✔'; toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-        reset();
-      }).catch(e => {
-        console.error(e);
-        toast.textContent = 'Error al subir archivos'; toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-        reset();
-      });
+      Promise.all(tasks).then(() => showToast('Subida exitosa ✔')).catch(() => showToast('Error en subida'));
     }
-    function reset() {
-      uploading = false; files = [];
-      fileInput.value = '';
-      renderPreviews();
-      setTimeout(() => { progressBar.style.display = 'none'; progressMsg.textContent = ''; }, 300);
+
+    function showToast(msg) {
+      toast.textContent = msg; toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+      files=[]; fileInput.value=''; folderInput.value=''; renderPreviews();
+      setTimeout(() => { progressBar.style.display='none'; progressMsg.textContent=''; uploading=false; }, 500);
     }
   </script>
 </body>
