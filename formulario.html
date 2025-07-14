@@ -71,6 +71,11 @@
     <div id="progressBar"><div id="progress"></div><div id="progressMessage"></div></div>
   </div>
 
+  <!-- Contador de archivos seleccionados -->
+  <div id="fileCounter" style="font-size:16px; color:#333; margin-top:10px;">
+    Archivos seleccionados: <span id="fileCount">0</span>
+  </div>
+
   <div class="external-links">
     <div id="newFolderBtn" class="new-folder-btn"><img src="https://img.icons8.com/fluency/48/folder-invoices--v2.png"/><span>Nueva Carpeta</span></div>
     <a class="link-btn" href="verGaleria2.html"><img src="https://img.icons8.com/fluency/48/picture.png"/><span>Galería</span></a>
@@ -114,6 +119,7 @@
     const progressEl = document.getElementById('progress');
     const progressMsg = document.getElementById('progressMessage');
     const toast = document.getElementById('toast');
+    const fileCountElement = document.getElementById('fileCount');
     let files = [];
     let uploading = false;
 
@@ -138,9 +144,8 @@
     selectFolderBtn.addEventListener('click', () => folderInput.click());
     fileInput.addEventListener('change', () => handleSelection(fileInput.files));
     folderInput.addEventListener('change', () => handleSelection(folderInput.files));
-    // Evento de subida
-    uploadBtn.addEventListener('click', uploadFiles);
 
+    // Manejo de selección de archivos
     function handleSelection(list) {
       files = Array.from(list);
       renderPreviews();
@@ -156,7 +161,7 @@
           const item = document.createElement('div'); item.className = 'preview-item';
           const rm = document.createElement('button'); rm.className = 'remove-btn';
           rm.textContent = uploading ? '🔒' : '✕'; rm.disabled = uploading;
-          rm.onclick = () => { files.splice(i,1); renderPreviews(); };
+          rm.onclick = () => { files.splice(i,1); renderPreviews(); updateFileCount(); };
           item.appendChild(rm);
           if (file.type.startsWith('image/')) { const img = document.createElement('img'); img.src = e.target.result; item.appendChild(img); }
           else if (file.type.startsWith('video/')) { const v = document.createElement('video'); v.src = e.target.result; v.controls=true; item.appendChild(v); }
@@ -165,29 +170,48 @@
         };
         reader.readAsDataURL(file);
       });
+
+      updateFileCount();
     }
 
-    function uploadFiles() {
-      if (!files.length) return alert('Selecciona archivos o carpeta');
+    function updateFileCount() {
+      fileCountElement.textContent = files.length;
+    }
+
+    // Subir los archivos
+    uploadBtn.addEventListener('click', () => {
+      if (!files.length) {
+        alert('No has seleccionado archivos');
+        return;
+      }
+
       uploading = true;
-      document.querySelectorAll('.remove-btn').forEach(b=>{b.textContent='🔒'; b.disabled=true;});
-      progressBar.style.display='block'; progressEl.style.width='0%';
-      const ts = new Date().toISOString().replace(/:/g,'-');
-      const tasks = files.map(f => new Promise((res, rej) => {
-        const path = `${mailEl.textContent}/${ts}-${f.webkitRelativePath||f.name}`;
-        const r = ref(storage, path);
-        const t = uploadBytesResumable(r, f);
-        t.on('state_changed', s => { const p=(s.bytesTransferred/s.totalBytes)*100; progressEl.style.width=p+'%'; progressMsg.textContent=`Subiendo ${Math.round(p)}%`; }, rej, () => getDownloadURL(t.snapshot.ref).then(res));
-      }));
-      Promise.all(tasks).then(() => showToast('Subida exitosa ✔')).catch(() => showToast('Error en subida'));
-    }
+      progressBar.style.display = 'block';
+      progressEl.style.width = '0%';
+      progressMsg.textContent = 'Subiendo...';
 
-    function showToast(msg) {
-      toast.textContent = msg; toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
-      files=[]; fileInput.value=''; folderInput.value=''; renderPreviews();
-      setTimeout(() => { progressBar.style.display='none'; progressMsg.textContent=''; uploading=false; }, 500);
-    }
+      files.forEach((file, index) => {
+        const filePath = `/${mailEl.textContent}/${file.name}`;
+        const storageRef = ref(storage, filePath);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        uploadTask.on('state_changed', 
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            progressEl.style.width = progress + '%';
+          }, 
+          (error) => {
+            console.error('Error en la subida del archivo: ', error);
+            alert('Error al subir el archivo.');
+          }, 
+          () => {
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+              console.log('Archivo subido con éxito: ', downloadURL);
+            });
+          }
+        );
+      });
+    });
   </script>
 </body>
 </html>
