@@ -297,42 +297,82 @@
       height: 24px;
     }
 
-    /* --------- Responsive --------- */
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 22px;
-      }
-
-      .search-container input {
-        width: 90%;
-        font-size: 16px;
-        padding: 12px;
-      }
-
-      .container {
-        padding: 20px 20px;
-      }
-
-      .folder-actions {
-        gap: 6px;
-      }
-
-      .folder-actions button {
-        width: 42px;
-        height: 42px;
-      }
-
-      .folder-actions img {
-        width: 20px;
-        height: 20px;
-      }
-
-      .floating-btn {
-        width: 52px;
-        height: 52px;
-        font-size: 24px;
-      }
+    /* --------- Botón de ayuda flotante ---------- */
+    .help-btn {
+      position: fixed;
+      bottom: 160px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      background: #008CBA;
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, .3);
+      cursor: pointer;
+      transition: background .25s, transform .25s;
     }
+
+    .help-btn:hover {
+      background: #005f73;
+      transform: translateY(-5px);
+    }
+
+    .help-btn img {
+      width: 24px;
+      height: 24px;
+    }
+
+    /* --------- Modal de ayuda ---------- */
+    .help-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, .7);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .help-modal-content {
+      background: #fff;
+      padding: 30px;
+      border-radius: 25px;
+      max-width: 600px;
+      width: 80%;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, .1);
+    }
+
+    .help-modal-content h2 {
+      margin-bottom: 15px;
+    }
+
+    .help-modal-content p {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .close-help-modal {
+      background: #f44336;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .close-help-modal:hover {
+      background: #e53935;
+    }
+
   </style>
 
   <!-- Firebase SDKs -->
@@ -374,8 +414,48 @@
     <img src="https://img.icons8.com/ios-filled/50/ffffff/left.png" alt="Volver">
   </button>
 
+  <!-- Botón flotante de ayuda -->
+  <button class="help-btn" onclick="openHelpModal()">
+    <img src="https://img.icons8.com/ios-filled/50/ffffff/question-mark.png" alt="Ayuda">
+  </button>
+
+  <div id="helpModal" class="help-modal">
+    <div class="help-modal-content">
+      <h2>¿Cómo funciona la página?</h2>
+      <p>Esta página te permite ver y gestionar las carpetas y archivos almacenados en Firebase. A continuación se explica la función de cada botón:</p>
+      <ul>
+        <li>
+          <strong>Botón "Ver"</strong>: Abre la carpeta seleccionada.
+          <img src="https://img.icons8.com/ios-filled/24/ffffff/visible--v1.png" alt="Ver" style="width: 20px; height: 20px;"/>
+        </li>
+        <li>
+          <strong>Botón "Subir"</strong>: Permite subir nuevos archivos a la carpeta seleccionada.
+          <img src="https://img.icons8.com/ios-filled/50/ffffff/upload-2.png" alt="Subir" style="width: 20px; height: 20px;"/>
+        </li>
+        <li>
+          <strong>Botón "Renombrar"</strong>: Permite cambiar el nombre de la carpeta.
+          <img src="https://img.icons8.com/ios-filled/50/ffffff/refresh.png" alt="Renombrar" style="width: 20px; height: 20px;"/>
+        </li>
+        <li>
+          <strong>Botón "PIN"</strong>: Protege la carpeta con un PIN para mayor seguridad.
+          <img src="https://img.icons8.com/ios-filled/50/ffffff/lock.png" alt="PIN" style="width: 20px; height: 20px;"/>
+        </li>
+      </ul>
+      <button class="close-help-modal" onclick="closeHelpModal()">Cerrar</button>
+    </div>
+</div>
+
 
 <script>
+/* Funciones de ayuda */
+function openHelpModal() {
+  document.getElementById("helpModal").style.display = "flex";
+}
+
+function closeHelpModal() {
+  document.getElementById("helpModal").style.display = "none";
+}
+
 /* Firebase config */
 const firebaseConfig = {
   apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
