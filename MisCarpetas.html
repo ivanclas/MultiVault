@@ -9,312 +9,36 @@
   <!-- ============  ESTILOS  ============ -->
   <style>
     /* --------- Estilos principales ---------- */
-    body {
-      font-family: 'Poppins', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #00c6ff, #0072ff);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    .header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background: #fff;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, .1);
-      padding: 15px;
-      z-index: 999;
-      text-align: center;
-      border-radius: 0 0 20px 20px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 28px;
-      color: #333;
-      letter-spacing: 2px;
-    }
-
-    .search-container {
-      display: flex;
-      justify-content: center;
-      margin-top: 15px;
-      margin-bottom: 20px;
-    }
-
-    .search-container input {
-      width: 80%;
-      max-width: 500px;
-      padding: 10px;
-      font-size: 16px;
-      border: 2px solid #007bff;
-      border-radius: 25px;
-      outline: none;
-      transition: border-color .3s;
-    }
-
-    .search-container input:focus {
-      border-color: #0056b3;
-    }
-
+    body{font-family:'Poppins',sans-serif;margin:0;padding:0;background:linear-gradient(135deg,#00c6ff,#0072ff);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+    .header{position:fixed;top:0;width:100%;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.1);padding:15px;z-index:999;text-align:center;border-radius:0 0 20px 20px;}
+    h1{margin:0;font-size:28px;color:#333;letter-spacing:2px;}
+    .search-container{display:flex;justify-content:center;margin-top:15px;margin-bottom:20px;}
+    .search-container input{width:80%;max-width:500px;padding:10px;font-size:16px;border:2px solid #007bff;border-radius:25px;outline:none;transition:border-color .3s;}
+    .search-container input:focus{border-color:#0056b3;}
     /* --------- Contenedor de carpetas ---------- */
-    .container {
-      margin-top: 150px;
-      width: 100%;
-      max-width: 1200px;
-      padding: 20px;
-      display: grid;
-      grid-gap: 20px;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    }
-
-    .folder-item {
-      background: #fff;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      min-height: 200px;
-      transition: transform 0.3s ease;
-      text-align: center;
-    }
-
-    .folder-item:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 15px rgba(0, 0, 0, .2);
-    }
-
-    .folder-item img {
-      width: 50px;
-      transition: width 0.3s ease;
-    }
-
-    .folder-name {
-      font-size: 18px;
-      color: #333;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      text-align: center;
-      justify-content: center;
-    }
-
-    .file-count-badge {
-      background: #3f51b5;
-      color: #fff;
-      border-radius: 50%;
-      padding: 4px 8px;
-      font-size: 12px;
-    }
-
-    .folder-actions {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      margin-top: 15px;
-    }
-
-    .folder-actions button {
-      width: 48px;
-      height: 48px;
-      padding: 0;
-      border: none;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: filter .25s;
-      color: white;
-    }
-
-    .folder-actions button:hover:not([disabled]) {
-      filter: brightness(1.2); /* Aumenta el brillo en el hover */
-    }
-
-    .folder-actions button:disabled {
-      opacity: .45;
-      cursor: default;
-    }
-
-    .folder-actions img {
-      width: 24px;
-      height: 24px;
-    }
-
-    /* --------- Botones de acciones con colores personalizados ---------- */
-    .btn-view   { background-color: #007bff; }  /* Azul */
-    .btn-upload { background-color: #00c853; }  /* Verde */
-    .btn-rename { background-color: #f44336; }  /* Rojo */
-    .btn-pin    { background-color: #ffeb3b; }  /* Amarillo */
-
-    /* --------- Modal ---------- */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, .7);
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-content {
-      background: #fff;
-      padding: 30px;
-      border-radius: 25px;
-      max-width: 600px;
-      width: 90%;
-      text-align: center;
-      max-height: 80vh;
-      overflow-y: auto;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, .1);
-    }
-
-    #previewImages {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: center;
-      margin-top: 10px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .preview-item { position: relative; }
-
-    .preview-item img,
-    .preview-item video,
-    .preview-item audio {
-      max-width: 80px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
-    }
-
-    .remove-btn {
-      position: absolute;
-      top: -6px;
-      right: -6px;
-      background: #f44336;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-      line-height: 20px;
-      font-size: 14px;
-    }
-
-    .upload-modal-btn {
-      background: #00c853;
-      color: #fff;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 14px;
-      transition: background .3s;
-    }
-    .upload-modal-btn:hover { background: #008c47; }
-
-    .close-modal {
-      background: #f44336;
-      color: #fff;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 8px;
-      transition: background .3s;
-    }
-    .close-modal:hover { background: #e53935; }
-
-    progress { width: 100%; height: 18px; margin-top: 18px; }
-
-    /* --------- Botón flotante ---------- */
-    .floating-btn {
-      position: fixed;
-      bottom: 80px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      background: #ff9800;
-      border: none;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      color: #fff;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, .3);
-      cursor: pointer;
-      transition: background .25s, transform .25s;
-    }
-    .floating-btn:hover { background: #ff6f00; transform: translateY(-5px); }
-    .floating-btn img { width: 24px; height: 24px; }
-
-    /* --------- Botón de ayuda flotante ---------- */
-    .help-btn {
-      position: fixed;
-      bottom: 160px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      background: #008CBA;
-      border: none;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      color: #fff;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, .3);
-      cursor: pointer;
-      transition: background .25s, transform .25s;
-    }
-    .help-btn:hover { background: #005f73; transform: translateY(-5px); }
-    .help-btn img { width: 24px; height: 24px; }
-
-    /* --------- Modal de ayuda ---------- */
-    .help-modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, .7);
-      justify-content: center;
-      align-items: center;
-    }
-    .help-modal-content {
-      background: #fff;
-      padding: 30px;
-      border-radius: 25px;
-      max-width: 600px;
-      width: 80%;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, .1);
-    }
-    .help-modal-content h2 { margin-bottom: 15px; }
-    .help-modal-content p  { font-size: 16px; margin-bottom: 20px; }
-    .close-help-modal { background: #f44336; color:#fff; padding:10px 20px; border:none; border-radius:5px; cursor:pointer; }
-    .close-help-modal:hover { background:#e53935; }
+    .container{margin-top:150px;width:100%;max-width:1200px;padding:20px;display:grid;grid-gap:20px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));}
+    .folder-item{background:#fff;padding:20px;border-radius:15px;box-shadow:0 4px 10px rgba(0,0,0,.1);display:flex;flex-direction:column;align-items:center;gap:12px;min-height:200px;transition:transform 0.3s ease;text-align:center;}
+    .folder-item:hover{transform:scale(1.05);box-shadow:0 6px 15px rgba(0,0,0,.2);} .folder-item img{width:50px;transition:width 0.3s ease;}
+    .folder-name{font-size:18px;color:#333;display:flex;align-items:center;gap:8px;justify-content:center;}
+    .file-count-badge{background:#3f51b5;color:#fff;border-radius:50%;padding:4px 8px;font-size:12px;}
+    .folder-actions{display:flex;justify-content:center;gap:10px;width:100%;margin-top:15px;}
+    .folder-actions button{width:48px;height:48px;border:none;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:filter .25s;color:#fff;padding:0;}
+    .folder-actions button:hover:not([disabled]){filter:brightness(1.2);} .folder-actions button:disabled{opacity:.45;cursor:default;} .folder-actions img{width:24px;height:24px;}
+    .btn-view{background:#007bff;} .btn-upload{background:#00c853;} .btn-rename{background:#f44336;} .btn-pin{background:#ffeb3b;}
+    /* --------- Modales ---------- */
+    .modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);justify-content:center;align-items:center;}
+    .modal-content{background:#fff;padding:30px;border-radius:25px;max-width:600px;width:90%;text-align:center;max-height:80vh;overflow-y:auto;box-shadow:0 4px 15px rgba(0,0,0,.1);}
+    /* Preview */
+    #previewImages{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-height:300px;overflow-y:auto;margin-top:10px;}
+    .preview-item{position:relative;} .preview-item img,.preview-item video,.preview-item audio{max-width:80px;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,.1);} .remove-btn{position:absolute;top:-6px;right:-6px;background:#f44336;color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;line-height:20px;font-size:14px;}
+    .upload-modal-btn{background:#00c853;color:#fff;padding:10px 20px;border:none;border-radius:5px;cursor:pointer;margin-top:14px;transition:background .3s;} .upload-modal-btn[disabled]{opacity:.5;cursor:default;} .upload-modal-btn:hover:not([disabled]){background:#008c47;}
+    .close-modal{background:#f44336;color:#fff;padding:10px 20px;border:none;border-radius:5px;cursor:pointer;margin-top:8px;transition:background .3s;} .close-modal:hover{background:#e53935;}
+    progress{width:100%;height:18px;margin-top:18px;}
+    /* Botones flotantes */
+    .floating-btn,.help-btn{position:fixed;right:20px;width:60px;height:60px;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 10px rgba(0,0,0,.3);cursor:pointer;transition:background .25s,transform .25s;}
+    .floating-btn{bottom:80px;background:#ff9800;} .floating-btn:hover{background:#ff6f00;transform:translateY(-5px);} .help-btn{bottom:160px;background:#008CBA;} .help-btn:hover{background:#005f73;transform:translateY(-5px);} .floating-btn img,.help-btn img{width:24px;height:24px;}
+    /* PIN modal */
+    #pinField{font-size:24px;text-align:center;padding:10px 15px;border:2px solid #007bff;border-radius:12px;width:100%;max-width:300px;letter-spacing:6px;}
   </style>
 
   <!-- Firebase SDKs -->
@@ -324,320 +48,97 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
-
-  <!-- Encabezado y buscador -->
   <div class="header">
     <h1>Mis Carpetas</h1>
-    <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Buscar carpetas...">
-    </div>
+    <div class="search-container"><input type="text" id="searchInput" placeholder="Buscar carpetas..."></div>
   </div>
-
-  <!-- Contenedor de carpetas -->
   <div class="container" id="foldersContainer"></div>
 
-  <!-- Modal de subida -->
+  <!-- Modal subida -->
   <div id="modal" class="modal">
     <div class="modal-content">
       <h2>Previsualización de archivos</h2>
       <div id="previewImages"></div>
       <progress id="uploadProgress" value="0" max="100"></progress>
-      <button class="upload-modal-btn" onclick="uploadFiles()">Subir Archivos</button>
+      <button class="upload-modal-btn" id="uploadBtn" onclick="uploadFiles()">Subir Archivos</button>
       <button class="close-modal" onclick="closeModal()">Cerrar</button>
     </div>
   </div>
 
-  <!-- Input oculto para archivos -->
-  <input type="file" id="fileInput" multiple style="display:none"
-         accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.vts,.vob">
+  <input type="file" id="fileInput" multiple style="display:none" accept="image/*,video/*,audio/*,.pdf,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.vts,.vob">
 
-  <!-- Botón flotante volver -->
-  <button class="floating-btn" onclick="goToNuevo()">
-    <img src="https://img.icons8.com/ios-filled/50/ffffff/left.png" alt="Volver">
-  </button>
+  <button class="floating-btn" onclick="goToNuevo()"><img src="https://img.icons8.com/ios-filled/50/ffffff/left.png" alt="Volver"></button>
+  <button class="help-btn" onclick="openHelpModal()"><img src="https://img.icons8.com/ios-filled/50/ffffff/question-mark.png" alt="Ayuda"></button>
 
-  <!-- Botón flotante de ayuda -->
-  <button class="help-btn" onclick="openHelpModal()">
-    <img src="https://img.icons8.com/ios-filled/50/ffffff/question-mark.png" alt="Ayuda">
-  </button>
+  <!-- Modal ayuda -->
+  <div id="helpModal" class="modal"><div class="modal-content help-modal-content"><h2>¿Cómo funciona la página?</h2><p>Gestiona carpetas y archivos en Firebase.</p><button class="close-help-modal" onclick="closeHelpModal()">Cerrar</button></div></div>
 
-  <!-- Modal de ayuda -->
-  <div id="helpModal" class="help-modal">
-    <div class="help-modal-content">
-      <h2>¿Cómo funciona la página?</h2>
-      <p>Esta página te permite ver y gestionar las carpetas y archivos almacenados en Firebase. A continuación se explica la función de cada botón:</p>
-      <ul>
-        <li><strong>Botón "Ver"</strong>: Abre la carpeta seleccionada. <img src="https://img.icons8.com/ios-filled/24/ffffff/visible--v1.png" alt="Ver" style="width: 20px; height: 20px;"/></li>
-        <li><strong>Botón "Subir"</strong>: Permite subir nuevos archivos a la carpeta seleccionada. <img src="https://img.icons8.com/ios-filled/50/ffffff/upload-2.png" alt="Subir" style="width: 20px; height: 20px;"/></li>
-        <li><strong>Botón "Renombrar"</strong>: Permite cambiar el nombre de la carpeta. <img src="https://img.icons8.com/ios-filled/50/ffffff/refresh.png" alt="Renombrar" style="width: 20px; height: 20px;"/></li>
-        <li><strong>Botón "PIN"</strong>: Protege la carpeta con un PIN para mayor seguridad. <img src="https://img.icons8.com/ios-filled/50/ffffff/lock.png" alt="PIN" style="width: 20px; height: 20px;"/></li>
-      </ul>
-      <button class="close-help-modal" onclick="closeHelpModal()">Cerrar</button>
-    </div>
-  </div>
+<script>
+  /* Helpers UI */
+  const openHelpModal = ()=>document.getElementById("helpModal").style.display="flex";
+  const closeHelpModal = ()=>document.getElementById("helpModal").style.display="none";
 
-  <!-- ========================================  SCRIPTS  ======================================== -->
-  <script>
-    /* ========================  Funciones de ayuda  ======================== */
-    function openHelpModal() { document.getElementById("helpModal").style.display = "flex"; }
-    function closeHelpModal() { document.getElementById("helpModal").style.display = "none"; }
+  /* Firebase */
+  const firebaseConfig={apiKey:"AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",authDomain:"login-de3fd.firebaseapp.com",databaseURL:"https://login-de3fd-default-rtdb.firebaseio.com",projectId:"login-de3fd",storageBucket:"login-de3fd.appspot.com",messagingSenderId:"1064113669692",appId:"1:1064113669692:web:c45b68b5a8a519536f2539"};
+  firebase.initializeApp(firebaseConfig);
+  const storage=firebase.storage(),db=firebase.database(),auth=firebase.auth();
 
-    /* ============  Configuración Firebase  ============ */
-    const firebaseConfig = {
-      apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
-      authDomain: "login-de3fd.firebaseapp.com",
-      databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
-      projectId: "login-de3fd",
-      storageBucket: "login-de3fd.appspot.com",
-      messagingSenderId: "1064113669692",
-      appId: "1:1064113669692:web:c45b68b5a8a519536f2539"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const storage = firebase.storage(), db = firebase.database(), auth = firebase.auth();
+  /* Utils */
+  const safeKey=s=>s.replace(/[.#$\[\]]/g,"_");
+  const normalize=str=>str.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
 
-    /* ============ Utilidades  ============ */
-    const safeKey = s => s.replace(/[.#$\[\]]/g, "_");
-    const normalize = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  /* State */
+  let userEmail="",currentFolder="",selectedFiles=[],isUploading=false;
 
-    /* ============  Estado global  ============ */
-    let userEmail = "", currentFolder = "", selectedFiles = [], isUploading = false;
+  /* Auth */
+  auth.onAuthStateChanged(u=>{if(u){userEmail=u.email;loadFolders();}else{window.location.href="index.html";}});
 
-    /* ========================  Autenticación  ======================== */
-    auth.onAuthStateChanged(u => {
-      if (u) { userEmail = u.email; loadFolders(); }
-      else   { window.location.href = "index.html"; }
-    });
+  /* Load folders */
+  async function loadFolders(){const container=document.getElementById("foldersContainer");container.innerHTML="";
+    const list=await storage.ref(`${userEmail}/`).listAll();
+    const infoArr=await Promise.all(list.prefixes.map(async pref=>{const folder=pref.name;const metaSnap=await db.ref(`folderMetadata/${safeKey(userEmail)}/${safeKey(folder)}`).get();const meta=metaSnap.val()||{};const display=meta.displayName||folder;const pin=meta.pin||null;const countPromise=storage.ref(`${userEmail}/${folder}`).listAll().then(r=>r.items.length).catch(()=>0);return{folder,display,pin,countPromise};}));
+    infoArr.forEach(({folder,display,pin,countPromise})=>appendFolder(folder,display,"…",pin,countPromise));
+    doSearch();
+  }
 
-    /* ========================  Carga de carpetas  ======================== */
-    async function loadFolders() {
-      const container = document.getElementById("foldersContainer");
-      container.innerHTML = "";
+  function appendFolder(folder,display,initialCount,pin,countPromise){const container=document.getElementById("foldersContainer");
+    const item=document.createElement("div");item.className="folder-item";item.dataset.name=normalize(display);
+    const icon=document.createElement("img");icon.src="https://img.icons8.com/color/48/folder-invoices.png";
+    const title=document.createElement("div");title.className="folder-name";title.textContent=display;
+    const badge=document.createElement("span");badge.className="file-count-badge";badge.textContent=initialCount;title.appendChild(badge);
+    const actions=document.createElement("div");actions.className="folder-actions";
+    const mk=url=>`<img src="${url}" alt="">`;
+    const btnView=document.createElement("button");btnView.className="btn-view";btnView.innerHTML=mk("https://img.icons8.com/ios-filled/24/ffffff/visible--v1.png");btnView.onclick=()=>openFolder(folder,pin);
+    const btnUp=document.createElement("button");btnUp.className="btn-upload";btnUp.innerHTML=mk("https://img.icons8.com/ios-filled/24/ffffff/upload-2--v1.png");btnUp.onclick=()=>{currentFolder=folder;document.getElementById("fileInput").click();};
+    const btnRen=document.createElement("button");btnRen.className="btn-rename";btnRen.innerHTML=mk("https://img.icons8.com/ios-filled/24/ffffff/refresh.png");btnRen.onclick=()=>renameFolder(folder,display);
+    const btnPin=document.createElement("button");btnPin.className="btn-pin";const lock=pin?"key":"lock";btnPin.innerHTML=mk(`https://img.icons8.com/ios-filled/24/ffffff/${lock}--v1.png`);btnPin.title=pin?"Actualizar PIN":"Agregar PIN";btnPin.onclick=()=>handlePin(folder,pin);
+    actions.append(btnView,btnUp,btnRen,btnPin);item.append(icon,title,actions);container.appendChild(item);
+    countPromise&&countPromise.then(c=>badge.textContent=c);
+  }
 
-      const list = await storage.ref(`${userEmail}/`).listAll();
+  function openFolder(folder,pin){if(pin&&prompt("Ingrese PIN:")!==pin){alert("PIN incorrecto");return;}window.location.href=`verGaleria3.html?folder=${encodeURIComponent(folder)}`;}
+  function renameFolder(folder,current){const n=prompt("Nuevo nombre:",current);if(n&&n.trim()){db.ref(`folderMetadata/${safeKey(userEmail)}/${safeKey(folder)}/displayName`).set(n.trim()).then(loadFolders);}}
+  function handlePin(folder,currentPin){if(currentPin){const old=prompt("Ingrese PIN actual:");if(old===null)return;if(old!==currentPin){alert("PIN incorrecto");return;}const np=prompt("Nuevo PIN (vacío para quitar):");if(np===null)return;db.ref(`folderMetadata/${safeKey(userEmail)}/${safeKey(folder)}/pin`).set(np.trim()||null).then(loadFolders);}else{const np=prompt("Crear PIN:");if(np&&np.trim()){db.ref(`folderMetadata/${safeKey(userEmail)}/${safeKey(folder)}/pin`).set(np.trim()).then(loadFolders);}}}
 
-      // Obtener metadatos en paralelo
-      const infoArr = await Promise.all(list.prefixes.map(async pref => {
-        const folder = pref.name;
-        const metaSnap = await db.ref(`folderMetadata/${safeKey(userEmail)}/${safeKey(folder)}`).get();
-        const meta = metaSnap.val() || {};
-        const display = meta.displayName || folder;
-        const pin = meta.pin || null;
-        // Obtener conteo de archivos SIN bloquear la interfaz (asíncrono)
-        const countPromise = storage.ref(`${userEmail}/${folder}`).listAll()
-                                   .then(r => r.items.length)
-                                   .catch(() => 0);
-        return { folder, display, pin, countPromise };
-      }));
+  /* Preview */
+  document.getElementById("fileInput").addEventListener("change",e=>{const dedup=new Map();[...e.target.files].forEach(f=>{const k=`${f.name}|${f.size}|${f.lastModified}`;if(!dedup.has(k))dedup.set(k,f);});selectedFiles=[...dedup.values()];renderPrev();document.getElementById("modal").style.display="flex";});
 
-      // Insertar elementos rápidamente sin esperar a los conteos
-      infoArr.forEach(({ folder, display, pin, countPromise }) => {
-        appendFolder(folder, display, "…", pin, countPromise);
-      });
+  function renderPrev(){const prev=document.getElementById("previewImages");prev.innerHTML="";selectedFiles.forEach((file,i)=>{const reader=new FileReader();reader.onload=e=>{const w=document.createElement("div");w.className="preview-item";const del=document.createElement("span");del.className="remove-btn";del.textContent="×";del.onclick=()=>{if(!isUploading){selectedFiles.splice(i,1);renderPrev();}};
+      const ext=file.name.toLowerCase().split(".").pop();let el;if((file.type.includes("video")&&ext!=="vts")||ext==="vob"){el=document.createElement("video");el.src=e.target.result;el.controls=true;}else if(file.type.includes("image")){el=document.createElement("img");el.src=e.target.result;}else if(file.type.includes("audio")){el=document.createElement("audio");el.src=e.target.result;el.controls=true;}else{const m={pdf:"pdf",doc:"ms-word",docx:"ms-word",xls:"ms-excel",xlsx:"ms-excel",zip:"zip",rar:"zip",ppt:"ms-powerpoint",pptx:"ms-powerpoint",vts:"vlc",vob:"vlc"};el=document.createElement("img");el.src=`https://img.icons8.com/color/48/000000/${m[ext]||"file"}.png`;}
+      w.append(del,el);prev.appendChild(w);};reader.readAsDataURL(file);});document.getElementById("uploadBtn").disabled=!selectedFiles.length;}
 
-      // Si el usuario ya está escribiendo algo en el buscador
-      doSearch();
-    }
+  function closeModal(){if(!isUploading){document.getElementById("modal").style.display="none";selectedFiles=[];document.getElementById("fileInput").value="";}}
 
-    /* ========================  Renderizar cada carpeta  ======================== */
-    function appendFolder(folder, display, initialCount, pin, countPromise) {
-      const container = document.getElementById("foldersContainer");
-      const item = document.createElement("div");
-      item.className = "folder-item";
-      item.dataset.name = normalize(display);
+  async function uploadFiles(){if(!selectedFiles.length)return;isUploading=true;document.querySelectorAll(".remove-btn").forEach(b=>b.style.display="none");const bar=document.getElementById("uploadProgress");bar.value=0;document.getElementById("uploadBtn").disabled=true;let done=0,total=selectedFiles.length;
+    for(const f of selectedFiles){const uploadTask=storage.ref(`${userEmail}/${currentFolder}/${f.name}`).put(f);uploadTask.on("state_changed",snap=>{bar.value=((done+snap.bytesTransferred/snap.totalBytes)/total)*100;});await uploadTask;done++;}
+    alert("Archivos subidos");isUploading=false;document.getElementById("uploadBtn").disabled=false;closeModal();bar.value=0;loadFolders();}
 
-      const icon = document.createElement("img");
-      icon.src = "https://img.icons8.com/color/48/folder-invoices.png";
+  /* Search */
+  function doSearch(){const q=normalize(document.getElementById("searchInput").value);document.querySelectorAll(".folder-item").forEach(item=>{item.style.display=(q===""||item.dataset.name.includes(q))?"flex":"none";});}
+  let searchTimeout;document.getElementById("searchInput").addEventListener("input",()=>{clearTimeout(searchTimeout);searchTimeout=setTimeout(doSearch,200);});
 
-      const title = document.createElement("div");
-      title.className = "folder-name";
-      title.textContent = display;
-
-      const badge = document.createElement("span");
-      badge.className = "file-count-badge";
-      badge.textContent = initialCount;
-      title.appendChild(badge);
-
-      const actions = document.createElement("div");
-      actions.className = "folder-actions";
-      const mkIcon = url => `<img src="${url}" alt="">`;
-
-      // === Botón Ver ===
-      const btnView = document.createElement("button");
-      btnView.className = "btn-view";
-      btnView.innerHTML = mkIcon("https://img.icons8.com/ios-filled/24/ffffff/visible--v1.png");
-      btnView.onclick = () => openFolder(folder, pin);
-
-      // === Botón Subir ===
-      const btnUp = document.createElement("button");
-      btnUp.className = "btn-upload";
-      btnUp.innerHTML = mkIcon("https://img.icons8.com/ios-filled/24/ffffff/upload-2--v1.png");
-      btnUp.onclick = () => {
-        currentFolder = folder;
-        document.getElementById("fileInput").click();
-      };
-
-      // === Botón Renombrar ===
-      const btnRen = document.createElement("button");
-      btnRen.className = "btn-rename";
-      btnRen.innerHTML = mkIcon("https://img.icons8.com/ios-filled/24/ffffff/refresh.png");
-      btnRen.onclick = () => renameFolder(folder, display);
-
-      // === Botón PIN ===
-      const btnPin = document.createElement("button");
-      btnPin.className = "btn-pin";
-      const lockIcon = pin ? "key" : "lock";
-      btnPin.innerHTML = mkIcon(`https://img.icons8.com/ios-filled/24/ffffff/${lockIcon}--v1.png`);
-      btnPin.title = pin ? "Actualizar PIN" : "Agregar PIN";
-      btnPin.onclick = () => handlePin(folder, pin);
-
-      actions.append(btnView, btnUp, btnRen, btnPin);
-      item.append(icon, title, actions);
-      container.appendChild(item);
-
-      // Resolver conteo real cuando llegue
-      if (countPromise) {
-        countPromise.then(c => badge.textContent = c);
-      }
-    }
-
-    /* ========================  Acciones sobre carpetas  ======================== */
-    function openFolder(folder, pin) {
-      if (pin && prompt("Ingrese PIN:") !== pin) {
-        alert("PIN incorrecto");
-        return;
-      }
-      window.location.href = `verGaleria3.html?folder=${encodeURIComponent(folder)}`;
-    }
-
-    function renameFolder(folder, currentName) {
-      const n = prompt("Nuevo nombre:", currentName);
-      if (n && n.trim()) {
-        db.ref(`folderMetadata/${safeKey(userEmail)}/${safeKey(folder)}/displayName`).set(n.trim())
-          .then(loadFolders);
-      }
-    }
-
-    function handlePin(folder, currentPin) {
-      if (currentPin) {
-        const old = prompt("Ingrese PIN actual:");
-        if (old === null) return;
-        if (old !== currentPin) { alert("PIN incorrecto"); return; }
-        const np = prompt("Nuevo PIN (vacío para quitar):");
-        if (np === null) return;
-        db.ref(`folderMetadata/${safeKey(userEmail)}/${safeKey(folder)}/pin`).set(np.trim() || null)
-          .then(loadFolders);
-      } else {
-        const np = prompt("Crear PIN:");
-        if (np && np.trim()) {
-          db.ref(`folderMetadata/${safeKey(userEmail)}/${safeKey(folder)}/pin`).set(np.trim())
-            .then(loadFolders);
-        }
-      }
-    }
-
-    /* ========================  Previsualización y subida ======================== */
-    function showPreview(e) {
-      // Eliminar duplicados
-      const dedup = new Map();
-      [...e.target.files].forEach(f => {
-        const k = `${f.name}|${f.size}|${f.lastModified}`;
-        if (!dedup.has(k)) dedup.set(k, f);
-      });
-      selectedFiles = [...dedup.values()];
-      renderPrev();
-      document.getElementById("modal").style.display = "flex";
-    }
-    document.getElementById("fileInput").addEventListener("change", showPreview);
-
-    function renderPrev() {
-      const prev = document.getElementById("previewImages");
-      prev.innerHTML = "";
-      selectedFiles.forEach((file, idx) => {
-        const reader = new FileReader();
-        reader.onload = e => {
-          const w = document.createElement("div");
-          w.className = "preview-item";
-
-          // Botón eliminar
-          const del = document.createElement("span");
-          del.className = "remove-btn";
-          del.textContent = "×";
-          del.onclick = () => {
-            if (!isUploading) { selectedFiles.splice(idx, 1); renderPrev(); }
-          };
-
-          // Vista previa
-          const ext = file.name.toLowerCase().split(".").pop();
-          let el;
-          if ((file.type.includes("video") && ext !== "vts") || ext === "vob")     {
-            el = document.createElement("video"); el.src = e.target.result; el.controls = true;
-          } else if (file.type.includes("image")) {
-            el = document.createElement("img"); el.src = e.target.result;
-          } else if (file.type.includes("audio")) {
-            el = document.createElement("audio"); el.src = e.target.result; el.controls = true;
-          } else {
-            const m = { pdf:"pdf", doc:"ms-word", docx:"ms-word", xls:"ms-excel", xlsx:"ms-excel", zip:"zip", rar:"zip", ppt:"ms-powerpoint", pptx:"ms-powerpoint", vts:"vlc", vob:"vlc" };
-            el = document.createElement("img");
-            el.src = `https://img.icons8.com/color/48/000000/${m[ext] || "file"}.png`;
-          }
-
-          w.append(del, el);
-          prev.appendChild(w);
-        };
-        reader.readAsDataURL(file);
-      });
-      document.querySelector(".upload-modal-btn").disabled = !selectedFiles.length;
-    }
-
-    function closeModal() {
-      if (!isUploading) {
-        document.getElementById("modal").style.display = "none";
-        selectedFiles = [];
-        document.getElementById("fileInput").value = "";
-      }
-    }
-
-    async function uploadFiles() {
-      if (!selectedFiles.length) return;
-      isUploading = true;
-      document.querySelectorAll(".remove-btn").forEach(b => b.style.display = "none");
-      document.querySelector(".close-modal").disabled = true;
-      const bar = document.getElementById("uploadProgress");
-      bar.value = 0;
-
-      let done = 0;
-      for (const f of selectedFiles) {
-        await storage.ref(`${userEmail}/${currentFolder}/${f.name}`).put(f).on("state_changed", snap => {
-          bar.value = ((done + snap.bytesTransferred / snap.totalBytes) / selectedFiles.length) * 100;
-        });
-        done++;
-      }
-      alert("Archivos subidos");
-      isUploading = false;
-      closeModal();
-      bar.value = 0;
-      loadFolders();
-    }
-
-    /* ========================  Búsqueda en tiempo real  ======================== */
-    function doSearch() {
-      const q = normalize(document.getElementById("searchInput").value);
-      document.querySelectorAll(".folder-item").forEach(item => {
-        const name = item.dataset.name;
-        item.style.display = (q === "" || name.includes(q)) ? "flex" : "none";
-      });
-    }
-
-    // Debounce para mejorar el rendimiento de la búsqueda
-    let searchTimeout;
-    const si = document.getElementById("searchInput");
-    si.addEventListener("input", () => {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(doSearch, 200); // 200 ms
-    });
-
-    /* ========================  Volver  ======================== */
-    function goToNuevo() { window.location.href = "nuevo.html"; }
-  </script>
+  /* volver */
+  const goToNuevo=()=>window.location.href="nuevo.html";
+</script>
 </body>
 </html>
