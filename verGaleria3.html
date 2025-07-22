@@ -225,276 +225,361 @@
   </div>
 
   <!-- ================= SCRIPTS ================= -->
-  <script type="module">
-/* --------------- IMPORTS FIREBASE --------------- */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getStorage, ref, listAll, getDownloadURL,
-         deleteObject, uploadBytesResumable }
-  from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+<script type="module">
+  /* --------------- IMPORTS FIREBASE --------------- */
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+  import { getStorage, ref, listAll, getDownloadURL, deleteObject, uploadBytesResumable }
+    from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
-/* --------------- CONFIG FIREBASE --------------- */
-const firebaseConfig = {
-  apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
-  authDomain: "login-de3fd.firebaseapp.com",
-  databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
-  projectId: "login-de3fd",
-  storageBucket: "login-de3fd.appspot.com",
-  messagingSenderId: "1064113669692",
-  appId: "1:1064113669692:web:c45b68b5a8a519536f2539"
-};
-const app     = initializeApp(firebaseConfig);
-const storage = getStorage(app);
-const auth    = getAuth(app);
+  /* --------------- CONFIG FIREBASE --------------- */
+  const firebaseConfig = {
+    apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
+    authDomain: "login-de3fd.firebaseapp.com",
+    databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
+    projectId: "login-de3fd",
+    storageBucket: "login-de3fd.appspot.com",
+    messagingSenderId: "1064113669692",
+    appId: "1:1064113669692:web:c45b68b5a8a519536f2539"
+  };
+  const app = initializeApp(firebaseConfig);
+  const storage = getStorage(app);
+  const auth = getAuth(app);
 
-/* --------------- VARS & ELEMENTS --------------- */
-let galleryItems = [];
-const folderName = new URLSearchParams(location.search).get("folder");
-if (!folderName) { alert("No se especificó ninguna carpeta."); location.href = "MisCarpetas.html"; }
+  /* --------------- VARS & ELEMENTS --------------- */
+  let galleryItems = [];
+  const folderName = new URLSearchParams(location.search).get("folder");
+  if (!folderName) { alert("No se especificó ninguna carpeta."); location.href = "MisCarpetas.html"; }
 
-const gallery            = document.getElementById("gallery");
-const filterAll          = document.getElementById("filterAll");
-const filterPhoto        = document.getElementById("filterPhoto");
-const filterVideo        = document.getElementById("filterVideo");
-const filterDocument     = document.getElementById("filterDocument");
-const filterAudio        = document.getElementById("filterAudio");
-const filterButtons      = { all:filterAll, photo:filterPhoto, video:filterVideo, document:filterDocument, audio:filterAudio };
+  const gallery = document.getElementById("gallery");
+  const filterAll = document.getElementById("filterAll");
+  const filterPhoto = document.getElementById("filterPhoto");
+  const filterVideo = document.getElementById("filterVideo");
+  const filterDocument = document.getElementById("filterDocument");
+  const filterAudio = document.getElementById("filterAudio");
+  const filterButtons = {
+    all: filterAll,
+    photo: filterPhoto,
+    video: filterVideo,
+    document: filterDocument,
+    audio: filterAudio
+  };
 
-const searchInput        = document.getElementById("searchInput");
-const deleteSelectedBtn  = document.getElementById("deleteSelectedBtn");
+  const searchInput = document.getElementById("searchInput");
+  const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
 
-const fileInput          = document.getElementById("fileInput");
-const modalOverlay       = document.getElementById("modalOverlay");
-const modal              = document.getElementById("modal");
-const selectedCont       = document.getElementById("selectedFiles");
-const btnUpload          = document.getElementById("btnUpload");
-const btnCancel          = document.getElementById("btnCancel");
-const btnMinimize        = document.getElementById("btnMinimize");
-const globalBar          = document.getElementById("globalProgressBar");
+  const fileInput = document.getElementById("fileInput");
+  const modalOverlay = document.getElementById("modalOverlay");
+  const modal = document.getElementById("modal");
+  const selectedCont = document.getElementById("selectedFiles");
+  const btnUpload = document.getElementById("btnUpload");
+  const btnCancel = document.getElementById("btnCancel");
+  const btnMinimize = document.getElementById("btnMinimize");
+  const globalBar = document.getElementById("globalProgressBar");
 
-let selectedFiles=[], uploading=false;
+  let selectedFiles = [], uploading = false;
+  let currentAudio = null;
+  let currentAudioElement = null;
 
-/* --------------- AUTH --------------- */
-auth.onAuthStateChanged(user=>{
-  if (user) loadGallery(user.email);
-  else { alert("Por favor, inicia sesión."); location.href="index.html"; }
-});
-
-/* --------------- LOAD GALLERY --------------- */
-async function loadGallery(email){
-  const listRef = ref(storage, `${email}/${folderName}/`);
-  let result;
-  try { result = await listAll(listRef); }
-  catch(e){ console.error(e); alert("Error al cargar la galería."); return; }
-
-  gallery.innerHTML = "";
-  galleryItems = [];
-
-  const tasks = result.items.map(async itemRef=>{
-    const url  = await getDownloadURL(itemRef);
-    const date = new Date();                          // simplificado
-    const item = buildItem(itemRef.name, url, itemRef.fullPath, date);
-    gallery.appendChild(item);
-    galleryItems.push(item);
+  /* --------------- AUTH --------------- */
+  auth.onAuthStateChanged(user => {
+    if (user) loadGallery(user.email);
+    else { alert("Por favor, inicia sesión."); location.href = "index.html"; }
   });
 
-  await Promise.all(tasks);
-  updateCounters();
-}
+  /* --------------- LOAD GALLERY --------------- */
+  async function loadGallery(email) {
+    const listRef = ref(storage, `${email}/${folderName}/`);
+    let result;
+    try { result = await listAll(listRef); }
+    catch (e) { console.error(e); alert("Error al cargar la galería."); return; }
 
-function buildItem(name, url, fullPath, dateObj){
-  const item = document.createElement("div");
-  item.className = "gallery-item";
-  const ext = name.split(".").pop().toLowerCase();
+    gallery.innerHTML = "";
+    galleryItems = [];
 
-  /* media */
-  let media;
-  if (["jpg","jpeg","png","gif","bmp","webp"].includes(ext)){
-    item.dataset.type = "photo";
-    media = new Image(); media.src = url;
-    const d = document.createElement("h4"); d.textContent = `Subido el ${dateObj.toLocaleDateString("es-ES")}`;
-    item.append(media,d);
-  }
-  else if (["mp4","webm","avi","vob"].includes(ext)){
-    item.dataset.type = "video";
-    media = document.createElement("video"); media.controls = true;
-    const s = document.createElement("source"); s.src = url; s.type = "video/mp4";
-    media.appendChild(s);
-    const d = document.createElement("h4"); d.textContent = `Subido el ${dateObj.toLocaleDateString("es-ES")}`;
-    item.append(media,d);
-  }
-  else if (["mp3","wav","ogg"].includes(ext)){
-    item.dataset.type = "audio";
-    media = new Image(); media.src = "https://img.icons8.com/color/96/000000/musical-notes.png"; media.className="audio-icon";
-    const h = document.createElement("h4"); h.textContent = name;
-    const a = document.createElement("a"); a.href = url; a.textContent="Descargar"; a.target="_blank";
-    item.append(media,h,a);
-  }
-  else{
-    item.dataset.type = "document";
-    const iconMap = {pdf:"pdf",zip:"zip",rar:"zip",doc:"ms-word",docx:"ms-word",xls:"ms-excel",xlsx:"ms-excel",ppt:"ms-powerpoint",pptx:"ms-powerpoint"};
-    media = new Image(); media.src = `https://img.icons8.com/color/96/000000/${iconMap[ext]||"file"}.png`; media.className="file-icon";
-    const h = document.createElement("h4"); h.textContent = name;
-    const a = document.createElement("a"); a.href = url; a.textContent="Descargar"; a.target="_blank";
-    item.append(media,h,a);
-  }
-
-  /* checkbox */
-  const cb = document.createElement("input");
-  cb.type = "checkbox"; cb.className = "gallery-checkbox"; cb.dataset.ref=fullPath;
-  cb.addEventListener("change", toggleDeleteButton);
-  item.appendChild(cb);
-
-  /* delete btn */
-  const del = document.createElement("button");
-  del.className="delete-btn"; del.textContent="Eliminar";
-  del.onclick = ()=> deleteSingle(fullPath, item);
-  item.appendChild(del);
-
-  return item;
-}
-
-/* --------------- COUNTERS & FILTERS --------------- */
-function updateCounters(){
-  let cAll=galleryItems.length, cP=0,cV=0,cD=0,cA=0;
-  galleryItems.forEach(i=>{
-    switch(i.dataset.type){
-      case "photo": cP++; break;
-      case "video": cV++; break;
-      case "document": cD++; break;
-      case "audio": cA++; break;
-    }
-  });
-  filterAll.textContent     = `Todo (${cAll})`;
-  filterPhoto.textContent   = `Fotos (${cP})`;
-  filterVideo.textContent   = `Videos (${cV})`;
-  filterDocument.textContent= `Documentos (${cD})`;
-  filterAudio.textContent   = `Audios (${cA})`;
-  toggleDeleteButton();
-}
-function filterGallery(type){
-  galleryItems.forEach(i=>{ i.style.display = (type==="all"||i.dataset.type===type)?"block":"none"; });
-}
-function toggleSearch(){
-  searchInput.classList.toggle("active");
-  if(!searchInput.classList.contains("active")){ searchInput.value=""; searchDocuments(); }
-  else searchInput.focus();
-}
-function searchDocuments(){
-  const q = (searchInput.value||"").toLowerCase();
-  galleryItems.forEach(i=>{
-    const h = i.querySelector("h4");
-    if (h) i.style.display = h.textContent.toLowerCase().includes(q) ? "block" : "none";
-  });
-}
-
-/* --------------- DELETE --------------- */
-function toggleDeleteButton(){
-  deleteSelectedBtn.style.display = document.querySelectorAll(".gallery-checkbox:checked").length ? "flex" : "none";
-}
-async function deleteSingle(fullPath, item){
-  if(!confirm("¿Eliminar este archivo?")) return;
-  try{
-    await deleteObject(ref(storage, fullPath));
-    item.remove(); galleryItems = galleryItems.filter(i=>i!==item); updateCounters();
-  }catch(e){ console.error(e); alert("Error al eliminar."); }
-}
-async function deleteSelectedFiles(){
-  const checks = [...document.querySelectorAll(".gallery-checkbox:checked")];
-  if(!checks.length){ alert("No hay archivos seleccionados."); return; }
-  if(!confirm("¿Eliminar los archivos seleccionados?")) return;
-  try{
-    await Promise.all(checks.map(c=> deleteObject(ref(storage, c.dataset.ref))));
-    checks.forEach(c=>{
-      const it=c.closest(".gallery-item");
-      it.remove(); galleryItems = galleryItems.filter(i=>i!==it);
+    const tasks = result.items.map(async itemRef => {
+      const url = await getDownloadURL(itemRef);
+      const date = new Date();
+      const item = buildItem(itemRef.name, url, itemRef.fullPath, date);
+      gallery.appendChild(item);
+      galleryItems.push(item);
     });
-    updateCounters(); alert("Archivos eliminados.");
-  }catch(e){ console.error(e); alert("Error en la eliminación."); }
-}
 
-/* --------------- UPLOAD MODAL --------------- */
-fileInput.addEventListener("change",e=>{
-  selectedFiles=[...e.target.files];
-  if(selectedFiles.length){ renderPreviews(); openModal(); }
-  fileInput.value="";
-});
-function openModal(){
-  modalOverlay.style.display="flex";
-  modalOverlay.classList.remove("transparent");
-  modal.classList.remove("minimized");
-  btnMinimize.textContent="🗕";
-  btnUpload.disabled=false; btnUpload.classList.remove("disabled"); btnUpload.textContent="Subir";
-  globalBar.style.width="0%";
-}
-btnMinimize.addEventListener("click",()=>{
-  modal.classList.toggle("minimized");
-  const mini = modal.classList.contains("minimized");
-  btnMinimize.textContent = mini ? "🗖" : "🗕";
-  modalOverlay.classList.toggle("transparent", mini);
-});
-btnCancel.addEventListener("click",()=>{ if(uploading)return; modalOverlay.style.display="none"; selectedFiles=[]; });
+    await Promise.all(tasks);
+    updateCounters();
+  }
 
-function renderPreviews(){
-  selectedCont.innerHTML="";
-  selectedFiles.forEach((file,idx)=>{
-    const row=document.createElement("div");row.className="file-preview";
-    const ext=file.name.split(".").pop().toLowerCase();
-    let img=new Image(); img.width=50; img.height=50;
-    if(["jpg","jpeg","png","gif","bmp","webp"].includes(ext)) img.src=URL.createObjectURL(file);
-    else if(["mp4","webm","avi","vob"].includes(ext)) img.src="https://img.icons8.com/color/96/000000/video.png";
-    else if(["mp3","wav","ogg"].includes(ext))         img.src="https://img.icons8.com/color/96/000000/musical-notes.png";
-    else{ const map={pdf:"pdf",zip:"zip",rar:"zip",doc:"ms-word",docx:"ms-word",xls:"ms-excel",xlsx:"ms-excel",ppt:"ms-powerpoint",pptx:"ms-powerpoint"};
-          img.src=`https://img.icons8.com/color/96/000000/${map[ext]||"file"}.png`;
-        }
-    if(!["jpg","jpeg","png","gif","bmp","webp"].includes(ext)) img.className="file-icon-small";
+  function buildItem(name, url, fullPath, dateObj) {
+    const item = document.createElement("div");
+    item.className = "gallery-item";
+    const ext = name.split(".").pop().toLowerCase();
 
-    const span=document.createElement("span"); span.className="file-name"; span.textContent=file.name;
-    const rm=document.createElement("button"); rm.className="remove-preview"; rm.innerHTML="✖";
-    rm.onclick=()=>{ if(uploading)return; selectedFiles.splice(idx,1); renderPreviews(); if(!selectedFiles.length) modalOverlay.style.display="none"; };
+    let media;
+    if (["jpg","jpeg","png","gif","bmp","webp"].includes(ext)) {
+      item.dataset.type = "photo";
+      media = new Image(); media.src = url;
+      const d = document.createElement("h4");
+      d.textContent = `Subido el ${dateObj.toLocaleDateString("es-ES")}`;
+      item.append(media, d);
+    }
+    else if (["mp4","webm","avi","vob"].includes(ext)) {
+      item.dataset.type = "video";
+      media = document.createElement("video"); media.controls = true;
+      const s = document.createElement("source"); s.src = url; s.type = "video/mp4";
+      media.appendChild(s);
+      const d = document.createElement("h4");
+      d.textContent = `Subido el ${dateObj.toLocaleDateString("es-ES")}`;
+      item.append(media, d);
+    }
+    else if (["m4a","mp3","wav","ogg"].includes(ext)) {
+      item.dataset.type = "audio";
+      media = new Image();
+      media.src = "https://img.icons8.com/color/96/000000/musical-notes.png";
+      media.className = "audio-icon";
+      const h = document.createElement("h4"); h.textContent = name;
+      const a = document.createElement("a"); a.href = url; a.textContent = "Descargar"; a.target = "_blank";
+      item.append(media, h, a);
 
-    const pc=document.createElement("div"); pc.className="progress-container";
-    const pb=document.createElement("div"); pb.className="progress-bar"; pc.appendChild(pb);
+      media.addEventListener("click", () => handleAudioClick(media, url));
+    }
+    else {
+      item.dataset.type = "document";
+      const iconMap = {
+        pdf:"pdf", zip:"zip", rar:"zip",
+        doc:"ms-word", docx:"ms-word",
+        xls:"ms-excel", xlsx:"ms-excel",
+        ppt:"ms-powerpoint", pptx:"ms-powerpoint"
+      };
+      media = new Image();
+      media.src = `https://img.icons8.com/color/96/000000/${iconMap[ext]||"file"}.png`;
+      media.className = "file-icon";
+      const h = document.createElement("h4"); h.textContent = name;
+      const a = document.createElement("a"); a.href = url; a.textContent = "Descargar"; a.target = "_blank";
+      item.append(media, h, a);
+    }
 
-    row.append(img,span,rm,pc); selectedCont.appendChild(row);
-  });
-}
+    const cb = document.createElement("input");
+    cb.type = "checkbox"; cb.className = "gallery-checkbox"; cb.dataset.ref = fullPath;
+    cb.addEventListener("change", toggleDeleteButton);
+    item.appendChild(cb);
 
-/* ---------- UPLOAD ---------- */
-btnUpload.addEventListener("click",()=>{
-  if(uploading||!selectedFiles.length) return;
-  uploading=true; btnUpload.disabled=true; btnUpload.classList.add("disabled"); btnUpload.textContent="Subiendo…";
-  selectedCont.querySelectorAll(".remove-preview").forEach(b=>{b.disabled=true;b.innerHTML="🔒";});
-  startUpload();
-});
-function startUpload(){
-  let done=0; const perc=new Array(selectedFiles.length).fill(0);
-  selectedFiles.forEach((file,idx)=>{
-    const bar = selectedCont.children[idx].querySelector(".progress-bar");
-    const dest = ref(storage, `${auth.currentUser.email}/${folderName}/${file.name}`);
-    const t = uploadBytesResumable(dest, file);
-    t.on("state_changed", s=>{
-      const p=Math.round((s.bytesTransferred/s.totalBytes)*100);
-      bar.style.width=p+"%"; perc[idx]=p;
-      globalBar.style.width = (perc.reduce((a,b)=>a+b,0)/perc.length) + "%";
-    }, console.error, async ()=>{
-      done++;
-      /* Añadir a galería */
-      const url = await getDownloadURL(dest);
-      const item = buildItem(file.name, url, dest.fullPath, new Date());
-      gallery.appendChild(item); galleryItems.push(item); updateCounters();
-      if(done===selectedFiles.length){
-        uploading=false;
-        alert("Todos los archivos se subieron correctamente.");
-        modalOverlay.style.display="none"; selectedFiles=[];
+    const del = document.createElement("button");
+    del.className = "delete-btn"; del.textContent = "Eliminar";
+    del.onclick = () => deleteSingle(fullPath, item);
+    item.appendChild(del);
+
+    return item;
+  }
+
+  /* --------------- HANDLE AUDIO CLICK --------------- */
+  function handleAudioClick(elem, audioUrl) {
+    // Si es el mismo ícono y hay un audio cargado, alternar play/pause
+    if (currentAudio && currentAudioElement === elem) {
+      if (!currentAudio.paused) {
+        currentAudio.pause();
+        elem.classList.remove("playing");
+      } else {
+        currentAudio.play();
+        elem.classList.add("playing");
+      }
+      return;
+    }
+
+    // Si hay otro audio reproduciéndose, pausarlo
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudioElement.classList.remove("playing");
+    }
+
+    // Iniciar nuevo audio
+    currentAudio = new Audio(audioUrl);
+    currentAudioElement = elem;
+    currentAudio.play();
+    elem.classList.add("playing");
+
+    // Al finalizar, limpiar estado
+    currentAudio.addEventListener("ended", () => {
+      elem.classList.remove("playing");
+      currentAudio = null;
+      currentAudioElement = null;
+    });
+  }
+
+  /* --------------- COUNTERS & FILTERS --------------- */
+  function updateCounters() {
+    let cAll = galleryItems.length, cP=0, cV=0, cD=0, cA=0;
+    galleryItems.forEach(i => {
+      switch (i.dataset.type) {
+        case "photo": cP++; break;
+        case "video": cV++; break;
+        case "document": cD++; break;
+        case "audio": cA++; break;
       }
     });
-  });
-}
+    filterAll.textContent     = `Todo (${cAll})`;
+    filterPhoto.textContent   = `Fotos (${cP})`;
+    filterVideo.textContent   = `Videos (${cV})`;
+    filterDocument.textContent= `Documentos (${cD})`;
+    filterAudio.textContent   = `Audios (${cA})`;
+    toggleDeleteButton();
+  }
+  function filterGallery(type) {
+    galleryItems.forEach(i => {
+      i.style.display = (type==="all"||i.dataset.type===type) ? "block" : "none";
+    });
+  }
+  function toggleSearch() {
+    searchInput.classList.toggle("active");
+    if (!searchInput.classList.contains("active")) {
+      searchInput.value = ""; searchDocuments();
+    } else searchInput.focus();
+  }
+  function searchDocuments() {
+    const q = (searchInput.value||"").toLowerCase();
+    galleryItems.forEach(i => {
+      const h = i.querySelector("h4");
+      i.style.display = h && h.textContent.toLowerCase().includes(q) ? "block" : "none";
+    });
+  }
 
-/* --------------- EXPONER PARA ONCLICK HTML --------------- */
-Object.assign(window,{ filterGallery, toggleSearch, searchDocuments, deleteSelectedFiles });
+  /* --------------- DELETE --------------- */
+  function toggleDeleteButton() {
+    deleteSelectedBtn.style.display = document.querySelectorAll(".gallery-checkbox:checked").length ? "flex" : "none";
+  }
+  async function deleteSingle(fullPath, item) {
+    if(!confirm("¿Eliminar este archivo?")) return;
+    try {
+      await deleteObject(ref(storage, fullPath));
+      item.remove();
+      galleryItems = galleryItems.filter(i=>i!==item);
+      updateCounters();
+    } catch(e){ console.error(e); alert("Error al eliminar."); }
+  }
+  async function deleteSelectedFiles() {
+    const checks = [...document.querySelectorAll(".gallery-checkbox:checked")];
+    if (!checks.length) { alert("No hay archivos seleccionados."); return; }
+    if (!confirm("¿Eliminar los archivos seleccionados?")) return;
+    try {
+      await Promise.all(checks.map(c=> deleteObject(ref(storage, c.dataset.ref))));
+      checks.forEach(c => {
+        const it = c.closest(".gallery-item");
+        it.remove();
+        galleryItems = galleryItems.filter(i=>i!==it);
+      });
+      updateCounters();
+      alert("Archivos eliminados.");
+    } catch(e){ console.error(e); alert("Error en la eliminación."); }
+  }
+
+  /* --------------- UPLOAD MODAL --------------- */
+  fileInput.addEventListener("change", e => {
+    selectedFiles = [...e.target.files];
+    if (selectedFiles.length) { renderPreviews(); openModal(); }
+    fileInput.value = "";
+  });
+  function openModal() {
+    modalOverlay.style.display = "flex";
+    modalOverlay.classList.remove("transparent");
+    modal.classList.remove("minimized");
+    btnMinimize.textContent = "🗕";
+    btnUpload.disabled = false;
+    btnUpload.classList.remove("disabled");
+    btnUpload.textContent = "Subir";
+    globalBar.style.width = "0%";
+  }
+  btnMinimize.addEventListener("click", () => {
+    modal.classList.toggle("minimized");
+    const mini = modal.classList.contains("minimized");
+    btnMinimize.textContent = mini ? "🗖" : "🗕";
+    modalOverlay.classList.toggle("transparent", mini);
+  });
+  btnCancel.addEventListener("click", () => {
+    if (uploading) return;
+    modalOverlay.style.display = "none";
+    selectedFiles = [];
+  });
+
+  function renderPreviews() {
+    selectedCont.innerHTML = "";
+    selectedFiles.forEach((file, idx) => {
+      const row = document.createElement("div"); row.className = "file-preview";
+      const ext = file.name.split(".").pop().toLowerCase();
+      let img = new Image(); img.width = 50; img.height = 50;
+      if (["jpg","jpeg","png","gif","bmp","webp"].includes(ext)) {
+        img.src = URL.createObjectURL(file);
+      } else if (["mp4","webm","avi","vob"].includes(ext)) {
+        img.src = "https://img.icons8.com/color/96/000000/video.png";
+      } else if (["m4a","mp3","wav","ogg"].includes(ext)) {
+        img.src = "https://img.icons8.com/color/96/000000/musical-notes.png";
+      } else {
+        const map = { pdf:"pdf", zip:"zip", rar:"zip", doc:"ms-word", docx:"ms-word", xls:"ms-excel", xlsx:"ms-excel", ppt:"ms-powerpoint", pptx:"ms-powerpoint" };
+        img.src = `https://img.icons8.com/color/96/000000/${map[ext]||"file"}.png`;
+      }
+      if (!["jpg","jpeg","png","gif","bmp","webp"].includes(ext)) img.className = "file-icon-small";
+
+      const span = document.createElement("span"); span.className = "file-name"; span.textContent = file.name;
+      const rm   = document.createElement("button"); rm.className = "remove-preview"; rm.innerHTML = "✖";
+      rm.onclick = () => {
+        if (uploading) return;
+        selectedFiles.splice(idx, 1);
+        renderPreviews();
+        if (!selectedFiles.length) modalOverlay.style.display = "none";
+      };
+
+      const pc = document.createElement("div"); pc.className = "progress-container";
+      const pb = document.createElement("div"); pb.className = "progress-bar"; pc.appendChild(pb);
+
+      row.append(img, span, rm, pc);
+      selectedCont.appendChild(row);
+    });
+  }
+
+  btnUpload.addEventListener("click", () => {
+    if (uploading || !selectedFiles.length) return;
+    uploading = true;
+    btnUpload.disabled = true;
+    btnUpload.classList.add("disabled");
+    btnUpload.textContent = "Subiendo…";
+    selectedCont.querySelectorAll(".remove-preview").forEach(b => {
+      b.disabled = true; b.innerHTML = "🔒";
+    });
+    startUpload();
+  });
+
+  function startUpload() {
+    let done = 0;
+    const perc = new Array(selectedFiles.length).fill(0);
+    selectedFiles.forEach((file, idx) => {
+      const bar = selectedCont.children[idx].querySelector(".progress-bar");
+      const dest = ref(storage, `${auth.currentUser.email}/${folderName}/${file.name}`);
+      const t = uploadBytesResumable(dest, file);
+
+      t.on("state_changed", s => {
+        const p = Math.round((s.bytesTransferred / s.totalBytes) * 100);
+        bar.style.width = p + "%";
+        perc[idx] = p;
+        globalBar.style.width = (perc.reduce((a, b) => a + b, 0) / perc.length) + "%";
+      }, console.error, async () => {
+        done++;
+        const url = await getDownloadURL(dest);
+        const item = buildItem(file.name, url, dest.fullPath, new Date());
+        gallery.appendChild(item);
+        galleryItems.push(item);
+        updateCounters();
+        if (done === selectedFiles.length) {
+          uploading = false;
+          alert("Todos los archivos se subieron correctamente.");
+          modalOverlay.style.display = "none";
+          selectedFiles = [];
+        }
+      });
+    });
+  }
+
+  /* --------------- EXPONER PARA ONCLICK HTML --------------- */
+  Object.assign(window, { filterGallery, toggleSearch, searchDocuments, deleteSelectedFiles });
 </script>
+
 
 </body>
 </html>
