@@ -224,7 +224,6 @@
     </div>
   </div>
 
-  <!-- ================= SCRIPTS ================= -->
 <script type="module">
   /* --------------- IMPORTS FIREBASE --------------- */
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
@@ -248,64 +247,68 @@
 
   /* --------------- VARS & ELEMENTS --------------- */
   let galleryItems = [];
+  const audioList = [];                       // lista de pistas
+  let currentAudio = null,
+      currentAudioElement = null,
+      currentIndex = -1;
+
   const folderName = new URLSearchParams(location.search).get("folder");
-  if (!folderName) { alert("No se especificó ninguna carpeta."); location.href = "MisCarpetas.html"; }
+  if (!folderName) {
+    alert("No se especificó ninguna carpeta.");
+    location.href = "MisCarpetas.html";
+  }
 
-  const gallery = document.getElementById("gallery");
-  const filterAll = document.getElementById("filterAll");
-  const filterPhoto = document.getElementById("filterPhoto");
-  const filterVideo = document.getElementById("filterVideo");
-  const filterDocument = document.getElementById("filterDocument");
-  const filterAudio = document.getElementById("filterAudio");
-  const filterButtons = {
-    all: filterAll,
-    photo: filterPhoto,
-    video: filterVideo,
-    document: filterDocument,
-    audio: filterAudio
-  };
-
-  const searchInput = document.getElementById("searchInput");
-  const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
-
-  const fileInput = document.getElementById("fileInput");
-  const modalOverlay = document.getElementById("modalOverlay");
-  const modal = document.getElementById("modal");
-  const selectedCont = document.getElementById("selectedFiles");
-  const btnUpload = document.getElementById("btnUpload");
-  const btnCancel = document.getElementById("btnCancel");
-  const btnMinimize = document.getElementById("btnMinimize");
-  const globalBar = document.getElementById("globalProgressBar");
+  const gallery          = document.getElementById("gallery");
+  const filterAll        = document.getElementById("filterAll");
+  const filterPhoto      = document.getElementById("filterPhoto");
+  const filterVideo      = document.getElementById("filterVideo");
+  const filterDocument   = document.getElementById("filterDocument");
+  const filterAudio      = document.getElementById("filterAudio");
+  const filterButtons    = { all:filterAll, photo:filterPhoto, video:filterVideo, document:filterDocument, audio:filterAudio };
+  const searchInput      = document.getElementById("searchInput");
+  const deleteSelectedBtn= document.getElementById("deleteSelectedBtn");
+  const fileInput        = document.getElementById("fileInput");
+  const modalOverlay     = document.getElementById("modalOverlay");
+  const modal            = document.getElementById("modal");
+  const selectedCont     = document.getElementById("selectedFiles");
+  const btnUpload        = document.getElementById("btnUpload");
+  const btnCancel        = document.getElementById("btnCancel");
+  const btnMinimize      = document.getElementById("btnMinimize");
+  const globalBar        = document.getElementById("globalProgressBar");
 
   let selectedFiles = [], uploading = false;
-  let currentAudio = null;
-  let currentAudioElement = null;
 
   /* --------------- AUTH --------------- */
   auth.onAuthStateChanged(user => {
     if (user) loadGallery(user.email);
-    else { alert("Por favor, inicia sesión."); location.href = "index.html"; }
+    else {
+      alert("Por favor, inicia sesión.");
+      location.href = "index.html";
+    }
   });
 
   /* --------------- LOAD GALLERY --------------- */
   async function loadGallery(email) {
     const listRef = ref(storage, `${email}/${folderName}/`);
     let result;
-    try { result = await listAll(listRef); }
-    catch (e) { console.error(e); alert("Error al cargar la galería."); return; }
-
+    try {
+      result = await listAll(listRef);
+    } catch (e) {
+      console.error(e);
+      alert("Error al cargar la galería.");
+      return;
+    }
     gallery.innerHTML = "";
     galleryItems = [];
+    audioList.length = 0;
 
-    const tasks = result.items.map(async itemRef => {
-      const url = await getDownloadURL(itemRef);
+    await Promise.all(result.items.map(async itemRef => {
+      const url  = await getDownloadURL(itemRef);
       const date = new Date();
       const item = buildItem(itemRef.name, url, itemRef.fullPath, date);
       gallery.appendChild(item);
       galleryItems.push(item);
-    });
-
-    await Promise.all(tasks);
+    }));
     updateCounters();
   }
 
@@ -313,8 +316,8 @@
     const item = document.createElement("div");
     item.className = "gallery-item";
     const ext = name.split(".").pop().toLowerCase();
-
     let media;
+
     if (["jpg","jpeg","png","gif","bmp","webp"].includes(ext)) {
       item.dataset.type = "photo";
       media = new Image(); media.src = url;
@@ -340,8 +343,10 @@
       const a = document.createElement("a"); a.href = url; a.textContent = "Descargar"; a.target = "_blank";
       item.append(media, h, a);
 
-      // ajustamos el listener para pasar también el nombre
-      media.addEventListener("click", () => handleAudioClick(media, url, name));
+      // registrar en playlist
+      const idx = audioList.length;
+      audioList.push({ elem: media, url, title: name });
+      media.addEventListener("click", () => playAtIndex(idx));
     }
     else {
       item.dataset.type = "document";
@@ -372,16 +377,18 @@
     return item;
   }
 
-  /* --------------- HANDLE AUDIO CLICK + MEDIA SESSION --------------- */
-  function handleAudioClick(elem, audioUrl, title) {
-    // mismo ícono: togglear play/pause
-    if (currentAudio && currentAudioElement === elem) {
+  /* --------------- PLAYER + MEDIA SESSION --------------- */
+  function playAtIndex(idx) {
+    if (idx < 0 || idx >= audioList.length) return;
+
+    // mismo ícono? toggle
+    if (currentAudio && currentIndex === idx) {
       if (!currentAudio.paused) {
         currentAudio.pause();
-        elem.classList.remove("playing");
+        currentAudioElement.classList.remove("playing");
       } else {
         currentAudio.play();
-        elem.classList.add("playing");
+        currentAudioElement.classList.add("playing");
       }
       return;
     }
@@ -392,34 +399,38 @@
       currentAudioElement.classList.remove("playing");
     }
 
-    // iniciar nuevo
-    currentAudio = new Audio(audioUrl);
-    currentAudioElement = elem;
+    // arrancar nuevo
+    currentIndex = idx;
+    currentAudioElement = audioList[idx].elem;
+    currentAudio = new Audio(audioList[idx].url);
     currentAudio.play();
-    elem.classList.add("playing");
+    currentAudioElement.classList.add("playing");
 
-    // ** Media Session API **
+    // Media Session
     if ('mediaSession' in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
-        title: title,
+        title: audioList[idx].title,
         artist: '',
         album: folderName,
-        artwork: [
-          { src: elem.src, sizes: '96x96', type: 'image/png' }
-        ]
+        artwork: [{ src: currentAudioElement.src, sizes: '96x96', type: 'image/png' }]
       });
       navigator.mediaSession.setActionHandler('play',  () => currentAudio.play());
       navigator.mediaSession.setActionHandler('pause', () => currentAudio.pause());
-      navigator.mediaSession.setActionHandler('previoustrack', () => {});
-      navigator.mediaSession.setActionHandler('nexttrack',     () => {});
+      navigator.mediaSession.setActionHandler('previoustrack', playPrev);
+      navigator.mediaSession.setActionHandler('nexttrack',     playNext);
     }
 
-    // limpiar cuando termine
     currentAudio.addEventListener("ended", () => {
-      elem.classList.remove("playing");
-      currentAudio = null;
-      currentAudioElement = null;
+      currentAudioElement.classList.remove("playing");
+      playNext();
     });
+  }
+
+  function playNext() {
+    playAtIndex((currentIndex + 1) % audioList.length);
+  }
+  function playPrev() {
+    playAtIndex((currentIndex - 1 + audioList.length) % audioList.length);
   }
 
   /* --------------- COUNTERS & FILTERS --------------- */
@@ -596,6 +607,7 @@
   /* --------------- EXPONER PARA ONCLICK HTML --------------- */
   Object.assign(window, { filterGallery, toggleSearch, searchDocuments, deleteSelectedFiles });
 </script>
+
 
 
 
