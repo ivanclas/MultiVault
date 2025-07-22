@@ -340,7 +340,8 @@
       const a = document.createElement("a"); a.href = url; a.textContent = "Descargar"; a.target = "_blank";
       item.append(media, h, a);
 
-      media.addEventListener("click", () => handleAudioClick(media, url));
+      // ajustamos el listener para pasar también el nombre
+      media.addEventListener("click", () => handleAudioClick(media, url, name));
     }
     else {
       item.dataset.type = "document";
@@ -371,9 +372,9 @@
     return item;
   }
 
-  /* --------------- HANDLE AUDIO CLICK --------------- */
-  function handleAudioClick(elem, audioUrl) {
-    // Si es el mismo ícono y hay un audio cargado, alternar play/pause
+  /* --------------- HANDLE AUDIO CLICK + MEDIA SESSION --------------- */
+  function handleAudioClick(elem, audioUrl, title) {
+    // mismo ícono: togglear play/pause
     if (currentAudio && currentAudioElement === elem) {
       if (!currentAudio.paused) {
         currentAudio.pause();
@@ -385,19 +386,35 @@
       return;
     }
 
-    // Si hay otro audio reproduciéndose, pausarlo
+    // pausar anterior
     if (currentAudio) {
       currentAudio.pause();
       currentAudioElement.classList.remove("playing");
     }
 
-    // Iniciar nuevo audio
+    // iniciar nuevo
     currentAudio = new Audio(audioUrl);
     currentAudioElement = elem;
     currentAudio.play();
     elem.classList.add("playing");
 
-    // Al finalizar, limpiar estado
+    // ** Media Session API **
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: title,
+        artist: '',
+        album: folderName,
+        artwork: [
+          { src: elem.src, sizes: '96x96', type: 'image/png' }
+        ]
+      });
+      navigator.mediaSession.setActionHandler('play',  () => currentAudio.play());
+      navigator.mediaSession.setActionHandler('pause', () => currentAudio.pause());
+      navigator.mediaSession.setActionHandler('previoustrack', () => {});
+      navigator.mediaSession.setActionHandler('nexttrack',     () => {});
+    }
+
+    // limpiar cuando termine
     currentAudio.addEventListener("ended", () => {
       elem.classList.remove("playing");
       currentAudio = null;
@@ -410,10 +427,10 @@
     let cAll = galleryItems.length, cP=0, cV=0, cD=0, cA=0;
     galleryItems.forEach(i => {
       switch (i.dataset.type) {
-        case "photo": cP++; break;
-        case "video": cV++; break;
-        case "document": cD++; break;
-        case "audio": cA++; break;
+        case "photo":   cP++; break;
+        case "video":   cV++; break;
+        case "document":cD++; break;
+        case "audio":   cA++; break;
       }
     });
     filterAll.textContent     = `Todo (${cAll})`;
@@ -447,7 +464,7 @@
     deleteSelectedBtn.style.display = document.querySelectorAll(".gallery-checkbox:checked").length ? "flex" : "none";
   }
   async function deleteSingle(fullPath, item) {
-    if(!confirm("¿Eliminar este archivo?")) return;
+    if (!confirm("¿Eliminar este archivo?")) return;
     try {
       await deleteObject(ref(storage, fullPath));
       item.remove();
@@ -579,6 +596,7 @@
   /* --------------- EXPONER PARA ONCLICK HTML --------------- */
   Object.assign(window, { filterGallery, toggleSearch, searchDocuments, deleteSelectedFiles });
 </script>
+
 
 
 </body>
