@@ -15,7 +15,6 @@ self.addEventListener('install', (e) => {
          'verGaleria.html',
          'verGaleria2.html',
          'verGaleria3.html',
-        'script.js',
         'iconGaleria.png',
         'manifest.json'
       ]);
