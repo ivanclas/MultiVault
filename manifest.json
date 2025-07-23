@@ -2,7 +2,7 @@
   "name": "MultiVault",
   "short_name": "Aplicación", 
   "description": "Mantén tus recuerdos seguros", 
-  "start_url": "index.html",  
+  "start_url": "/index.html",  
   "background_color": "#ffffff",  
   "theme_color": "#4CAF50",  
   "icons": [
