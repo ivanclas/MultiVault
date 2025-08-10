@@ -138,7 +138,7 @@
     });
 
     // Botones
-    logoutBtn.addEventListener('click', () => { if (confirm('¿Cerrar sesión?')) signOut(auth).then(() => location.href = 'index.html'); });
+    logoutBtn.addEventListener('click', () => { if (confirm('¿Cerrar sesión?')) signOut(auth).then(() => location.href = 'login.html'); });
     newFolderBtn.addEventListener('click', () => location.href = 'nuevo.html');
     selectBtn.addEventListener('click', () => fileInput.click());
     selectFolderBtn.addEventListener('click', () => folderInput.click());
