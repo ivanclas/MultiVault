@@ -1,427 +1,243 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bienvenido a MultiVault</title>
-   <style>
-        /* Tus estilos existentes */
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .login-container {
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            position: relative;
-        }
-
-        h1 {
-            color: #333;
-            font-size: 28px;
-            margin-bottom: 20px;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        input {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-            box-sizing: border-box;
-            position: relative;
-        }
-
-        input:focus {
-            border-color: #007bff;
-            outline: none;
-        }
-
-        .input-wrapper {
-            position: relative;
-            width: 100%;
-        }
-
-        .input-wrapper input {
-            padding-right: 40px;
-        }
-
-        .toggle-password {
-            position: absolute;
-            top: 50%;
-            right: 10px;
-            transform: translateY(-50%);
-            cursor: pointer;
-            width: 20px;
-            height: 20px;
-        }
-
-        .toggle-password svg {
-            fill: #999;
-            width: 100%;
-            height: 100%;
-        }
-
-        .toggle-password:hover svg {
-            fill: #333;
-        }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        p {
-            margin-top: 20px;
-            color: #666;
-        }
-
-        a {
-            color: #007bff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            position: relative;
-        }
-
-        .modal-content h1 {
-            margin-bottom: 20px;
-        }
-
-        .close {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .close:hover {
-            color: #333;
-        }
-
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 2;
-        }
-
-        .loading-overlay p {
-            color: white;
-            font-size: 18px;
-            margin-top: 10px;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .login-container {
-                padding: 30px;
-            }
-
-            h1 {
-                font-size: 24px;
-            }
-
-            input, button {
-                padding: 12px;
-                font-size: 14px;
-            }
-        }
-
-        /* Estilos para el botón de Google */
-        .google-login-btn {
-            width: 100%;
-            padding: 15px;
-            background-color: #4285F4;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .google-login-btn:hover {
-            background-color: #3367D6;
-        }
-
-        /* Iconos en los botones */
-        button i {
-            margin-right: 10px;
-            font-size: 18px;
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Login con Huella + Firebase</title>
+<link rel="icon" href="iconGaleria.png" type="image/png" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+  :root { --bg: #f5f7fa; --panel:#fff; --text:#333; --muted:#757575; --primary:#007bff; --accent:#1e88e5; --danger:#e53935; }
+  *{box-sizing:border-box}
+  body{font-family:'Poppins',sans-serif;background:linear-gradient(135deg,#00c6ff,#0072ff);display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;padding:20px}
+  .login-container{background:#fff;padding:32px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.15);width:100%;max-width:420px;text-align:center}
+  h1{color:#333;font-size:26px;margin:0 0 14px}
+  p.lead{color:#666;margin:0 0 18px;font-size:14px}
+  .input-wrapper{position:relative;margin:10px 0}
+  input{width:100%;padding:14px 14px;border:2px solid #ddd;border-radius:10px;font-size:15px}
+  input:focus{outline:none;border-color:var(--primary)}
+  button{width:100%;padding:14px;border:none;border-radius:10px;cursor:pointer;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;transition:transform .15s}
+  button:hover{transform:translateY(-1px)}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-google{background:#4285F4;color:#fff}
+  .btn-fp{background:#111827;color:#fff}
+  .divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:#888}
+  .divider::before,.divider::after{content:"";height:1px;background:#e0e0e0;flex:1}
+  .hint{font-size:12px;color:#666;margin-top:8px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+  .toast.show{opacity:1;transform:translate(-50%,-6px)}
+</style>
 </head>
 <body>
-  <header>
-    <h1>Bienvenido a MultiVault</h1>
-    <button id="logoutBtn">Cerrar Sesión</button>
-  </header>
+  <div class="login-container">
+    <h1>Iniciar Sesión</h1>
+    <p class="lead">Usa tu correo/Google y registra tu huella para desbloqueo rápido.</p>
 
-  <!-- Formulario de login -->
-  <div id="loginForm">
-    <input type="email" id="email" placeholder="Correo" />
-    <input type="password" id="password" placeholder="Contraseña" />
-    <button onclick="login()">Ingresar</button>
-    <br><br>
-    <button class="google-btn" onclick="loginWithGoogle()">Iniciar con Google</button>
-    <br><br>
-    <button onclick="loginWithFingerprint()">Ingresar con Huella</button>
-  </div>
-
-  <!-- El resto de la interfaz, por ejemplo, mostrar usuario y panel -->
-  <div class="header-spacer"></div>
-  <div id="userCard" class="user-card">
-    <div id="avatar" class="avatar">U</div>
-    <div class="user-info">
-      <span id="uName" class="user-name"></span>
-      <span id="uMail" class="user-email"></span>
+    <div class="input-wrapper">
+      <input type="email" id="email" placeholder="Correo" autocomplete="username" />
     </div>
-  </div>
-
-  <div class="panel">
-    <div class="btn-grid">
-      <button id="selectBtn" class="panel-btn accent-btn">📂 Seleccionar Archivos</button>
-      <button id="selectFolderBtn" class="panel-btn accent-btn">📁 Seleccionar Carpeta</button>
-      <button id="uploadBtn" class="panel-btn upload-btn">⬆ Subir</button>
+    <div class="input-wrapper">
+      <input type="password" id="password" placeholder="Contraseña" autocomplete="current-password" />
     </div>
-    <input id="fileInput" type="file" multiple accept="*/*" style="display:none;" />
-    <input id="folderInput" type="file" webkitdirectory directory multiple style="display:none;" />
-    <div id="selectedImages"></div>
-    <div id="progressBar"><div id="progress"></div><div id="progressMessage"></div></div>
+
+    <button class="btn-primary" id="btnEmail">Ingresar</button>
+    <div class="divider">o</div>
+    <button class="btn-google" id="btnGoogle">Iniciar con Google</button>
+    <button class="btn-fp" id="btnHuella">Ingresar con Huella</button>
+    <div class="hint">Nota: la huella funciona como desbloqueo cuando ya tienes sesión activa. Tras “Cerrar sesión”, deberás ingresar una vez por correo/Google para vincular de nuevo.</div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
-    import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js';
-    import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js';
+  <div id="toast" class="toast"></div>
 
-    // Configuración de Firebase
-    const app = initializeApp({
-      apiKey: 'AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80',
-      authDomain: 'login-de3fd.firebaseapp.com',
-      databaseURL: 'https://login-de3fd-default-rtdb.firebaseio.com',
-      projectId: 'login-de3fd',
-      storageBucket: 'login-de3fd.appspot.com',
-      messagingSenderId: '1064113669692',
-      appId: '1:1064113669692:web:c45b68b5a8a519536f2539',
-    });
+<script type="module">
+  // ===== Firebase v11 =====
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import {
+    getAuth, setPersistence, browserLocalPersistence,
+    signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider,
+    onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+  import {
+    getFirestore, doc, setDoc, getDoc
+  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  const firebaseConfig = {
+    apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
+    authDomain: "login-de3fd.firebaseapp.com",
+    databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
+    projectId: "login-de3fd",
+    storageBucket: "login-de3fd.appspot.com",
+    messagingSenderId: "1064113669692",
+    appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
+    measurementId: "G-TMWR9JNR18"
+  };
 
-    // Elementos del DOM
-    const logoutBtn = document.getElementById('logoutBtn');
-    const userCard = document.getElementById('userCard');
-    const avatarEl = document.getElementById('avatar');
-    const nameEl = document.getElementById('uName');
-    const mailEl = document.getElementById('uMail');
-    const fileInput = document.getElementById('fileInput');
-    const folderInput = document.getElementById('folderInput');
-    const selectBtn = document.getElementById('selectBtn');
-    const selectFolderBtn = document.getElementById('selectFolderBtn');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const selectedContainer = document.getElementById('selectedImages');
-    const progressBar = document.getElementById('progressBar');
-    const progressEl = document.getElementById('progress');
-    const progressMsg = document.getElementById('progressMessage');
-    const toast = document.getElementById('toast');
-    const fileCountElement = document.getElementById('fileCount');
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  await setPersistence(auth, browserLocalPersistence);
 
-    let files = [];
-    let uploading = false;
+  // ===== UI helpers =====
+  const $ = (sel)=>document.querySelector(sel);
+  const toast = $('#toast');
+  const notify = (msg)=>{ toast.textContent=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),2200); };
 
-    // Manejo del estado de autenticación (verifica si el usuario está autenticado)
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const email = user.email;
-        const displayName = user.displayName || email.split('@')[0];
-        avatarEl.textContent = displayName.charAt(0).toUpperCase();
-        nameEl.textContent = displayName;
-        mailEl.textContent = email;
-        userCard.style.display = 'flex';
+  // ===== DOM =====
+  const emailEl = $('#email');
+  const passEl  = $('#password');
+  const btnEmail  = $('#btnEmail');
+  const btnGoogle = $('#btnGoogle');
+  const btnHuella = $('#btnHuella');
 
-        // Recupera la huella de Firebase (Firestore)
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          const fingerprintId = userSnap.data().fingerprintId;
-          if (fingerprintId) {
-            localStorage.setItem('fingerprintId', fingerprintId);
-          }
+  const provider = new GoogleAuthProvider();
+
+  // ========== WebAuthn helpers ==========
+  const b64ToBytes = (b64)=>Uint8Array.from(atob(b64), c=>c.charCodeAt(0));
+  const bytesToB64 = (bytes)=>btoa(String.fromCharCode(...new Uint8Array(bytes)));
+
+  async function registerPasskeyForUser(user) {
+    try {
+      if (!window.PublicKeyCredential) { notify("Este navegador no soporta WebAuthn"); return; }
+      const email = user.email;
+      // challenge temporal (demo). En prod, debe venir del servidor:
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const userId = new TextEncoder().encode(user.uid);
+
+      const cred = await navigator.credentials.create({
+        publicKey: {
+          challenge,
+          rp: { name: "MultiVault" },
+          user: { id: userId, name: email, displayName: email },
+          pubKeyCredParams: [{ type:"public-key", alg: -7 }], // ES256
+          authenticatorSelection: { authenticatorAttachment:"platform", userVerification:"required" },
+          timeout: 60000,
+          attestation: "none"
         }
+      });
+
+      const credentialIdB64 = bytesToB64(cred.rawId);
+      // Guardar en Firestore (por uid)
+      await setDoc(doc(db, "users", user.uid), {
+        email: email,
+        displayName: user.displayName || email.split("@")[0],
+        credentialId: credentialIdB64,
+        updatedAt: new Date().toISOString()
+      }, { merge:true });
+
+      // Para facilitar lookup por email (opcional):
+      await setDoc(doc(db, "passkeys", email.toLowerCase()), {
+        uid: user.uid,
+        credentialId: credentialIdB64,
+        updatedAt: new Date().toISOString()
+      }, { merge:true });
+
+      localStorage.setItem("credentialId", credentialIdB64);
+      localStorage.setItem("userEmail", email);
+      notify("Huella registrada correctamente");
+    } catch (e) {
+      console.warn("registerPasskeyForUser error:", e);
+      notify("No se pudo registrar la huella");
+    }
+  }
+
+  async function getCredentialIdForUser(user) {
+    // Prioriza Firestore; si no está, usa localStorage
+    try {
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (snap.exists() && snap.data().credentialId) {
+        localStorage.setItem("credentialId", snap.data().credentialId);
+        localStorage.setItem("userEmail", user.email);
+        return snap.data().credentialId;
+      }
+    } catch (e) { /* ignore */ }
+    return localStorage.getItem("credentialId");
+  }
+
+  async function authenticateWithPasskey(credentialIdB64) {
+    const rawId = b64ToBytes(credentialIdB64);
+    const assertion = await navigator.credentials.get({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        allowCredentials: [{ id: rawId, type:"public-key", transports:["internal"] }],
+        userVerification: "required",
+        timeout: 60000
+      }
+    });
+    return !!assertion; // En producción: enviar al servidor para validación real.
+  }
+
+  // ========== Auth flows ==========
+  btnEmail.addEventListener("click", async ()=>{
+    const email = emailEl.value.trim();
+    const pass  = passEl.value;
+    if (!email || !pass) return notify("Completa correo y contraseña");
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, pass);
+      notify("Sesión iniciada");
+      // Recupera passkey si existe; si no hay, ofrece registrar:
+      const saved = await getCredentialIdForUser(cred.user);
+      if (!saved && window.PublicKeyCredential) {
+        // registra en background (no bloquea UX)
+        registerPasskeyForUser(cred.user);
+      }
+      location.href = "dashboard.html";
+    } catch (e) {
+      notify(e.message || "Error al iniciar sesión");
+    }
+  });
+
+  btnGoogle.addEventListener("click", async ()=>{
+    try {
+      const res = await signInWithPopup(auth, provider);
+      notify("Sesión con Google");
+      // registra o actualiza huella
+      const has = await getCredentialIdForUser(res.user);
+      if (!has) await registerPasskeyForUser(res.user);
+      location.href = "dashboard.html";
+    } catch(e) {
+      notify(e.message || "Error con Google");
+    }
+  });
+
+  btnHuella.addEventListener("click", async ()=>{
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        notify("Primero inicia sesión una vez con correo/Google");
+        return;
+      }
+      const credentialIdB64 = await getCredentialIdForUser(user);
+      if (!credentialIdB64) { notify("No tienes huella registrada"); return; }
+      const ok = await authenticateWithPasskey(credentialIdB64);
+      if (ok) {
+        notify("Huella verificada");
+        location.href = "dashboard.html";
       } else {
-        window.location.href = 'index.html'; // Si no hay usuario autenticado, redirigir al login
+        notify("No se pudo verificar la huella");
       }
-    });
+    } catch(e) {
+      notify(e.message || "Error con huella");
+    }
+  });
 
-    // Cerrar sesión
-    logoutBtn.addEventListener('click', () => {
-      if (confirm('¿Cerrar sesión?')) {
-        signOut(auth).then(() => {
-          localStorage.removeItem('fingerprintId');
-          location.href = 'index.html';
-        });
-      }
-    });
-
-    // **Login con correo y contraseña**
-    async function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        localStorage.setItem('userEmail', email);
-
-        // Recuperar la huella desde Firestore
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          const fingerprintId = userSnap.data().fingerprintId;
-          if (fingerprintId) {
-            localStorage.setItem('fingerprintId', fingerprintId);
-          }
-        }
-
-        alert('Login exitoso');
-        location.href = 'dashboard.html'; // Redirigir al panel de control
-      } catch (error) {
-        alert('Error: ' + error.message);
+  // Autologin con huella si ya hay sesión y passkey guardada
+  onAuthStateChanged(auth, async (user)=>{
+    if (user) {
+      // Si ya se guardó una passkey, puedes intentar levantarla automáticamente:
+      const credentialIdB64 = await getCredentialIdForUser(user);
+      if (credentialIdB64) {
+        try {
+          // Opcional: autoverificación silenciosa al abrir
+          // await authenticateWithPasskey(credentialIdB64);
+          // Redirige si quieres auto-entrar:
+          // location.href = "dashboard.html";
+        } catch { /* usuario puede cancelar */ }
       }
     }
-
-    // **Login con Google**
-    const provider = new GoogleAuthProvider();
-    async function loginWithGoogle() {
-      try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        localStorage.setItem('userEmail', user.email);
-
-        // Guardar la huella en Firebase (Firestore)
-        const userRef = doc(db, 'users', user.uid);
-        await setDoc(userRef, { fingerprintId: user.uid }, { merge: true });
-
-        alert('Login con Google exitoso');
-        location.href = 'dashboard.html'; // Redirigir al panel de control
-      } catch (error) {
-        alert('Error con Google: ' + error.message);
-      }
-    }
-
-    // **Login con huella**
-    async function loginWithFingerprint() {
-      const savedFingerprintId = localStorage.getItem('fingerprintId');
-      if (savedFingerprintId) {
-        // Realizar la verificación de huella
-        const cred = await navigator.credentials.get({
-          publicKey: {
-            challenge: crypto.getRandomValues(new Uint8Array(32)),
-            allowCredentials: [{
-              id: new Uint8Array(atob(savedFingerprintId).split("").map(c => c.charCodeAt(0))),
-              type: "public-key",
-              transports: ["internal"]
-            }],
-            userVerification: "required"
-          }
-        });
-
-        if (cred) {
-          alert('Huella verificada');
-          location.href = 'dashboard.html'; // Redirigir al panel de control
-        } else {
-          alert('Error en la verificación de la huella');
-        }
-      } else {
-        alert('No tienes una huella registrada.');
-      }
-    }
-
-  </script>
+  });
+</script>
 </body>
 </html>
