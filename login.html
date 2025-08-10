@@ -241,13 +241,46 @@
     <h1>Bienvenido a MultiVault</h1>
     <button id="logoutBtn">Cerrar Sesión</button>
   </header>
-  <!-- Restante de la interfaz -->
+
+  <!-- Formulario de login -->
+  <div id="loginForm">
+    <input type="email" id="email" placeholder="Correo" />
+    <input type="password" id="password" placeholder="Contraseña" />
+    <button onclick="login()">Ingresar</button>
+    <br><br>
+    <button class="google-btn" onclick="loginWithGoogle()">Iniciar con Google</button>
+    <br><br>
+    <button onclick="loginWithFingerprint()">Ingresar con Huella</button>
+  </div>
+
+  <!-- El resto de la interfaz, por ejemplo, mostrar usuario y panel -->
+  <div class="header-spacer"></div>
+  <div id="userCard" class="user-card">
+    <div id="avatar" class="avatar">U</div>
+    <div class="user-info">
+      <span id="uName" class="user-name"></span>
+      <span id="uMail" class="user-email"></span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="btn-grid">
+      <button id="selectBtn" class="panel-btn accent-btn">📂 Seleccionar Archivos</button>
+      <button id="selectFolderBtn" class="panel-btn accent-btn">📁 Seleccionar Carpeta</button>
+      <button id="uploadBtn" class="panel-btn upload-btn">⬆ Subir</button>
+    </div>
+    <input id="fileInput" type="file" multiple accept="*/*" style="display:none;" />
+    <input id="folderInput" type="file" webkitdirectory directory multiple style="display:none;" />
+    <div id="selectedImages"></div>
+    <div id="progressBar"><div id="progress"></div><div id="progressMessage"></div></div>
+  </div>
+
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
-    import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js';
+    import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js';
     import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js';
 
-    // Configuración Firebase
+    // Configuración de Firebase
     const app = initializeApp({
       apiKey: 'AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80',
       authDomain: 'login-de3fd.firebaseapp.com',
@@ -282,7 +315,7 @@
     let files = [];
     let uploading = false;
 
-    // Auth state change (verifica que el usuario esté logueado)
+    // Manejo del estado de autenticación (verifica si el usuario está autenticado)
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const email = user.email;
@@ -292,8 +325,8 @@
         mailEl.textContent = email;
         userCard.style.display = 'flex';
 
-        // Recupera la huella del usuario desde la base de datos
-        const userRef = doc(db, 'users', user.uid);  // 'users' es la colección
+        // Recupera la huella de Firebase (Firestore)
+        const userRef = doc(db, 'users', user.uid);
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
           const fingerprintId = userSnap.data().fingerprintId;
@@ -302,11 +335,11 @@
           }
         }
       } else {
-        window.location.href = 'index.html';
+        window.location.href = 'index.html'; // Si no hay usuario autenticado, redirigir al login
       }
     });
 
-    // Logout handler
+    // Cerrar sesión
     logoutBtn.addEventListener('click', () => {
       if (confirm('¿Cerrar sesión?')) {
         signOut(auth).then(() => {
@@ -316,88 +349,78 @@
       }
     });
 
-    // Registrar credencial biométrica y guardarla en Firestore
-    async function registerBiometricCredential() {
+    // **Login con correo y contraseña**
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
       try {
-        if (!window.PublicKeyCredential) {
-          console.warn('WebAuthn no soportado en este navegador');
-          return;
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        localStorage.setItem('userEmail', email);
+
+        // Recuperar la huella desde Firestore
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const fingerprintId = userSnap.data().fingerprintId;
+          if (fingerprintId) {
+            localStorage.setItem('fingerprintId', fingerprintId);
+          }
         }
 
-        const email = localStorage.getItem('userEmail');
-        if (!email) return;
-
-        const userId = new TextEncoder().encode(email); // ID único basado en el email
-
-        const cred = await navigator.credentials.create({
-          publicKey: {
-            challenge: crypto.getRandomValues(new Uint8Array(32)),
-            rp: { name: 'Mi App' },
-            user: {
-              id: userId,
-              name: email,
-              displayName: email
-            },
-            pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
-            authenticatorSelection: {
-              authenticatorAttachment: 'platform',
-              userVerification: 'required'
-            },
-            timeout: 60000,
-            attestation: 'direct'
-          }
-        });
-
-        // Guardar el ID de la credencial en base64 en Firestore
-        const rawIdBase64 = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
-        localStorage.setItem('fingerprintId', rawIdBase64);
-
-        // Guardamos la huella en Firestore
-        const userRef = doc(db, 'users', auth.currentUser.uid);
-        await setDoc(userRef, { fingerprintId: rawIdBase64 }, { merge: true });
-
-        console.log('Credencial biométrica registrada y guardada');
-      } catch (err) {
-        console.warn('No se pudo registrar huella: ' + err.message);
+        alert('Login exitoso');
+        location.href = 'dashboard.html'; // Redirigir al panel de control
+      } catch (error) {
+        alert('Error: ' + error.message);
       }
     }
 
-    // Subir archivos o carpetas al almacenamiento
-    uploadBtn.addEventListener('click', () => {
-      if (!files.length) {
-        alert('No has seleccionado archivos');
-        return;
+    // **Login con Google**
+    const provider = new GoogleAuthProvider();
+    async function loginWithGoogle() {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        localStorage.setItem('userEmail', user.email);
+
+        // Guardar la huella en Firebase (Firestore)
+        const userRef = doc(db, 'users', user.uid);
+        await setDoc(userRef, { fingerprintId: user.uid }, { merge: true });
+
+        alert('Login con Google exitoso');
+        location.href = 'dashboard.html'; // Redirigir al panel de control
+      } catch (error) {
+        alert('Error con Google: ' + error.message);
       }
+    }
 
-      uploading = true;
-      progressBar.style.display = 'block';
-      progressEl.style.width = '0%';
-      progressMsg.textContent = 'Subiendo...';
-
-      files.forEach((file, index) => {
-        const filePath = `/${mailEl.textContent}/${file.name}`;
-        const storageRef = ref(storage, filePath);
-        const uploadTask = uploadBytesResumable(storageRef, file);
-
-        uploadTask.on(
-          'state_changed',
-          (snapshot) => {
-            const progress =
-              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            progressEl.style.width = progress + '%';
-          },
-          (error) => {
-            console.error('Error en la subida del archivo: ', error);
-            alert('Error al subir el archivo.');
-          },
-          () => {
-            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-              console.log('Archivo subido con éxito: ', downloadURL);
-            });
+    // **Login con huella**
+    async function loginWithFingerprint() {
+      const savedFingerprintId = localStorage.getItem('fingerprintId');
+      if (savedFingerprintId) {
+        // Realizar la verificación de huella
+        const cred = await navigator.credentials.get({
+          publicKey: {
+            challenge: crypto.getRandomValues(new Uint8Array(32)),
+            allowCredentials: [{
+              id: new Uint8Array(atob(savedFingerprintId).split("").map(c => c.charCodeAt(0))),
+              type: "public-key",
+              transports: ["internal"]
+            }],
+            userVerification: "required"
           }
-        );
-      });
-    });
+        });
+
+        if (cred) {
+          alert('Huella verificada');
+          location.href = 'dashboard.html'; // Redirigir al panel de control
+        } else {
+          alert('Error en la verificación de la huella');
+        }
+      } else {
+        alert('No tienes una huella registrada.');
+      }
+    }
 
   </script>
 </body>
