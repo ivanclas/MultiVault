@@ -286,6 +286,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"; 
 
         const firebaseConfig = {
             apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
@@ -301,6 +302,28 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+        const db = getDatabase(app);
+
+        // ======== Registro ========
+        window.register = async function() {
+            const email = document.getElementById("register-email").value;
+            const password = document.getElementById("register-password").value;
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                
+                // Guardar el correo en Realtime Database
+                const userRef = ref(db, 'users/' + email.replace('.', ','));
+                set(userRef, {
+                    email: email,
+                    loggedIn: true
+                });
+
+                alert("Registro exitoso");
+                closeModal(); // Cerrar el modal de registro
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
+        }
 
         // ======== Login normal ========
         window.login = async function() {
@@ -310,6 +333,7 @@
                 await signInWithEmailAndPassword(auth, email, password);
                 localStorage.setItem("userEmail", email);
                 await registerBiometricCredential();
+
                 alert("Inicio de sesión exitoso");
                 location.href = "formulario.html";
             } catch (error) {
@@ -324,6 +348,7 @@
                 const email = result.user.email;
                 localStorage.setItem("userEmail", email);
                 await registerBiometricCredential();
+
                 alert("Inicio de sesión con Google exitoso");
                 location.href = "formulario.html";
             } catch (error) {
