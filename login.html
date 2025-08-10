@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Login con Huella + Firebase</title>
-<link rel="icon" href="iconGaleria.png" type="image/png" />
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login con Huella + Firebase</title>
+  <link rel="icon" href="iconGaleria.png" type="image/png" />
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
   :root { --bg: #f5f7fa; --panel:#fff; --text:#333; --muted:#757575; --primary:#007bff; --accent:#1e88e5; --danger:#e53935; }
@@ -31,10 +31,11 @@
   .toast.show{opacity:1;transform:translate(-50%,-6px)}
 </style>
 </head>
+</head>
 <body>
   <div class="login-container">
     <h1>Iniciar Sesión</h1>
-    <p class="lead">Usa tu correo/Google y registra tu huella para desbloqueo rápido.</p>
+    <p class="lead">Usa tu correo/Google y registra tu huella para entrar rápido.</p>
 
     <div class="input-wrapper">
       <input type="email" id="email" placeholder="Correo" autocomplete="username" />
@@ -47,195 +48,114 @@
     <div class="divider">o</div>
     <button class="btn-google" id="btnGoogle">Iniciar con Google</button>
     <button class="btn-fp" id="btnHuella">Ingresar con Huella</button>
-    <div class="hint">Nota: la huella funciona como desbloqueo cuando ya tienes sesión activa. Tras “Cerrar sesión”, deberás ingresar una vez por correo/Google para vincular de nuevo.</div>
+    <div class="hint">La huella queda vinculada y podrás entrar sin contraseña mientras no cierres sesión desde la cuenta.</div>
   </div>
 
   <div id="toast" class="toast"></div>
 
 <script type="module">
-  // ===== Firebase v11 =====
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
   import {
     getAuth, setPersistence, browserLocalPersistence,
-    signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider,
-    onAuthStateChanged, signOut
+    signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-  import {
-    getFirestore, doc, setDoc, getDoc
-  } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
     authDomain: "login-de3fd.firebaseapp.com",
-    databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
     projectId: "login-de3fd",
     storageBucket: "login-de3fd.appspot.com",
     messagingSenderId: "1064113669692",
-    appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
-    measurementId: "G-TMWR9JNR18"
+    appId: "1:1064113669692:web:c45b68b5a8a519536f2539"
   };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const db = getFirestore(app);
   await setPersistence(auth, browserLocalPersistence);
 
-  // ===== UI helpers =====
-  const $ = (sel)=>document.querySelector(sel);
+  const $ = s => document.querySelector(s);
   const toast = $('#toast');
-  const notify = (msg)=>{ toast.textContent=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),2200); };
+  const notify = m => { toast.textContent=m; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),2200); };
 
-  // ===== DOM =====
   const emailEl = $('#email');
   const passEl  = $('#password');
   const btnEmail  = $('#btnEmail');
   const btnGoogle = $('#btnGoogle');
   const btnHuella = $('#btnHuella');
-
   const provider = new GoogleAuthProvider();
 
   // ========== WebAuthn helpers ==========
-  const b64ToBytes = (b64)=>Uint8Array.from(atob(b64), c=>c.charCodeAt(0));
-  const bytesToB64 = (bytes)=>btoa(String.fromCharCode(...new Uint8Array(bytes)));
 
-  async function registerPasskeyForUser(user) {
+  const b64ToBytes = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const bytesToB64 = bytes => btoa(String.fromCharCode(...new Uint8Array(bytes)));
+
+  async function registerPasskey(user) {
     try {
-      if (!window.PublicKeyCredential) { notify("Este navegador no soporta WebAuthn"); return; }
-      const email = user.email;
-      // challenge temporal (demo). En prod, debe venir del servidor:
-      const challenge = crypto.getRandomValues(new Uint8Array(32));
-      const userId = new TextEncoder().encode(user.uid);
-
       const cred = await navigator.credentials.create({
         publicKey: {
-          challenge,
-          rp: { name: "MultiVault" },
-          user: { id: userId, name: email, displayName: email },
-          pubKeyCredParams: [{ type:"public-key", alg: -7 }], // ES256
+          challenge: crypto.getRandomValues(new Uint8Array(32)),
+          rp: { name: "Login rápido" },
+          user: { id: new TextEncoder().encode(user.uid), name: user.email, displayName: user.email },
+          pubKeyCredParams: [{ type:"public-key", alg:-7 }],
           authenticatorSelection: { authenticatorAttachment:"platform", userVerification:"required" },
-          timeout: 60000,
+          timeout: 15000,
           attestation: "none"
         }
       });
-
-      const credentialIdB64 = bytesToB64(cred.rawId);
-      // Guardar en Firestore (por uid)
-      await setDoc(doc(db, "users", user.uid), {
-        email: email,
-        displayName: user.displayName || email.split("@")[0],
-        credentialId: credentialIdB64,
-        updatedAt: new Date().toISOString()
-      }, { merge:true });
-
-      // Para facilitar lookup por email (opcional):
-      await setDoc(doc(db, "passkeys", email.toLowerCase()), {
-        uid: user.uid,
-        credentialId: credentialIdB64,
-        updatedAt: new Date().toISOString()
-      }, { merge:true });
-
-      localStorage.setItem("credentialId", credentialIdB64);
-      localStorage.setItem("userEmail", email);
-      notify("Huella registrada correctamente");
-    } catch (e) {
-      console.warn("registerPasskeyForUser error:", e);
-      notify("No se pudo registrar la huella");
-    }
+      const idB64 = bytesToB64(cred.rawId);
+      localStorage.setItem("credentialId", idB64);
+      localStorage.setItem("userEmail", user.email);
+      notify("Huella registrada");
+    } catch(e){ notify("Error registrando huella"); }
   }
 
-  async function getCredentialIdForUser(user) {
-    // Prioriza Firestore; si no está, usa localStorage
+  async function authWithPasskey(credentialIdB64) {
     try {
-      const snap = await getDoc(doc(db, "users", user.uid));
-      if (snap.exists() && snap.data().credentialId) {
-        localStorage.setItem("credentialId", snap.data().credentialId);
-        localStorage.setItem("userEmail", user.email);
-        return snap.data().credentialId;
-      }
-    } catch (e) { /* ignore */ }
-    return localStorage.getItem("credentialId");
+      const rawId = b64ToBytes(credentialIdB64);
+      const assertion = await navigator.credentials.get({
+        publicKey: {
+          challenge: crypto.getRandomValues(new Uint8Array(32)),
+          allowCredentials: [{ id: rawId, type:"public-key", transports:["internal"] }],
+          userVerification: "required",
+          timeout: 15000
+        }
+      });
+      return !!assertion;
+    } catch { return false; }
   }
 
-  async function authenticateWithPasskey(credentialIdB64) {
-    const rawId = b64ToBytes(credentialIdB64);
-    const assertion = await navigator.credentials.get({
-      publicKey: {
-        challenge: crypto.getRandomValues(new Uint8Array(32)),
-        allowCredentials: [{ id: rawId, type:"public-key", transports:["internal"] }],
-        userVerification: "required",
-        timeout: 60000
-      }
-    });
-    return !!assertion; // En producción: enviar al servidor para validación real.
-  }
-
-  // ========== Auth flows ==========
   btnEmail.addEventListener("click", async ()=>{
     const email = emailEl.value.trim();
     const pass  = passEl.value;
-    if (!email || !pass) return notify("Completa correo y contraseña");
+    if(!email || !pass) return notify("Completa datos");
     try {
       const cred = await signInWithEmailAndPassword(auth, email, pass);
-      notify("Sesión iniciada");
-      // Recupera passkey si existe; si no hay, ofrece registrar:
-      const saved = await getCredentialIdForUser(cred.user);
-      if (!saved && window.PublicKeyCredential) {
-        // registra en background (no bloquea UX)
-        registerPasskeyForUser(cred.user);
-      }
-      location.href = "dashboard.html";
-    } catch (e) {
-      notify(e.message || "Error al iniciar sesión");
-    }
+      if (!localStorage.getItem("credentialId")) registerPasskey(cred.user);
+      location.href = "formulario.html";
+    } catch(e){ notify("Error: "+e.message); }
   });
 
   btnGoogle.addEventListener("click", async ()=>{
     try {
       const res = await signInWithPopup(auth, provider);
-      notify("Sesión con Google");
-      // registra o actualiza huella
-      const has = await getCredentialIdForUser(res.user);
-      if (!has) await registerPasskeyForUser(res.user);
-      location.href = "dashboard.html";
-    } catch(e) {
-      notify(e.message || "Error con Google");
-    }
+      if (!localStorage.getItem("credentialId")) registerPasskey(res.user);
+      location.href = "formulario.html";
+    } catch(e){ notify("Error: "+e.message); }
   });
 
   btnHuella.addEventListener("click", async ()=>{
-    try {
-      const user = auth.currentUser;
-      if (!user) {
-        notify("Primero inicia sesión una vez con correo/Google");
-        return;
-      }
-      const credentialIdB64 = await getCredentialIdForUser(user);
-      if (!credentialIdB64) { notify("No tienes huella registrada"); return; }
-      const ok = await authenticateWithPasskey(credentialIdB64);
-      if (ok) {
-        notify("Huella verificada");
-        location.href = "dashboard.html";
-      } else {
-        notify("No se pudo verificar la huella");
-      }
-    } catch(e) {
-      notify(e.message || "Error con huella");
-    }
+    const id = localStorage.getItem("credentialId");
+    if (!id) return notify("No hay huella guardada");
+    const ok = await authWithPasskey(id);
+    if (ok) location.href = "formulario.html";
+    else notify("Huella no verificada");
   });
 
-  // Autologin con huella si ya hay sesión y passkey guardada
-  onAuthStateChanged(auth, async (user)=>{
-    if (user) {
-      // Si ya se guardó una passkey, puedes intentar levantarla automáticamente:
-      const credentialIdB64 = await getCredentialIdForUser(user);
-      if (credentialIdB64) {
-        try {
-          // Opcional: autoverificación silenciosa al abrir
-          // await authenticateWithPasskey(credentialIdB64);
-          // Redirige si quieres auto-entrar:
-          // location.href = "dashboard.html";
-        } catch { /* usuario puede cancelar */ }
-      }
+  // Auto login si ya hay sesión y huella guardada
+  onAuthStateChanged(auth, async user=>{
+    if (user && localStorage.getItem("credentialId")) {
+      const ok = await authWithPasskey(localStorage.getItem("credentialId"));
+      if (ok) location.href = "formulario.html";
     }
   });
 </script>
