@@ -4,42 +4,99 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login con Huella + Firebase</title>
+  <link rel="icon" href="iconGaleria.png" type="image/png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
-    body{font-family:'Poppins',sans-serif;background:linear-gradient(135deg,#00c6ff,#0072ff);display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
-    .login-container{background:#fff;padding:32px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.1);width:100%;max-width:420px;text-align:center}
-    h2{margin:0 0 16px}
-    input{width:100%;padding:14px;margin:8px 0;border:2px solid #ddd;border-radius:10px;font-size:16px;box-sizing:border-box}
-    button{width:100%;padding:14px;margin-top:12px;border:0;border-radius:10px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;background:#007bff;color:#fff}
-    button:hover{background:#0056b3}
-    .google-btn{background:#4285F4}
-    .google-btn:hover{background:#3367D6}
-    .passkey{background:#111827}
-    .passkey:hover{background:#0b1220}
-    .hint{color:#666;font-size:12px;margin-top:8px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .spinner{display:none;margin:12px auto;border:4px solid rgba(0,0,0,.1);border-top:4px solid #000;border-radius:50%;width:36px;height:36px;animation:spin 1s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
+    /* Estilos de tu login original, con pequeñas mejoras */
+    body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #00c6ff, #0072ff); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .login-container { background-color: #fff; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; position: relative; }
+    h1 { color: #333; font-size: 28px; margin-bottom: 20px; font-weight: bold; letter-spacing: 1px; }
+    input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; transition: border-color 0.3s ease; box-sizing: border-box; position: relative; }
+    input:focus { border-color: #007bff; outline: none; }
+    .input-wrapper { position: relative; width: 100%; }
+    .input-wrapper input { padding-right: 40px; }
+    .toggle-password { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer; width: 20px; height: 20px; }
+    .toggle-password svg { fill: #999; width: 100%; height: 100%; }
+    .toggle-password:hover svg { fill: #333; }
+    button { width: 100%; padding: 15px; background-color: #007bff; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; transition: background-color 0.3s ease; margin-top: 12px; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    button:hover { background-color: #0056b3; }
+    .google-login-btn { background-color: #4285F4; }
+    .google-login-btn:hover { background-color: #3367D6; }
+    .passkey-btn { background-color: #111827; }
+    .passkey-btn:hover { background-color: #0b1220; }
+    p { margin-top: 16px; color: #666; }
+    a { color: #007bff; text-decoration: none; font-weight: bold; }
+    a:hover { text-decoration: underline; }
+
+    /* Modal */
+    .modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+    .modal-content { background-color: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 400px; text-align: center; position: relative; }
+    .modal-content h1 { margin-bottom: 20px; }
+    .close { position: absolute; top: 10px; right: 20px; font-size: 30px; font-weight: bold; cursor: pointer; color: #999; }
+    .close:hover { color: #333; }
+
+    /* Overlay de carga */
+    .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 50; }
+    .loading-overlay p { color: white; font-size: 18px; margin-top: 10px; }
+    .spinner { border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
+
+    @media (max-width: 768px) { .login-container { padding: 30px; } h1 { font-size: 24px; } input, button { padding: 12px; font-size: 14px; } }
   </style>
 </head>
 <body>
   <div class="login-container">
-    <h2>Iniciar Sesión</h2>
-    <input type="email" id="email" placeholder="Correo" autocomplete="username" />
-    <input type="password" id="password" placeholder="Contraseña" autocomplete="current-password" />
-    <button id="btn-login">Ingresar</button>
-    <button id="btn-google" class="google-btn">Iniciar con Google</button>
-    <div class="row">
-      <button id="btn-register-passkey" class="passkey" style="display:none">Registrar Passkey</button>
-      <button id="btn-login-passkey" class="passkey" style="display:none">Ingresar con Huella</button>
+    <h1>Iniciar Sesión</h1>
+
+    <div class="input-wrapper">
+      <input type="email" id="email" placeholder="Correo electrónico" autocomplete="username" required />
     </div>
-    <div id="loader" class="spinner"></div>
-    <div class="hint">Requiere navegador compatible (Chrome/Android o Safari/iOS) y HTTPS.</div>
+    <div class="input-wrapper">
+      <input type="password" id="password" placeholder="Contraseña" autocomplete="current-password" required />
+      <span class="toggle-password" onclick="togglePassword('password')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/></svg>
+      </span>
+    </div>
+
+    <button id="btn-login"><i class="fas fa-sign-in-alt"></i> Ingresar</button>
+    <button id="btn-google" class="google-login-btn"><i class="fab fa-google"></i> Iniciar con Google</button>
+
+    <!-- Nuevos: Passkeys -->
+    <button id="btn-register-passkey" class="passkey-btn" style="display:none"><i class="fas fa-key"></i> Registrar Passkey</button>
+    <button id="btn-login-passkey" class="passkey-btn" style="display:none"><i class="fas fa-fingerprint"></i> Ingresar con Huella</button>
+
+    <p><a href="javascript:void(0);" id="link-reset">¿Olvidaste tu contraseña?</a></p>
+    <p>¿No tienes una cuenta? <a href="javascript:void(0);" onclick="openModal()">Regístrate aquí</a>.</p>
+  </div>
+
+  <!-- Modal de registro -->
+  <div id="registerModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h1>Registro</h1>
+      <div class="input-wrapper">
+        <input type="email" id="register-email" placeholder="Correo electrónico" required />
+      </div>
+      <div class="input-wrapper">
+        <input type="password" id="register-password" placeholder="Contraseña" required />
+        <span class="toggle-password" onclick="togglePassword('register-password')">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/></svg>
+        </span>
+      </div>
+      <button id="btn-register"><i class="fas fa-user-plus"></i> Registrar</button>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p>Por favor, espere...</p>
   </div>
 
   <script type="module">
-    // ===== Firebase (v11) =====
+    // ===== Firebase v11 =====
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
-    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
+    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithCustomToken, sendPasswordResetEmail, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
 
     const firebaseConfig = {
       apiKey: 'AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80',
@@ -56,11 +113,10 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    // ===== BACKEND URL (ajústala a tu Function deploy) =====
-    // Ejemplo: https://us-central1-login-de3fd.cloudfunctions.net/webauthn
+    // ===== BACKEND URL =====
     const API_BASE = 'https://us-central1-login-de3fd.cloudfunctions.net/webauthn';
 
-    // ===== Helpers base64url <-> ArrayBuffer =====
+    // ===== Utils base64url <-> ArrayBuffer =====
     const b64urlToBuf = (b64url) => {
       const pad = '='.repeat((4 - (b64url.length % 4)) % 4);
       const b64 = (b64url + pad).replace(/-/g, '+').replace(/_/g, '/');
@@ -77,15 +133,15 @@
       return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     };
 
-    // ===== UI =====
-    const el = (id) => document.getElementById(id);
-    const show = (id, on=true) => el(id).style.display = on ? 'inline-flex' : 'none';
-    const loading = (on) => el('loader').style.display = on ? 'block' : 'none';
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const showLoading = (on) => loadingOverlay.style.display = on ? 'flex' : 'none';
 
     const supportsWebAuthn = () => !!window.PublicKeyCredential;
+    const btnRegPasskey = document.getElementById('btn-register-passkey');
+    const btnLoginPasskey = document.getElementById('btn-login-passkey');
     if (supportsWebAuthn()) {
-      show('btn-register-passkey', true);
-      show('btn-login-passkey', true);
+      btnRegPasskey.style.display = 'flex';
+      btnLoginPasskey.style.display = 'flex';
     }
 
     // ===== API client =====
@@ -95,41 +151,65 @@
       return await res.json();
     }
 
-    // ===== Email/Password =====
-    el('btn-login').addEventListener('click', async()=>{
-      const email = el('email').value.trim();
-      const password = el('password').value;
+    // ===== Login Email/Password =====
+    document.getElementById('btn-login').addEventListener('click', async()=>{
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
       if(!email || !password){ alert('Completa correo y contraseña'); return; }
       try{
-        loading(true);
+        showLoading(true);
         await signInWithEmailAndPassword(auth, email, password);
         alert('Inicio de sesión exitoso');
-        // (Opcional) ofrecer registrar passkey luego del login
         // window.location.href = 'formulario.html';
       }catch(err){ alert('Error: '+err.message); }
-      finally{ loading(false); }
+      finally{ showLoading(false); }
     });
 
-    // ===== Google =====
-    el('btn-google').addEventListener('click', async()=>{
+    // ===== Login con Google =====
+    document.getElementById('btn-google').addEventListener('click', async()=>{
       try{
-        loading(true);
+        showLoading(true);
         await signInWithPopup(auth, provider);
         alert('Inicio con Google exitoso');
         // window.location.href = 'formulario.html';
       }catch(err){ alert('Error con Google: '+err.message); }
-      finally{ loading(false); }
+      finally{ showLoading(false); }
     });
 
-    // ===== Registrar Passkey (huella/FaceID) =====
-    el('btn-register-passkey').addEventListener('click', async()=>{
+    // ===== Reset password =====
+    document.getElementById('link-reset').addEventListener('click', async()=>{
+      const email = document.getElementById('email').value.trim();
+      if(!email) return alert('Ingresa tu correo para restablecer la contraseña.');
+      try{
+        await sendPasswordResetEmail(auth, email);
+        alert('Correo de restablecimiento enviado.');
+      }catch(err){ alert('Error al enviar correo: '+err.message); }
+    });
+
+    // ===== Registro de usuario (modal) =====
+    document.getElementById('btn-register').addEventListener('click', async()=>{
+      const email = document.getElementById('register-email').value.trim();
+      const password = document.getElementById('register-password').value;
+      if(!email || !password){ alert('Completa los campos.'); return; }
+      try{
+        showLoading(true);
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert('¡Registro exitoso!');
+        closeModal();
+        document.getElementById('register-email').value='';
+        document.getElementById('register-password').value='';
+      }catch(err){ alert('Error en el registro: '+err.message); }
+      finally{ showLoading(false); }
+    });
+
+    // ===== Registrar Passkey =====
+    btnRegPasskey.addEventListener('click', async()=>{
       try{
         if(!supportsWebAuthn()) return alert('Tu navegador no soporta WebAuthn/Passkeys.');
-        const email = (el('email').value || auth.currentUser?.email || '').trim();
+        const email = (document.getElementById('email').value || auth.currentUser?.email || '').trim();
         if(!email) return alert('Ingresa tu correo o inicia sesión para asociar la passkey.');
-        loading(true);
+        showLoading(true);
         const options = await postJSON(`${API_BASE}/api/webauthn/register/options`, { email });
-        // Adaptar propiedades a ArrayBuffer
         options.challenge = b64urlToBuf(options.challenge);
         if(options.user?.id) options.user.id = b64urlToBuf(options.user.id);
         if(Array.isArray(options.excludeCredentials)){
@@ -149,15 +229,15 @@
         await postJSON(`${API_BASE}/api/webauthn/register/verify`, { email, attestation });
         alert('Passkey registrada. Ya puedes ingresar con huella.');
       }catch(err){ alert('Error registrando passkey: '+err.message); }
-      finally{ loading(false); }
+      finally{ showLoading(false); }
     });
 
-    // ===== Ingresar con Huella (Passkey) =====
-    el('btn-login-passkey').addEventListener('click', async()=>{
+    // ===== Login con Huella (Passkey) =====
+    btnLoginPasskey.addEventListener('click', async()=>{
       try{
         if(!supportsWebAuthn()) return alert('Tu navegador no soporta WebAuthn/Passkeys.');
-        const email = (el('email').value || auth.currentUser?.email || '').trim();
-        loading(true);
+        const email = (document.getElementById('email').value || auth.currentUser?.email || '').trim();
+        showLoading(true);
         const options = await postJSON(`${API_BASE}/api/webauthn/auth/options`, { email: email || undefined });
         options.challenge = b64urlToBuf(options.challenge);
         if(Array.isArray(options.allowCredentials)){
@@ -182,8 +262,24 @@
         alert('Huella verificada. Login OK');
         window.location.href = 'formulario.html';
       }catch(err){ alert('Error con huella: '+err.message); }
-      finally{ loading(false); }
+      finally{ showLoading(false); }
     });
+
+    // Exponer helpers globales para el modal y toggle
+    window.togglePassword = (fieldId) => { const field = document.getElementById(fieldId); field.type = field.type === 'password' ? 'text' : 'password'; };
+    window.openModal = () => { document.getElementById('registerModal').style.display = 'flex'; };
+    window.closeModal = () => { document.getElementById('registerModal').style.display = 'none'; };
+  </script>
+
+  <script>
+    // Registrar Service Worker como en tu implementación original
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then((registration) => { console.log('Service Worker registrado con éxito:', registration); })
+          .catch((error) => { console.error('Error al registrar el Service Worker:', error); });
+      });
+    }
   </script>
 </body>
 </html>
