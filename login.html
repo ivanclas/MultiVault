@@ -6,8 +6,11 @@
     <title>Login con Firebase</title>
     <link rel="icon" href="iconGaleria.png" type="image/png">
 
+    <!-- Cargar Font Awesome para los iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        /* Tus estilos existentes */
+        /* Estilo General */
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #00c6ff, #0072ff);
@@ -16,6 +19,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            padding: 0;
         }
 
         .login-container {
@@ -24,14 +28,14 @@
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             text-align: center;
             position: relative;
         }
 
         h1 {
             color: #333;
-            font-size: 28px;
+            font-size: 32px;
             margin-bottom: 20px;
             font-weight: bold;
             letter-spacing: 1px;
@@ -40,13 +44,12 @@
         input {
             width: 100%;
             padding: 15px;
-            margin: 10px 0;
+            margin: 15px 0;
             border: 2px solid #ddd;
             border-radius: 10px;
             font-size: 16px;
             transition: border-color 0.3s ease;
             box-sizing: border-box;
-            position: relative;
         }
 
         input:focus {
@@ -94,10 +97,6 @@
             font-size: 16px;
             transition: background-color 0.3s ease;
             margin-top: 20px;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         button:hover {
@@ -105,7 +104,7 @@
         }
 
         p {
-            margin-top: 20px;
+            margin-top: 15px;
             color: #666;
         }
 
@@ -200,7 +199,7 @@
             }
 
             h1 {
-                font-size: 24px;
+                font-size: 28px;
             }
 
             input, button {
@@ -234,7 +233,7 @@
             <i class="fab fa-google"></i>
             Iniciar sesión con Google
         </button>
-        <p><a href="javascript:void(0);" onclick="resetPassword()">¿Olvidaste tu contraseña?</a></p>
+        <p><a href="javascript:void(0);" onclick="openResetPasswordModal()">¿Olvidaste tu contraseña?</a></p>
         <p>¿No tienes una cuenta? <a href="javascript:void(0);" onclick="openModal()">Regístrate aquí</a>.</p>
     </div>
 
@@ -258,6 +257,22 @@
             <button onclick="register()">
                 <i class="fas fa-user-plus"></i>
                 Registrar
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal para restablecer contraseña -->
+    <div id="resetPasswordModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeResetPasswordModal()">&times;</span>
+            <h1>Restablecer Contraseña</h1>
+            <p>Ingresa tu correo electrónico para recibir un enlace para restablecer tu contraseña.</p>
+            <div class="input-wrapper">
+                <input type="email" id="reset-email" placeholder="Correo electrónico" required />
+            </div>
+            <button onclick="resetPassword()">
+                <i class="fas fa-paper-plane"></i>
+                Enviar enlace
             </button>
         </div>
     </div>
@@ -417,20 +432,33 @@
             const field = document.getElementById(fieldId);
             field.type = field.type === "password" ? "text" : "password";
         };
-    </script>
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then((registration) => {
-                        console.log('Service Worker registrado con éxito:', registration);
-                    })
-                    .catch((error) => {
-                        console.error('Error al registrar el Service Worker:', error);
-                    });
-            });
+        // Modal para restablecer contraseña
+        window.openResetPasswordModal = () => {
+            const modal = document.getElementById("resetPasswordModal");
+            modal.style.display = "flex";
+        };
+
+        window.closeResetPasswordModal = () => {
+            const modal = document.getElementById("resetPasswordModal");
+            modal.style.display = "none";
+        };
+
+        window.resetPassword = async () => {
+            const email = document.getElementById("reset-email").value;
+            if (!email) {
+                alert("Por favor, ingresa tu correo electrónico.");
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("Correo de restablecimiento enviado.");
+                closeResetPasswordModal();
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
         }
     </script>
+
 </body>
 </html>
