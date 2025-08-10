@@ -250,7 +250,6 @@
 </div>
 
 <script type="module">
-    // ======== Firebase Setup ========
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } 
         from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
@@ -275,8 +274,8 @@
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-            localStorage.setItem("userEmail", email);
+            const result = await signInWithEmailAndPassword(auth, email, password);
+            saveSessionData(result.user);
             await registerBiometricCredential();
             alert("Inicio de sesión exitoso");
             location.href = "formulario.html";
@@ -289,14 +288,19 @@
     window.loginWithGoogle = async function() {
         try {
             const result = await signInWithPopup(auth, provider);
-            const email = result.user.email;
-            localStorage.setItem("userEmail", email);
+            saveSessionData(result.user);
             await registerBiometricCredential();
             alert("Inicio de sesión con Google exitoso");
             location.href = "formulario.html";
         } catch (error) {
             alert("Error con Google: " + error.message);
         }
+    }
+
+    // ======== Guardar datos de sesión ========
+    function saveSessionData(user) {
+        localStorage.setItem("userEmail", user.email);
+        localStorage.setItem("refreshToken", user.refreshToken);
     }
 
     // ======== Registrar credencial biométrica ========
@@ -310,7 +314,7 @@
             const email = localStorage.getItem("userEmail");
             if (!email) return;
 
-            const userId = new TextEncoder().encode(email); // ID único basado en el email
+            const userId = new TextEncoder().encode(email);
 
             const cred = await navigator.credentials.create({
                 publicKey: {
@@ -331,7 +335,6 @@
                 }
             });
 
-            // Guardar el ID de la credencial en base64
             const rawIdBase64 = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
             localStorage.setItem("fingerprintId", rawIdBase64);
 
@@ -346,9 +349,10 @@
         try {
             const savedEmail = localStorage.getItem("userEmail");
             const savedId = localStorage.getItem("fingerprintId");
+            const refreshToken = localStorage.getItem("refreshToken");
 
-            if (!savedEmail || !savedId) {
-                alert("No hay una huella registrada, inicia sesión primero");
+            if (!savedEmail || !savedId || !refreshToken) {
+                alert("No hay una huella registrada o datos de sesión, inicia sesión primero");
                 return;
             }
 
@@ -366,14 +370,29 @@
                 }
             });
 
-            alert("Huella verificada para " + savedEmail);
-            location.href = "formulario.html";
+            // Reautenticar en Firebase usando refreshToken
+            const res = await fetch(`https://securetoken.googleapis.com/v1/token?key=${firebaseConfig.apiKey}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `grant_type=refresh_token&refresh_token=${refreshToken}`
+            });
+
+            const data = await res.json();
+            if (data.id_token) {
+                // Firebase Auth usará este token para validar sesión
+                console.log("Token renovado correctamente");
+                alert("Huella verificada para " + savedEmail);
+                location.href = "formulario.html";
+            } else {
+                throw new Error("No se pudo renovar token");
+            }
+
         } catch (err) {
             alert("Error con huella: " + err.message);
         }
     }
 
-    // ======== Auto login con huella al abrir ========
+    // ======== Auto login con huella ========
     window.addEventListener("load", async () => {
         if (localStorage.getItem("userEmail") && localStorage.getItem("fingerprintId")) {
             try {
@@ -384,5 +403,6 @@
         }
     });
 </script>
+
 </body>
 </html>
