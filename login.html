@@ -20,6 +20,8 @@
   </style>
 </head>
 <body>
+  <!-- Requisito para Chrome/Android: input con autofill para Conditional UI -->
+  <input id="webauthn-autofill" type="text" autocomplete="username webauthn" style="position:absolute;opacity:0;height:0;width:0;pointer-events:none" />
   <div class="card">
     <h1>MultiVault</h1>
     <p id="status">Verificando biometría…</p>
@@ -246,6 +248,64 @@
         }
       });
     }
+  // ====== AUTO-LOGIN con Passkeys (Conditional UI) ======
+    async function supportsConditional(){
+      try{ return !!window.PublicKeyCredential && (await PublicKeyCredential.isConditionalMediationAvailable?.()); }
+      catch{ return false; }
+    }
+    async function getAuthOptions(){
+      const options = await postJSON(`${API_BASE}/api/webauthn/auth/options`, {}); // sin email -> discoverable
+      options.challenge = b64urlToBuf(options.challenge);
+      if(Array.isArray(options.allowCredentials)){
+        options.allowCredentials = options.allowCredentials.map(c=>({ ...c, id: b64urlToBuf(c.id) }));
+      }
+      return options;
+    }
+    async function doPasskeyLogin(options, useConditional){
+      const assertion = await navigator.credentials.get({ publicKey: options, ...(useConditional?{mediation:'conditional'}:{}) });
+      if(!assertion) throw new Error('Sin credencial');
+      const authData = {
+        id: assertion.id,
+        rawId: bufToB64url(assertion.rawId),
+        type: assertion.type,
+        response: {
+          clientDataJSON: bufToB64url(assertion.response.clientDataJSON),
+          authenticatorData: bufToB64url(assertion.response.authenticatorData),
+          signature: bufToB64url(assertion.response.signature),
+          userHandle: assertion.response.userHandle ? bufToB64url(assertion.response.userHandle) : null,
+        }
+      };
+      const verify = await postJSON(`${API_BASE}/api/webauthn/auth/verify`, { assertion: authData });
+      if(!verify?.firebaseCustomToken) throw new Error('Backend no devolvió Custom Token');
+      await signInWithCustomToken(auth, verify.firebaseCustomToken);
+      await logLogin?.('passkey');
+      location.href = FORM_URL;
+    }
+
+    (async()=>{
+      try{
+        setStatus?.('Verificando biometría…');
+        document.getElementById('loader') && (document.getElementById('loader').style.display='block');
+        const options = await getAuthOptions();
+        const cond = await supportsConditional();
+        if(cond){
+          document.getElementById('webauthn-autofill')?.focus();
+          await doPasskeyLogin(options, true);
+        } else {
+          // Fallback: requiere primer gesto del usuario
+          setStatus?.('Toca la pantalla para autenticar con huella…');
+          const oneTap = async ()=>{
+            document.removeEventListener('pointerdown', oneTap, {capture:true});
+            try{ await doPasskeyLogin(options, false); }
+            catch(e){ console.error(e); alert('No se pudo usar la huella: '+(e?.message||e)); }
+          };
+          document.addEventListener('pointerdown', oneTap, {capture:true, once:true});
+        }
+      }catch(e){
+        console.log('Auto-passkey falló:', e?.name, e?.message);
+        // Si no hay passkey aún, tu flujo de primera vez seguirá mostrándose normalmente
+      }
+    })();
   </script>
 </body>
 </html>
