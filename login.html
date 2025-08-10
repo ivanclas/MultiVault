@@ -332,7 +332,7 @@
                 }
             });
 
-            // Guardar el ID de la credencial en base64
+            // Guardar el ID de la credencial en base64 asociado con el correo
             const rawIdBase64 = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
             localStorage.setItem("fingerprintId", rawIdBase64);
 
@@ -355,7 +355,7 @@
 
             const rawId = Uint8Array.from(atob(savedId), c => c.charCodeAt(0));
 
-            await navigator.credentials.get({
+            const credentials = await navigator.credentials.get({
                 publicKey: {
                     challenge: crypto.getRandomValues(new Uint8Array(32)),
                     allowCredentials: [{
@@ -367,9 +367,13 @@
                 }
             });
 
-            localStorage.setItem("loggedIn", true); // Marcar como "loggedIn"
-            alert("Huella verificada para " + savedEmail);
-            location.href = "formulario.html";
+            if (credentials) {
+                localStorage.setItem("loggedIn", true); // Marcar como "loggedIn"
+                alert("Huella verificada para " + savedEmail);
+                location.href = "formulario.html";
+            } else {
+                alert("Verificación de huella fallida");
+            }
         } catch (err) {
             alert("Error con huella: " + err.message);
         }
