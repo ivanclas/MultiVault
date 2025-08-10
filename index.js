@@ -1,243 +1,340 @@
-// index.js
-const express = require('express');
-const bodyParser = require('body-parser');
-const { Fido2Lib } = require('fido2-lib');
-const admin = require('firebase-admin');
-const cors = require('cors');
+// ==============================
+// Firebase Functions + WebAuthn
+// Autenticación con Passkeys (Huella/FaceID) + Firebase Custom Token
+// Requisitos:
+// - Node.js 18+ en Cloud Functions
+// - Firebase Admin SDK
+// - @simplewebauthn/server
+// - Firestore para almacenar usuarios/credenciales
+// ==============================
 
-// Inicializa firebase-admin con tu serviceAccountKey.json
-// Descarga el JSON desde Firebase Console (Service Accounts)
-const serviceAccount = require('./serviceAccountKey.json');
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+// -------- package.json (pon esto en functions/package.json) --------
+/*
+{
+  "name": "functions",
+  "type": "module",
+  "engines": { "node": "18" },
+  "main": "index.js",
+  "dependencies": {
+    "@simplewebauthn/server": "^9.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.5.0",
+    "firebase-functions": "^4.8.0"
+  }
+}
+*/
+
+// -------- index.js (pon esto en functions/index.js) --------
+import express from 'express';
+import cors from 'cors';
+import * as admin from 'firebase-admin';
+import functions from 'firebase-functions';
+import {
+  generateRegistrationOptions,
+  verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse,
+} from '@simplewebauthn/server';
+
+// Inicializa Firebase Admin
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 const db = admin.firestore();
 
+// ===== CONFIGURA TU Relying Party =====
+// IMPORTANTE: Estos valores están ajustados a tu GitHub Pages
+const rpName = 'MultiVault';
+const rpID = 'ivanclas.github.io'; // sin https://, solo host
+const origin = 'https://ivanclas.github.io'; // con https y sin trailing slash
+
+// Helpers de Firestore
+const usersCol = db.collection('users'); // docId: uid (usaremos email en minúsculas)
+const credsCol = db.collection('webauthnCredentials'); // docId: credentialID, campos: uid, publicKey, counter, transports
+
+function toBase64URL(buf) {
+  return Buffer.from(buf).toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+}
+function fromBase64URL(b64url) {
+  const pad = '='.repeat((4 - (b64url.length % 4)) % 4);
+  const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/') + pad;
+  return Buffer.from(b64, 'base64');
+}
+
+async function getUserDoc(uid) {
+  const ref = usersCol.doc(uid);
+  const snap = await ref.get();
+  return { ref, data: snap.exists ? snap.data() : null };
+}
+
+async function listUserCredentials(uid) {
+  const qs = await credsCol.where('uid', '==', uid).get();
+  return qs.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+// Express app
+const app = express();
+// CORS estricto al dominio de tu app pública
+app.use(cors({ origin: 'https://ivanclas.github.io' }));
+app.use(express.json());
+
+// Helpers de Firestore
+const usersCol = db.collection('users'); // docId: uid (usaremos email en minúsculas)
+const credsCol = db.collection('webauthnCredentials'); // docId: credentialID, campos: uid, publicKey, counter, transports
+
+function toBase64URL(buf) {
+  return Buffer.from(buf).toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+}
+function fromBase64URL(b64url) {
+  const pad = '='.repeat((4 - (b64url.length % 4)) % 4);
+  const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/') + pad;
+  return Buffer.from(b64, 'base64');
+}
+
+async function getUserDoc(uid) {
+  const ref = usersCol.doc(uid);
+  const snap = await ref.get();
+  return { ref, data: snap.exists ? snap.data() : null };
+}
+
+async function listUserCredentials(uid) {
+  const qs = await credsCol.where('uid', '==', uid).get();
+  return qs.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+// Express app
 const app = express();
 app.use(cors({ origin: true }));
-app.use(bodyParser.json({ limit: '1mb' }));
+app.use(express.json());
 
-// Configura FIDO2
-const f2l = new Fido2Lib({
-  timeout: 60000,
-  rpId: "tu-dominio.com", // si usas localhost para pruebas, usa "localhost"
-  rpName: "Mi App",
-  challengeSize: 32,
-  cryptoParams: [-7, -257], // ES256, RS256
-  authenticatorAttachment: "platform",
-  authenticatorRequireResidentKey: false,
-  authenticatorUserVerification: "required"
-});
-
-// Almacena temporalmente challenges por sesión (para pruebas simples usar map en memoria)
-const challengeStore = new Map(); // <challenge, { email, uid }>
-
-// ---------- Generar opciones de registro ----------
-app.post('/generate-registration-options', async (req, res) => {
+// --- REGISTRO: OPTIONS ---
+app.post('/api/webauthn/register/options', async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ error: 'Email requerido' });
+    const emailRaw = String(req.body.email || '').trim();
+    if (!emailRaw) return res.status(400).json({ error: 'email requerido' });
+    const uid = emailRaw.toLowerCase();
 
-    // Si usas login con Firebase, aquí deberías obtener uid del usuario autenticado
-    // Para simplificar, asumimos que el frontend ya hizo signIn y envía email,
-    // y que el uid se obtiene consultando Firestore users collection:
-    // (opcional) intentar obtener uid por email
-    let uid = null;
-    // Buscamos usuario por email (opcional)
-    const usersQuery = await db.collection('users').where('email','==',email).limit(1).get();
-    if (!usersQuery.empty) {
-      uid = usersQuery.docs[0].id;
-    } else {
-      // No existe: creamos un documento temporal con email y generamos uid random
-      const newDoc = db.collection('users').doc();
-      await newDoc.set({ email, createdAt: admin.firestore.FieldValue.serverTimestamp() });
-      uid = newDoc.id;
+    // Asegura que exista usuario en Auth/Firestore (opcionalmente crea en Auth)
+    let fbUser;
+    try { fbUser = await admin.auth().getUserByEmail(uid); } 
+    catch {
+      fbUser = await admin.auth().createUser({ uid, email: uid, emailVerified: false });
     }
 
-    const user = {
-      id: Buffer.from(uid).toString('base64'), // user.id must be ArrayBuffer on client; we send base64
-      name: email,
-      displayName: email
+    const { ref, data } = await getUserDoc(uid);
+    if (!data) await ref.set({ uid, email: uid }, { merge: true });
+
+    // Excluir credenciales ya registradas
+    const existingCreds = await listUserCredentials(uid);
+    const excludeCredentials = existingCreds.map(c => ({
+      id: fromBase64URL(c.credentialID),
+      type: 'public-key',
+      transports: c.transports || undefined,
+    }));
+
+    const options = await generateRegistrationOptions({
+      rpName,
+      rpID,
+      userID: uid,
+      userName: uid,
+      attestationType: 'none',
+      excludeCredentials,
+      authenticatorSelection: { residentKey: 'preferred', userVerification: 'preferred' },
+    });
+
+    // Guarda challenge temporalmente en el usuario
+    await ref.set({ currentChallenge: options.challenge }, { merge: true });
+
+    // Convierte id/ids a base64url seguros para JSON
+    const pubOpts = {
+      ...options,
+      user: { ...options.user, id: fromBase64URL(toBase64URL(Buffer.from(options.user.id))) }, // ya es Buffer, garantizamos tipo
     };
+    // Ajusta buffers -> base64url
+    pubOpts.challenge = options.challenge; // string ya válido
+    if (Array.isArray(pubOpts.excludeCredentials)) {
+      pubOpts.excludeCredentials = pubOpts.excludeCredentials.map(c => ({
+        ...c,
+        id: toBase64URL(c.id),
+      }));
+    }
 
-    const registrationOptions = await f2l.attestationOptions();
-    registrationOptions.user = user;
-    registrationOptions.challenge = bufferToBase64Url(registrationOptions.challenge);
-    registrationOptions.user.id = bufferToBase64Url(Buffer.from(uid)); // match client encoding
-    // store challenge -> uid/email
-    challengeStore.set(registrationOptions.challenge, { email, uid });
-
-    return res.json({ publicKey: registrationOptions });
+    return res.json(pubOpts);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: String(err) });
   }
 });
 
-// ---------- Verificar registro (attestation) ----------
-app.post('/verify-registration', async (req, res) => {
+// --- REGISTRO: VERIFY ---
+app.post('/api/webauthn/register/verify', async (req, res) => {
   try {
-    const { email, attestation } = req.body;
-    if (!email || !attestation) return res.status(400).json({ error: 'Faltan campos' });
+    const { email, attestation } = req.body || {};
+    if (!email || !attestation) return res.status(400).json({ error: 'payload inválido' });
+    const uid = String(email).toLowerCase();
 
-    // convertimos raw fields a Buffer
-    const clientAttestationResponse = {
-      id: attestation.id,
-      rawId: base64urlToBuffer(attestation.rawId),
+    const { ref, data } = await getUserDoc(uid);
+    if (!data || !data.currentChallenge) return res.status(400).json({ error: 'challenge no encontrado' });
+
+    const verification = await verifyRegistrationResponse({
       response: {
-        clientDataJSON: base64urlToBuffer(attestation.response.clientDataJSON),
-        attestationObject: base64urlToBuffer(attestation.response.attestationObject)
+        id: attestation.id,
+        rawId: fromBase64URL(attestation.rawId),
+        response: {
+          clientDataJSON: fromBase64URL(attestation.response.clientDataJSON),
+          attestationObject: fromBase64URL(attestation.response.attestationObject),
+        },
+        type: attestation.type,
       },
-      type: attestation.type
-    };
+      expectedChallenge: data.currentChallenge,
+      expectedOrigin: origin,
+      expectedRPID: rpID,
+    });
 
-    // Recuperar challenge asociado (en pruebas lo guardamos en memoria)
-    // El client envió challenge en create step, el servidor lo creó en generate-reg.
-    // Para simplificar, buscamos cualquier challenge asociado al email (básico)
-    let storedChallengeEntry = null;
-    for (let [challenge, info] of challengeStore.entries()) {
-      if (info.email === email) { storedChallengeEntry = { challenge, info }; break; }
+    if (!verification.verified || !verification.registrationInfo) {
+      return res.status(400).json({ error: 'verificación fallida' });
     }
-    if (!storedChallengeEntry) return res.status(400).json({ error: 'Challenge no encontrado' });
 
-    // prepare expected
-    const expected = {
-      challenge: base64urlToBuffer(storedChallengeEntry.challenge),
-      origin: "https://TU_DOMINIO", // ajustar según deployment
-      factor: "either"
-    };
+    const { credentialPublicKey, credentialID, counter, credentialDeviceType, credentialBackedUp } = verification.registrationInfo;
 
-    // verify attestation
-    const regResult = await f2l.attestationResult(clientAttestationResponse, expected);
-
-    // regResult contains publicKey, counter, fmt, etc.
-    const rawIdB64Url = bufferToBase64Url(regResult.authnrData.get('rawId') || regResult.get('rawId') || clientAttestationResponse.rawId);
-
-    // store credential in Firestore under user (by uid)
-    const uid = storedChallengeEntry.info.uid;
-    const credDocRef = db.collection('webauthnCredentials').doc(rawIdB64Url);
-    await credDocRef.set({
+    // Guarda credencial
+    const credIDb64 = toBase64URL(credentialID);
+    await credsCol.doc(credIDb64).set({
       uid,
-      email,
-      publicKey: regResult.authnrData.get('credentialPublicKeyPem') || regResult.get('credentialPublicKey'),
-      fmt: regResult.fmt,
-      counter: regResult.authnrData.get('counter') || 0,
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
-    });
+      credentialID: credIDb64,
+      publicKey: toBase64URL(credentialPublicKey),
+      counter,
+      deviceType: credentialDeviceType,
+      backedUp: credentialBackedUp,
+      transports: attestation.transports || null,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
 
-    // remove challenge
-    challengeStore.delete(storedChallengeEntry.challenge);
+    await ref.set({ currentChallenge: admin.firestore.FieldValue.delete() }, { merge: true });
 
-    return res.json({ success: true, id: rawIdB64Url });
-  } catch (err) {
-    console.error('verify-registration err', err);
-    res.status(500).json({ success:false, error: err.message });
-  }
-});
-
-// ---------- Generar opciones de autenticación (assertion) ----------
-app.post('/generate-authentication-options', async (req, res) => {
-  try {
-    // obtenemos credenciales registradas y mandamos allowCredentials
-    const credsSnap = await db.collection('webauthnCredentials').limit(50).get(); // limita por seguridad
-    const allowCredentials = [];
-    credsSnap.forEach(docSnap => {
-      const id = docSnap.id; // ya es base64url
-      allowCredentials.push({ id, type: 'public-key', transports: ['internal'] });
-    });
-
-    const authnOptions = await f2l.assertionOptions();
-    authnOptions.challenge = bufferToBase64Url(authnOptions.challenge);
-    if (allowCredentials.length) {
-      authnOptions.allowCredentials = allowCredentials;
-    }
-    // guardamos challenge temporalmente
-    challengeStore.set(authnOptions.challenge, { timestamp: Date.now() });
-
-    return res.json({ publicKey: authnOptions });
+    return res.json({ ok: true });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: String(err) });
   }
 });
 
-// ---------- Verificar autenticación (assertion) ----------
-app.post('/verify-authentication', async (req, res) => {
+// --- AUTH: OPTIONS ---
+app.post('/api/webauthn/auth/options', async (req, res) => {
   try {
-    const { authData } = req.body;
-    if (!authData) return res.status(400).json({ success:false, error:'No authData' });
+    const emailRaw = req.body.email ? String(req.body.email).trim().toLowerCase() : null;
 
-    const clientAssertion = {
-      id: authData.id,
-      rawId: base64urlToBuffer(authData.rawId),
-      response: {
-        clientDataJSON: base64urlToBuffer(authData.response.clientDataJSON),
-        authenticatorData: base64urlToBuffer(authData.response.authenticatorData),
-        signature: base64urlToBuffer(authData.response.signature),
-        userHandle: authData.response.userHandle ? base64urlToBuffer(authData.response.userHandle) : null
-      },
-      type: authData.type
-    };
-
-    // Recuperar challenge (simplificado: tomamos el último)
-    let storedChallenge = null;
-    for (let [challenge, v] of challengeStore.entries()) { storedChallenge = challenge; break; }
-    if (!storedChallenge) return res.status(400).json({ success:false, error:'No challenge saved' });
-
-    const expected = {
-      challenge: base64urlToBuffer(storedChallenge),
-      origin: "https://TU_DOMINIO",
-      factor: "either"
-    };
-
-    // find the credential in Firestore using rawId base64url (client sent rawId from navigator)
-    const rawIdB64Url = authData.rawId; // client already provided base64url
-    const credSnap = await db.collection('webauthnCredentials').doc(rawIdB64Url).get();
-    if (!credSnap.exists) {
-      return res.status(400).json({ success:false, error:'Credencial no encontrada' });
+    let allowCredentials = [];
+    if (emailRaw) {
+      const creds = await listUserCredentials(emailRaw);
+      allowCredentials = creds.map(c => ({ id: fromBase64URL(c.credentialID), type: 'public-key', transports: c.transports || undefined }));
     }
-    const cred = credSnap.data();
 
-    // Build publicKey for verification
-    const verification = await f2l.assertionResult(clientAssertion, {
-      challenge: base64urlToBuffer(storedChallenge),
-      origin: "https://TU_DOMINIO",
-      factor: "either",
-      publicKey: cred.publicKey,
-      prevCounter: cred.counter || 0,
-      userHandle: null
+    const options = await generateAuthenticationOptions({
+      rpID,
+      userVerification: 'preferred',
+      allowCredentials: allowCredentials.length ? allowCredentials : undefined,
     });
 
-    // If verification ok, update counter in DB
-    await db.collection('webauthnCredentials').doc(rawIdB64Url).update({
-      counter: verification.authnrData.get('counter') || verification.get('authnrData')?.counter || cred.counter || 0
-    });
+    // Persistir challenge a nivel "sesión" genérica (por simplicidad, lo guardamos en doc usuario si lo conocemos)
+    if (emailRaw) {
+      await usersCol.doc(emailRaw).set({ currentChallenge: options.challenge }, { merge: true });
+    }
 
-    // Now we have uid from cred
-    const uid = cred.uid;
-    // create firebase custom token
-    const customToken = await admin.auth().createCustomToken(uid);
+    const pubOpts = { ...options };
+    pubOpts.challenge = options.challenge; // string
+    if (Array.isArray(pubOpts.allowCredentials)) {
+      pubOpts.allowCredentials = pubOpts.allowCredentials.map(c => ({ ...c, id: toBase64URL(c.id) }));
+    }
 
-    // remove challenge
-    challengeStore.delete(storedChallenge);
-
-    return res.json({ success:true, customToken });
+    return res.json(pubOpts);
   } catch (err) {
-    console.error('verify-auth err', err);
-    res.status(500).json({ success:false, error: err.message });
+    console.error(err);
+    return res.status(500).json({ error: String(err) });
   }
 });
 
-// helpers for base64url <-> buffer (server side)
-function bufferToBase64Url(buffer) {
-  return Buffer.from(buffer).toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-}
-function base64urlToBuffer(base64url) {
-  base64url = base64url.replace(/-/g,'+').replace(/_/g,'/');
-  while (base64url.length % 4) base64url += '=';
-  return Buffer.from(base64url, 'base64');
-}
+// --- AUTH: VERIFY ---
+app.post('/api/webauthn/auth/verify', async (req, res) => {
+  try {
+    const { email, assertion } = req.body || {};
+    const emailRaw = email ? String(email).trim().toLowerCase() : null;
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Server listening on", PORT));
-module.exports = app;
+    // Obtén credencial por ID
+    if (!assertion || !assertion.id) return res.status(400).json({ error: 'assertion inválida' });
+    const credDoc = await credsCol.doc(assertion.id).get();
+    if (!credDoc.exists) return res.status(404).json({ error: 'credencial no encontrada' });
+    const cred = credDoc.data();
+
+    const uid = cred.uid; // usuario dueño de la credencial
+    const { data } = await getUserDoc(uid);
+
+    const expectedChallenge = data?.currentChallenge || undefined; // si no guardaste por email en options, SimpleWebAuthn tolera sin expectedChallenge, pero es recomendable
+
+    const verification = await verifyAuthenticationResponse({
+      response: {
+        id: assertion.id,
+        rawId: fromBase64URL(assertion.rawId),
+        response: {
+          clientDataJSON: fromBase64URL(assertion.response.clientDataJSON),
+          authenticatorData: fromBase64URL(assertion.response.authenticatorData),
+          signature: fromBase64URL(assertion.response.signature),
+          userHandle: assertion.response.userHandle ? fromBase64URL(assertion.response.userHandle) : undefined,
+        },
+        type: assertion.type,
+      },
+      expectedRPID: rpID,
+      expectedOrigin: origin,
+      expectedChallenge, // puedes omitir si manejas la sesión de otra forma
+      authenticator: {
+        credentialPublicKey: fromBase64URL(cred.publicKey),
+        credentialID: fromBase64URL(cred.credentialID),
+        counter: cred.counter || 0,
+        transports: cred.transports || undefined,
+      },
+    });
+
+    if (!verification.verified || !verification.authenticationInfo) {
+      return res.status(400).json({ error: 'verificación fallida' });
+    }
+
+    // Actualiza el contador
+    const { newCounter } = verification.authenticationInfo;
+    await credDoc.ref.set({ counter: newCounter }, { merge: true });
+
+    // Limpia challenge
+    await usersCol.doc(uid).set({ currentChallenge: admin.firestore.FieldValue.delete() }, { merge: true });
+
+    // Asegura usuario en Auth y crea Custom Token
+    let fbUser;
+    try { fbUser = await admin.auth().getUser(uid); } catch {
+      try { fbUser = await admin.auth().getUserByEmail(uid); } catch {}
+    }
+    if (!fbUser) {
+      fbUser = await admin.auth().createUser({ uid, email: uid, emailVerified: false });
+    }
+
+    const firebaseCustomToken = await admin.auth().createCustomToken(fbUser.uid);
+    return res.json({ verified: true, firebaseCustomToken });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: String(err) });
+  }
+});
+
+// Exporta como Function HTTPS
+export const webauthn = functions.https.onRequest(app);
+
+// --------- NOTAS DE DESPLIEGUE ---------
+// 1) Coloca este archivo como functions/index.js y el package.json provisto.
+// 2) firebase init functions (elige JavaScript, Node 18). Reemplaza los archivos.
+// 3) firebase deploy --only functions
+// 4) Configura rpID y origin con tu dominio real (debe ser HTTPS). Usa dominios autorizados en Firebase Auth.
+// 5) En frontend, configura API_BASE apuntando a la URL de esta Function (región incluida).
