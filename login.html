@@ -1,240 +1,97 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Login con Huella + Firebase</title>
-    <style>
-        /* Tus estilos existentes */
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+<style>
+    /* Tus estilos existentes */
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #00c6ff, #0072ff);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
 
-        .login-container {
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            position: relative;
-        }
+    .login-container {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+        position: relative;
+    }
 
-        h1 {
-            color: #333;
-            font-size: 28px;
-            margin-bottom: 20px;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
+    h1 { color: #333; font-size: 28px; margin-bottom: 20px; font-weight: bold; letter-spacing: 1px; }
 
-        input {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-            box-sizing: border-box;
-            position: relative;
-        }
+    input {
+        width: 100%;
+        padding: 15px;
+        margin: 10px 0;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: border-color 0.3s ease;
+        box-sizing: border-box;
+        position: relative;
+    }
 
-        input:focus {
-            border-color: #007bff;
-            outline: none;
-        }
+    input:focus { border-color: #007bff; outline: none; }
 
-        .input-wrapper {
-            position: relative;
-            width: 100%;
-        }
+    .input-wrapper { position: relative; width: 100%; }
 
-        .input-wrapper input {
-            padding-right: 40px;
-        }
+    .input-wrapper input { padding-right: 40px; }
 
-        .toggle-password {
-            position: absolute;
-            top: 50%;
-            right: 10px;
-            transform: translateY(-50%);
-            cursor: pointer;
-            width: 20px;
-            height: 20px;
-        }
+    .toggle-password { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); cursor: pointer; width: 20px; height: 20px; }
+    .toggle-password svg { fill: #999; width: 100%; height: 100%; }
+    .toggle-password:hover svg { fill: #333; }
 
-        .toggle-password svg {
-            fill: #999;
-            width: 100%;
-            height: 100%;
-        }
+    button {
+        width: 100%;
+        padding: 15px;
+        background-color: #91ff00;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    button:hover { background-color: #76c200; }
 
-        .toggle-password:hover svg {
-            fill: #333;
-        }
+    p { margin-top: 20px; color: #666; }
+    a { color: #007bff; text-decoration: none; font-weight: bold; }
+    a:hover { text-decoration: underline; }
 
-        button {
-            width: 100%;
-            padding: 15px;
-            background-color: #91ff00;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+    .modal-content { background:#fff; padding:30px; border-radius:15px; width:100%; max-width:400px; text-align:center; position:relative; box-shadow:0 10px 30px rgba(0,0,0,0.2); }
 
-        button:hover {
-            background-color: #0056b3;
-        }
+    .close { position:absolute; top:10px; right:20px; font-size:30px; font-weight:bold; cursor:pointer; color:#999; }
+    .close:hover { color:#333; }
 
-        p {
-            margin-top: 20px;
-            color: #666;
-        }
+    .loading-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:2; }
+    .loading-overlay p { color:white; font-size:18px; margin-top:10px; }
+    .spinner { border:4px solid rgba(255,255,255,0.3); border-top:4px solid white; border-radius:50%; width:40px; height:40px; animation:spin 1s linear infinite; }
+    @keyframes spin { 0%{transform:rotate(0deg);}100%{transform:rotate(360deg);} }
 
-        a {
-            color: #007bff;
-            text-decoration: none;
-            font-weight: bold;
-        }
+    @media (max-width:768px) {
+        .login-container { padding:30px; } h1 { font-size:24px; } input, button { padding:12px; font-size:14px; }
+    }
 
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            position: relative;
-        }
-
-        .modal-content h1 {
-            margin-bottom: 20px;
-        }
-
-        .close {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .close:hover {
-            color: #333;
-        }
-
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 2;
-        }
-
-        .loading-overlay p {
-            color: white;
-            font-size: 18px;
-            margin-top: 10px;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .login-container {
-                padding: 30px;
-            }
-
-            h1 {
-                font-size: 24px;
-            }
-
-            input, button {
-                padding: 12px;
-                font-size: 14px;
-            }
-        }
-
-        /* Estilos para el botón de Google */
-        .google-login-btn {
-            width: 100%;
-            padding: 15px;
-            background-color: #4285F4;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .google-login-btn:hover {
-            background-color: #3367D6;
-        }
-
-        /* Iconos en los botones */
-        button i {
-            margin-right: 10px;
-            font-size: 18px;
-        }
-    </style>
+    .google-login-btn { width:100%; padding:15px; background-color:#4285F4; color:white; border:none; border-radius:10px; cursor:pointer; font-size:16px; transition:background-color 0.3s ease; margin-top:10px; letter-spacing:0.5px; display:flex; align-items:center; justify-content:center; }
+    .google-login-btn:hover { background-color:#3367D6; }
+    button i { margin-right:10px; font-size:18px; }
+</style>
 </head>
 <body>
 
@@ -242,19 +99,36 @@
     <h2>Iniciar Sesión</h2>
     <input type="email" id="email" placeholder="Correo" />
     <input type="password" id="password" placeholder="Contraseña" />
-    <button onclick="login()">Ingresar</button>
+    <button onclick="login()"><i class="fa fa-sign-in-alt"></i>Ingresar</button>
     <br><br>
-    <button class="google-btn" onclick="loginWithGoogle()">Iniciar con Google</button>
+    <button class="google-login-btn" onclick="loginWithGoogle()"><i class="fab fa-google"></i>Iniciar con Google</button>
     <br><br>
     <button onclick="loginWithFingerprint()">Ingresar con Huella</button>
 </div>
 
+<div class="loading-overlay" id="loadingOverlay" style="display:none;flex-direction:column;">
+    <div class="spinner"></div>
+    <p>Por favor espera...</p>
+</div>
+
+<!-- Font Awesome para iconos (opcional) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
 <script type="module">
+/*
+  Script completo corregido.
+  - Guarda fingerprintId en Firestore (colección 'fingerprintIndex')
+  - Guarda refreshToken en Firestore doc asociado
+  - En login por huella: verifica biometría, busca dueño en Firestore,
+    intercambia refreshToken por id_token y guarda id_token en localStorage.
+  - Nota: para re-autenticar en el SDK de forma 100% segura se recomienda crear
+    un customToken en backend; esto aquí usa intercambio de refreshToken para obtener id_token
+    y lo deja en localStorage para que tu app lo use (funciona para llamadas REST y auth checks manuales).
+*/
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } 
-    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-import { getFirestore, setDoc, getDoc, doc, serverTimestamp } 
-    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getFirestore, setDoc, getDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
@@ -272,14 +146,17 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// ----- helpers para base64url y arrays -----
+const loadingOverlay = document.getElementById("loadingOverlay");
+function showLoading(){ loadingOverlay.style.display = "flex"; }
+function hideLoading(){ loadingOverlay.style.display = "none"; }
+
+// ---------- Helpers base64url ----------
 function bufferToBase64Url(buffer) {
     const bytes = new Uint8Array(buffer);
     let str = "";
     for (let i = 0; i < bytes.byteLength; i++) str += String.fromCharCode(bytes[i]);
     return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
-
 function base64UrlToUint8Array(base64url) {
     let base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
     while (base64.length % 4) base64 += "=";
@@ -290,114 +167,119 @@ function base64UrlToUint8Array(base64url) {
     return bytes;
 }
 
-// ======== Login normal ========
+// ---------- LOGIN with email/password ----------
 window.login = async function() {
-    const email = document.getElementById("email").value;
+    const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
+    if (!email || !password) { alert("Completa correo y contraseña"); return; }
+    showLoading();
     try {
         const result = await signInWithEmailAndPassword(auth, email, password);
-        // guarda email local y continúa
+        // guardamos email y refreshToken local y en Firestore al registrar huella
         localStorage.setItem("userEmail", email);
-        // registra la huella (si el dispositivo la soporta)
-        await registerBiometricCredential(email);
+        // registrar huella y guardar en Firestore (si el dispositivo lo soporta)
+        await registerBiometricCredential(email, result.user);
         alert("Inicio de sesión exitoso");
+        hideLoading();
         location.href = "formulario.html";
-    } catch (error) {
-        console.error("login error:", error);
-        alert("Error: " + error.message);
+    } catch (err) {
+        console.error("login error:", err);
+        hideLoading();
+        alert("Error en el inicio: " + (err.message || err));
     }
 };
 
-// ======== Login con Google ========
+// ---------- LOGIN with Google ----------
 window.loginWithGoogle = async function() {
+    showLoading();
     try {
         const result = await signInWithPopup(auth, provider);
         const email = result.user.email;
         localStorage.setItem("userEmail", email);
-        // registra la huella y asocia a este usuario
-        await registerBiometricCredential(email);
+        // registrar huella y guardar en Firestore (si el dispositivo lo soporta)
+        await registerBiometricCredential(email, result.user);
         alert("Inicio de sesión con Google exitoso");
+        hideLoading();
         location.href = "formulario.html";
-    } catch (error) {
-        console.error("google login error:", error);
-        alert("Error con Google: " + error.message);
+    } catch (err) {
+        console.error("google login error:", err);
+        hideLoading();
+        alert("Error con Google: " + (err.message || err));
     }
 };
 
-// ======== Registrar credencial biométrica (FIXED) ========
-async function registerBiometricCredential(email) {
+// ---------- Registrar credencial biométrica ----------
+async function registerBiometricCredential(email, firebaseUser) {
     try {
         if (!window.PublicKeyCredential) {
-            console.warn("WebAuthn no soportado en este navegador");
+            console.warn("WebAuthn no soportado en este navegador/dispositivo.");
+            return;
+        }
+        if (!firebaseUser) {
+            console.warn("No hay usuario Firebase activo; no registramos huella en Firestore.");
             return;
         }
 
-        // nos aseguramos que hay usuario autenticado (Firestore rules seguras)
-        const user = auth.currentUser;
-        if (!user) {
-            console.warn("No hay usuario autenticado; no se guardará la huella en Firestore.");
-            return;
-        }
-
-        // user.id (UID) es más robusto que el email para identificación
-        const userId = new TextEncoder().encode(user.uid);
+        // ID único: usamos firebase uid para mayor seguridad
+        const userIdBytes = new TextEncoder().encode(firebaseUser.uid);
 
         const publicKey = {
             challenge: crypto.getRandomValues(new Uint8Array(32)),
             rp: { name: "Mi App" },
-            user: { id: userId, name: email, displayName: email },
+            user: { id: userIdBytes, name: email, displayName: email },
             pubKeyCredParams: [{ type: "public-key", alg: -7 }],
             authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
             timeout: 60000,
             attestation: "direct"
         };
 
+        // pide al navegador crear la credencial (huella)
         const cred = await navigator.credentials.create({ publicKey });
 
-        if (!cred) {
-            throw new Error("Credencial no retornada por el navegador.");
-        }
+        if (!cred) throw new Error("No se obtuvo credencial del navegador.");
 
-        // transformamos rawId a base64url (seguro como docID)
+        // codificar rawId a base64url (para usar como doc id limpio)
         const rawIdB64Url = bufferToBase64Url(cred.rawId);
 
-        // ====== GRABAR en Firestore en colección 'fingerprintIndex' ======
-        // usamos como document id la base64url (sin caracteres / + =) -> evita errores de path
+        // Guardar en Firestore la relación fingerprint -> user
         const docRef = doc(db, "fingerprintIndex", rawIdB64Url);
 
-        // Si quieres guardar también refreshToken (opcional - ver nota de seguridad abajo)
-        const refreshToken = user.refreshToken || null;
+        // Guardamos refreshToken, uid y email para permitir re-login desde cliente
+        // Nota: guardar refreshToken en Firestore tiene riesgos; si te preocupa,
+        // usa la ruta del backend (Cloud Function) para emitir customToken.
+        const refreshToken = firebaseUser.refreshToken || null;
 
         await setDoc(docRef, {
-            uid: user.uid,
+            uid: firebaseUser.uid,
             email: email,
-            createdAt: serverTimestamp(),
-            refreshToken: refreshToken
+            refreshToken: refreshToken,
+            createdAt: serverTimestamp()
         });
 
-        // Guardar localmente para rápido uso en este dispositivo
+        // Guardamos localmente el id para operaciones rápidas en el dispositivo
         localStorage.setItem("fingerprintId", rawIdB64Url);
 
-        console.log("Huella registrada y guardada (doc id):", rawIdB64Url);
-
+        console.log("Huella registrada y guardada. docId:", rawIdB64Url);
     } catch (err) {
         console.error("registerBiometricCredential error:", err);
         alert("No se pudo registrar la huella: " + (err.message || err));
     }
 }
 
-// ======== Login con huella (usa fingerprintId guardado) ========
+// ---------- Login usando huella ----------
 window.loginWithFingerprint = async function() {
+    showLoading();
     try {
         const savedId = localStorage.getItem("fingerprintId");
         if (!savedId) {
-            alert("No hay huella registrada en este dispositivo.");
+            hideLoading();
+            alert("No hay huella registrada en este dispositivo. Inicia sesión con correo o Google primero.");
             return;
         }
 
         const rawId = base64UrlToUint8Array(savedId);
 
-        // pedir verificación biométrica al navegador
+        // pide verificación biométrica al navegador / dispositivo
         await navigator.credentials.get({
             publicKey: {
                 challenge: crypto.getRandomValues(new Uint8Array(32)),
@@ -410,50 +292,87 @@ window.loginWithFingerprint = async function() {
             }
         });
 
-        console.log("Huella local verificada (navegador confirmó). Buscando dueño en Firestore...");
+        // Si llegamos aquí, la biometría fue aceptada por el dispositivo
+        console.log("Biometría local verificada. Buscando dueño en Firestore...");
 
-        // buscamos documento en Firestore con ese id
-        const docSnap = await getDoc(doc(db, "fingerprintIndex", savedId));
+        const docRef = doc(db, "fingerprintIndex", savedId);
+        const docSnap = await getDoc(docRef);
+
         if (!docSnap.exists()) {
+            hideLoading();
             alert("Huella verificada pero no se encontró usuario asociado en Firestore.");
             return;
         }
 
         const info = docSnap.data();
-        console.log("fingerprintIndex doc data:", info);
+        if (!info || !info.email) {
+            hideLoading();
+            alert("Documento de huella mal formado. Contacta soporte.");
+            return;
+        }
 
-        // guardamos el email local y redirigimos
-        localStorage.setItem("userEmail", info.email || "");
-        // opcional: guardar uid si lo necesitas
+        // Si tenemos refreshToken en Firestore, intercambiamos por id_token
+        const refreshToken = info.refreshToken || null;
+
+        // Guardamos email/uid localmente
+        localStorage.setItem("userEmail", info.email);
         localStorage.setItem("userUid", info.uid || "");
 
-        alert("Huella verificada para " + (info.email || "usuario"));
-        // IMPORTANTE: aquí todavía NO hemos re-autenticado a Firebase.
-        // Para re-autenticar de forma segura debes usar un back-end que verifique la asserción
-        // y te devuelva un customToken de Firebase (te lo puedo armar).
-        // Por ahora redirigimos:
+        if (!refreshToken) {
+            // si no hay refreshToken guardado, al menos redirigimos con email local
+            hideLoading();
+            alert("Huella verificada para " + info.email + " (sin refreshToken). Se redirige.");
+            location.href = "formulario.html";
+            return;
+        }
+
+        // Intercambiamos el refreshToken por un id_token usando securetoken API
+        // Esto retorna id_token que representa al usuario.
+        const exchangeRes = await fetch(`https://securetoken.googleapis.com/v1/token?key=${firebaseConfig.apiKey}`, {
+            method: "POST",
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `grant_type=refresh_token&refresh_token=${refreshToken}`
+        });
+
+        const exchangeData = await exchangeRes.json();
+
+        if (!exchangeData || !exchangeData.id_token) {
+            console.error("Error intercambiando refresh token:", exchangeData);
+            hideLoading();
+            alert("No se pudo renovar sesión automáticamente. Intenta ingresar con correo/Google.");
+            return;
+        }
+
+        // Guardamos id_token y expires time en localStorage (el SDK no se inicializa automáticamente con este token)
+        // Pero ahora tienes un id_token válido que puedes usar para llamadas a tu backend
+        localStorage.setItem("idToken", exchangeData.id_token);
+        localStorage.setItem("idTokenExpiresIn", exchangeData.expires_in);
+        console.log("ID token renovado OK. email:", info.email);
+
+        hideLoading();
+        alert("Huella verificada, sesión restaurada para " + info.email);
+        // redirigimos al formulario principal
         location.href = "formulario.html";
 
     } catch (err) {
         console.error("loginWithFingerprint error:", err);
+        hideLoading();
         alert("Error con huella: " + (err.message || err));
     }
 };
 
-// ======== Auto login con huella al abrir (si quieres) ========
+// ---------- Auto login con huella al abrir (opcional) ----------
 window.addEventListener("load", async () => {
-    if (localStorage.getItem("fingerprintId")) {
-        try {
-            // intenta login con huella en segundo plano
-            // si no quieres auto preguntar huella al abrir, comenta la próxima línea
+    // Si quieres que pida huella al abrir, deja esto; si no, comenta la llamada.
+    try {
+        if (localStorage.getItem("fingerprintId")) {
+            // intenta iniciar con huella automáticamente (pedirá biometría)
             await loginWithFingerprint();
-        } catch (e) {
-            console.log("Auto huella cancelada:", e);
         }
+    } catch (e) {
+        console.log("Auto huella cancelada o falló:", e);
     }
 });
 </script>
-
-
 </body>
 </html>
