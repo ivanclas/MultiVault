@@ -3,222 +3,64 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login con Firebase + Huella (Passkey)</title>
-  <link rel="icon" href="iconGaleria.png" type="image/png" />
-
+  <title>Login con Huella + Firebase</title>
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #00c6ff, #0072ff);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .login-container {
-      background-color: #fff;
-      padding: 40px;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 420px;
-      text-align: center;
-      position: relative;
-    }
-
-    h1 {
-      color: #333;
-      font-size: 28px;
-      margin-bottom: 20px;
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
-
-    input {
-      width: 100%;
-      padding: 15px;
-      margin: 10px 0;
-      border: 2px solid #ddd;
-      border-radius: 10px;
-      font-size: 16px;
-      transition: border-color 0.3s ease;
-      box-sizing: border-box;
-      position: relative;
-    }
-
-    input:focus {
-      border-color: #007bff;
-      outline: none;
-    }
-
-    .input-wrapper { position: relative; width: 100%; }
-    .input-wrapper input { padding-right: 40px; }
-
-    .toggle-password {
-      position: absolute; top: 50%; right: 10px; transform: translateY(-50%);
-      cursor: pointer; width: 20px; height: 20px;
-    }
-    .toggle-password svg { fill: #999; width: 100%; height: 100%; }
-    .toggle-password:hover svg { fill: #333; }
-
-    button {
-      width: 100%;
-      padding: 15px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s ease;
-      margin-top: 12px;
-      letter-spacing: 0.5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-    button:hover { background-color: #0056b3; }
-
-    .google-login-btn { background-color: #4285F4; }
-    .google-login-btn:hover { background-color: #3367D6; }
-
-    .passkey-btn { background-color: #111827; }
-    .passkey-btn:hover { background-color: #0b1220; }
-
-    p { margin-top: 16px; color: #666; }
-    a { color: #007bff; text-decoration: none; font-weight: bold; }
-    a:hover { text-decoration: underline; }
-
-    .modal {
-      display: none; position: fixed; z-index: 10; left: 0; top: 0;
-      width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);
-      justify-content: center; align-items: center;
-    }
-
-    .modal-content {
-      background-color: #fff; padding: 30px; border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      width: 100%; max-width: 420px; text-align: center; position: relative;
-    }
-    .modal-content h1 { margin-bottom: 20px; }
-
-    .close { position: absolute; top: 10px; right: 20px; font-size: 30px; font-weight: bold; cursor: pointer; color: #999; }
-    .close:hover { color: #333; }
-
-    .loading-overlay {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 50;
-    }
-    .loading-overlay p { color: white; font-size: 18px; margin-top: 10px; }
-
-    .spinner {
-      border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%;
-      width: 40px; height: 40px; animation: spin 1s linear infinite;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
-
-    @media (max-width: 768px) {
-      .login-container { padding: 30px; }
-      h1 { font-size: 24px; }
-      input, button { padding: 12px; font-size: 14px; }
-    }
+    body{font-family:'Poppins',sans-serif;background:linear-gradient(135deg,#00c6ff,#0072ff);display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
+    .login-container{background:#fff;padding:32px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.1);width:100%;max-width:420px;text-align:center}
+    h2{margin:0 0 16px}
+    input{width:100%;padding:14px;margin:8px 0;border:2px solid #ddd;border-radius:10px;font-size:16px;box-sizing:border-box}
+    button{width:100%;padding:14px;margin-top:12px;border:0;border-radius:10px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;background:#007bff;color:#fff}
+    button:hover{background:#0056b3}
+    .google-btn{background:#4285F4}
+    .google-btn:hover{background:#3367D6}
+    .passkey{background:#111827}
+    .passkey:hover{background:#0b1220}
+    .hint{color:#666;font-size:12px;margin-top:8px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .spinner{display:none;margin:12px auto;border:4px solid rgba(0,0,0,.1);border-top:4px solid #000;border-radius:50%;width:36px;height:36px;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body>
   <div class="login-container">
-    <h1>Iniciar Sesión</h1>
-    <div class="input-wrapper">
-      <input type="email" id="login-email" placeholder="Correo electrónico" required />
+    <h2>Iniciar Sesión</h2>
+    <input type="email" id="email" placeholder="Correo" autocomplete="username" />
+    <input type="password" id="password" placeholder="Contraseña" autocomplete="current-password" />
+    <button id="btn-login">Ingresar</button>
+    <button id="btn-google" class="google-btn">Iniciar con Google</button>
+    <div class="row">
+      <button id="btn-register-passkey" class="passkey" style="display:none">Registrar Passkey</button>
+      <button id="btn-login-passkey" class="passkey" style="display:none">Ingresar con Huella</button>
     </div>
-    <div class="input-wrapper">
-      <input type="password" id="login-password" placeholder="Contraseña" required />
-      <span class="toggle-password" onclick="togglePassword('login-password')">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/></svg>
-      </span>
-    </div>
-
-    <button onclick="login()"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</button>
-    <button onclick="loginWithGoogle()" class="google-login-btn"><i class="fab fa-google"></i> Iniciar sesión con Google</button>
-
-    <!-- NUEVO: Autenticación con Huella/Passkey -->
-    <button id="passkey-login-btn" class="passkey-btn" onclick="loginWithPasskey()" style="display:none">
-      <i class="fas fa-fingerprint"></i> Ingresar con Huella (Passkey)
-    </button>
-
-    <p><a href="javascript:void(0);" onclick="resetPassword()">¿Olvidaste tu contraseña?</a></p>
-    <p>¿No tienes una cuenta? <a href="javascript:void(0);" onclick="openModal()">Regístrate aquí</a>.</p>
-
-    <!-- NUEVO: Registrar una passkey -->
-    <button id="passkey-register-btn" class="passkey-btn" onclick="registerPasskey()" style="display:none">
-      <i class="fas fa-key"></i> Registrar Passkey (Huella/Face/Pin)
-    </button>
-  </div>
-
-  <!-- Modal de registro -->
-  <div id="registerModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
-      <h1>Registro</h1>
-      <div class="input-wrapper">
-        <input type="email" id="register-email" placeholder="Correo electrónico" required />
-      </div>
-      <div class="input-wrapper">
-        <input type="password" id="register-password" placeholder="Contraseña" required />
-        <span class="toggle-password" onclick="togglePassword('register-password')">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 4.5c-7.5 0-11 7.5-11 7.5s3.5 7.5 11 7.5 11-7.5 11-7.5-3.5-7.5-11-7.5zm0 12c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5zm0-7c-1.5 0-2.5 1-2.5 2.5s1 2.5 2.5 2.5 2.5-1 2.5-2.5-1-2.5-2.5-2.5z"/></svg>
-        </span>
-      </div>
-      <button onclick="register()"><i class="fas fa-user-plus"></i> Registrar</button>
-    </div>
-  </div>
-
-  <!-- Loading overlay -->
-  <div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner"></div>
-    <p>Por favor, espere...</p>
+    <div id="loader" class="spinner"></div>
+    <div class="hint">Requiere navegador compatible (Chrome/Android o Safari/iOS) y HTTPS.</div>
   </div>
 
   <script type="module">
-    // --- Firebase ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+    // ===== Firebase (v11) =====
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
 
     const firebaseConfig = {
-      apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
-      authDomain: "login-de3fd.firebaseapp.com",
-      databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
-      projectId: "login-de3fd",
-      storageBucket: "login-de3fd.appspot.com",
-      messagingSenderId: "1064113669692",
-      appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
-      measurementId: "G-TMWR9JNR18"
+      apiKey: 'AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80',
+      authDomain: 'login-de3fd.firebaseapp.com',
+      databaseURL: 'https://login-de3fd-default-rtdb.firebaseio.com',
+      projectId: 'login-de3fd',
+      storageBucket: 'login-de3fd.appspot.com',
+      messagingSenderId: '1064113669692',
+      appId: '1:1064113669692:web:c45b68b5a8a519536f2539',
+      measurementId: 'G-TMWR9JNR18'
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    provider.addScope('profile');
-    provider.addScope('email');
 
-    const loadingOverlay = document.getElementById('loadingOverlay');
+    // ===== BACKEND URL (ajústala a tu Function deploy) =====
+    // Ejemplo: https://us-central1-login-de3fd.cloudfunctions.net/webauthn
+    const API_BASE = 'https://us-central1-login-de3fd.cloudfunctions.net/webauthn';
 
-    // ====== CONFIGURA TUS ENDPOINTS BACKEND ======
-    // Debes implementar estos endpoints en tu servidor (por ejemplo, Cloud Functions for Firebase)
-    // usando WebAuthn (FIDO2). Recomendado: librería "@simplewebauthn/server".
-    const API_BASE = 'https://TU_DOMINIO/api/webauthn';
-    const ENDPOINTS = {
-      regOptions: API_BASE + '/register/options',
-      regVerify:  API_BASE + '/register/verify',
-      authOptions: API_BASE + '/auth/options',
-      authVerify:  API_BASE + '/auth/verify',
-    };
-
-    // ====== UTILS: base64url <-> ArrayBuffer ======
+    // ===== Helpers base64url <-> ArrayBuffer =====
     const b64urlToBuf = (b64url) => {
       const pad = '='.repeat((4 - (b64url.length % 4)) % 4);
       const b64 = (b64url + pad).replace(/-/g, '+').replace(/_/g, '/');
@@ -228,122 +70,73 @@
       for (let i = 0; i < str.length; i++) view[i] = str.charCodeAt(i);
       return buf;
     };
-
     const bufToB64url = (buf) => {
       const bytes = new Uint8Array(buf);
       let str = '';
       for (let i = 0; i < bytes.byteLength; i++) str += String.fromCharCode(bytes[i]);
-      const b64 = btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-      return b64;
+      return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     };
 
-    // ====== UI helpers ======
-    const show = (el) => el.style.display = 'flex';
-    const hide = (el) => el.style.display = 'none';
+    // ===== UI =====
+    const el = (id) => document.getElementById(id);
+    const show = (id, on=true) => el(id).style.display = on ? 'inline-flex' : 'none';
+    const loading = (on) => el('loader').style.display = on ? 'block' : 'none';
 
-    // Mostrar botones Passkey si el navegador soporta WebAuthn
-    const passkeyLoginBtn = document.getElementById('passkey-login-btn');
-    const passkeyRegisterBtn = document.getElementById('passkey-register-btn');
-    if (window.PublicKeyCredential && typeof window.PublicKeyCredential === 'function') {
-      passkeyLoginBtn.style.display = 'flex';
-      passkeyRegisterBtn.style.display = 'flex';
+    const supportsWebAuthn = () => !!window.PublicKeyCredential;
+    if (supportsWebAuthn()) {
+      show('btn-register-passkey', true);
+      show('btn-login-passkey', true);
     }
 
-    // ====== Ventanas modales ======
-    window.openModal = () => {
-      document.getElementById('registerModal').style.display = 'flex';
-    };
-    window.closeModal = () => {
-      document.getElementById('registerModal').style.display = 'none';
-    };
-
-    // ====== Autenticación tradicional ======
-    window.login = async () => {
-      const email = document.getElementById('login-email').value.trim();
-      const password = document.getElementById('login-password').value;
-      if (!email || !password) { alert('Por favor, completa todos los campos.'); return; }
-      loadingOverlay.style.display = 'flex';
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        alert('¡Inicio de sesión exitoso!');
-        window.location.href = 'formulario.html';
-      } catch (error) {
-        alert('Error en el inicio de sesión: ' + error.message);
-      } finally { loadingOverlay.style.display = 'none'; }
-    };
-
-    window.register = async () => {
-      const email = document.getElementById('register-email').value.trim();
-      const password = document.getElementById('register-password').value;
-      if (!email || !password) { alert('Por favor, completa todos los campos.'); return; }
-      loadingOverlay.style.display = 'flex';
-      try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        alert('¡Registro exitoso!');
-        document.getElementById('register-email').value = '';
-        document.getElementById('register-password').value = '';
-        closeModal();
-      } catch (error) {
-        alert('Error en el registro: ' + error.message);
-      } finally { loadingOverlay.style.display = 'none'; }
-    };
-
-    window.resetPassword = async () => {
-      const email = document.getElementById('login-email').value.trim();
-      if (!email) { alert('Por favor, ingresa tu correo electrónico para restablecer la contraseña.'); return; }
-      try {
-        await sendPasswordResetEmail(auth, email);
-        alert('Correo de restablecimiento enviado.');
-      } catch (error) {
-        alert('Error al enviar el correo: ' + error.message);
-      }
-    };
-
-    window.togglePassword = (fieldId) => {
-      const field = document.getElementById(fieldId);
-      field.type = field.type === 'password' ? 'text' : 'password';
-    };
-
-    window.loginWithGoogle = async () => {
-      loadingOverlay.style.display = 'flex';
-      try {
-        await signInWithPopup(auth, provider);
-        alert('¡Inicio de sesión con Google exitoso!');
-        window.location.href = 'formulario.html';
-      } catch (error) {
-        alert('Error al iniciar sesión con Google: ' + error.message);
-      } finally { loadingOverlay.style.display = 'none'; }
-    };
-
-    // ====== NUEVO: Registro y Login con Passkeys (WebAuthn + Huella) ======
-    // NOTA IMPORTANTE: Necesitas endpoints backend (ENDPOINTS.*) para generar/verificar challenges
-    // y devolver un Firebase Custom Token en auth/verify.
-
-    async function fetchJSON(url, body) {
-      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body || {}) });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    // ===== API client =====
+    async function postJSON(url, body){
+      const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body||{}) });
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.json();
     }
 
-    window.registerPasskey = async () => {
-      try {
-        const email = (document.getElementById('login-email').value || '').trim();
-        if (!email) { alert('Ingresa tu correo en el campo de login para asociar la passkey.'); return; }
+    // ===== Email/Password =====
+    el('btn-login').addEventListener('click', async()=>{
+      const email = el('email').value.trim();
+      const password = el('password').value;
+      if(!email || !password){ alert('Completa correo y contraseña'); return; }
+      try{
+        loading(true);
+        await signInWithEmailAndPassword(auth, email, password);
+        alert('Inicio de sesión exitoso');
+        // (Opcional) ofrecer registrar passkey luego del login
+        // window.location.href = 'formulario.html';
+      }catch(err){ alert('Error: '+err.message); }
+      finally{ loading(false); }
+    });
 
-        // 1) Pedir opciones de creación al backend
-        const options = await fetchJSON(ENDPOINTS.regOptions, { email });
+    // ===== Google =====
+    el('btn-google').addEventListener('click', async()=>{
+      try{
+        loading(true);
+        await signInWithPopup(auth, provider);
+        alert('Inicio con Google exitoso');
+        // window.location.href = 'formulario.html';
+      }catch(err){ alert('Error con Google: '+err.message); }
+      finally{ loading(false); }
+    });
 
-        // Convertir propiedades base64url -> ArrayBuffer
+    // ===== Registrar Passkey (huella/FaceID) =====
+    el('btn-register-passkey').addEventListener('click', async()=>{
+      try{
+        if(!supportsWebAuthn()) return alert('Tu navegador no soporta WebAuthn/Passkeys.');
+        const email = (el('email').value || auth.currentUser?.email || '').trim();
+        if(!email) return alert('Ingresa tu correo o inicia sesión para asociar la passkey.');
+        loading(true);
+        const options = await postJSON(`${API_BASE}/api/webauthn/register/options`, { email });
+        // Adaptar propiedades a ArrayBuffer
         options.challenge = b64urlToBuf(options.challenge);
-        if (options.user && options.user.id) options.user.id = b64urlToBuf(options.user.id);
-        if (Array.isArray(options.excludeCredentials)) {
-          options.excludeCredentials = options.excludeCredentials.map(c => ({ ...c, id: b64urlToBuf(c.id) }));
+        if(options.user?.id) options.user.id = b64urlToBuf(options.user.id);
+        if(Array.isArray(options.excludeCredentials)){
+          options.excludeCredentials = options.excludeCredentials.map(c=>({ ...c, id: b64urlToBuf(c.id) }));
         }
-
-        // 2) Crear credencial (solicitar huella/biometría del dispositivo)
         const cred = await navigator.credentials.create({ publicKey: options });
-        if (!cred) throw new Error('No se pudo crear la credencial');
-
+        if(!cred) throw new Error('No se pudo crear la credencial');
         const attestation = {
           id: cred.id,
           rawId: bufToB64url(cred.rawId),
@@ -353,32 +146,25 @@
             attestationObject: bufToB64url(cred.response.attestationObject)
           }
         };
+        await postJSON(`${API_BASE}/api/webauthn/register/verify`, { email, attestation });
+        alert('Passkey registrada. Ya puedes ingresar con huella.');
+      }catch(err){ alert('Error registrando passkey: '+err.message); }
+      finally{ loading(false); }
+    });
 
-        // 3) Verificar en el backend
-        const verifyRes = await fetchJSON(ENDPOINTS.regVerify, { email, attestation });
-        alert('Passkey registrada correctamente. Ahora ya puedes ingresar con huella.');
-      } catch (err) {
-        console.error(err);
-        alert('Error al registrar la passkey: ' + err.message);
-      }
-    };
-
-    window.loginWithPasskey = async () => {
-      loadingOverlay.style.display = 'flex';
-      try {
-        const email = (document.getElementById('login-email').value || '').trim();
-
-        // 1) Pedir opciones de autenticación al backend
-        const options = await fetchJSON(ENDPOINTS.authOptions, { email: email || undefined });
+    // ===== Ingresar con Huella (Passkey) =====
+    el('btn-login-passkey').addEventListener('click', async()=>{
+      try{
+        if(!supportsWebAuthn()) return alert('Tu navegador no soporta WebAuthn/Passkeys.');
+        const email = (el('email').value || auth.currentUser?.email || '').trim();
+        loading(true);
+        const options = await postJSON(`${API_BASE}/api/webauthn/auth/options`, { email: email || undefined });
         options.challenge = b64urlToBuf(options.challenge);
-        if (Array.isArray(options.allowCredentials)) {
-          options.allowCredentials = options.allowCredentials.map(c => ({ ...c, id: b64urlToBuf(c.id) }));
+        if(Array.isArray(options.allowCredentials)){
+          options.allowCredentials = options.allowCredentials.map(c=>({ ...c, id: b64urlToBuf(c.id) }));
         }
-
-        // 2) Solicitar credencial (biometría)
         const assertion = await navigator.credentials.get({ publicKey: options });
-        if (!assertion) throw new Error('No se obtuvo credencial');
-
+        if(!assertion) throw new Error('No se obtuvo credencial');
         const authData = {
           id: assertion.id,
           rawId: bufToB64url(assertion.rawId),
@@ -387,34 +173,17 @@
             clientDataJSON: bufToB64url(assertion.response.clientDataJSON),
             authenticatorData: bufToB64url(assertion.response.authenticatorData),
             signature: bufToB64url(assertion.response.signature),
-            userHandle: assertion.response.userHandle ? bufToB64url(assertion.response.userHandle) : null
+            userHandle: assertion.response.userHandle ? bufToB64url(assertion.response.userHandle) : null,
           }
         };
-
-        // 3) Verificar en backend y obtener Firebase Custom Token
-        const verifyRes = await fetchJSON(ENDPOINTS.authVerify, { email: email || undefined, assertion: authData });
-        if (!verifyRes || !verifyRes.firebaseCustomToken) throw new Error('El backend no devolvió un Custom Token');
-
-        await signInWithCustomToken(auth, verifyRes.firebaseCustomToken);
-        alert('¡Inicio de sesión con huella exitoso!');
+        const verify = await postJSON(`${API_BASE}/api/webauthn/auth/verify`, { email: email || undefined, assertion: authData });
+        if(!verify?.firebaseCustomToken) throw new Error('Backend no devolvió Custom Token');
+        await signInWithCustomToken(auth, verify.firebaseCustomToken);
+        alert('Huella verificada. Login OK');
         window.location.href = 'formulario.html';
-      } catch (err) {
-        console.error(err);
-        alert('Error al ingresar con passkey: ' + err.message);
-      } finally {
-        loadingOverlay.style.display = 'none';
-      }
-    };
-  </script>
-
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-          .then((registration) => { console.log('Service Worker registrado con éxito:', registration); })
-          .catch((error) => { console.error('Error al registrar el Service Worker:', error); });
-      });
-    }
+      }catch(err){ alert('Error con huella: '+err.message); }
+      finally{ loading(false); }
+    });
   </script>
 </body>
 </html>
