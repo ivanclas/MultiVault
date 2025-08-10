@@ -1,388 +1,202 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login con Huella + Firebase</title>
-    <style>
-        /* Tus estilos existentes */
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .login-container {
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            position: relative;
-        }
-
-        h1 {
-            color: #333;
-            font-size: 28px;
-            margin-bottom: 20px;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        input {
-            width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-            box-sizing: border-box;
-            position: relative;
-        }
-
-        input:focus {
-            border-color: #007bff;
-            outline: none;
-        }
-
-        .input-wrapper {
-            position: relative;
-            width: 100%;
-        }
-
-        .input-wrapper input {
-            padding-right: 40px;
-        }
-
-        .toggle-password {
-            position: absolute;
-            top: 50%;
-            right: 10px;
-            transform: translateY(-50%);
-            cursor: pointer;
-            width: 20px;
-            height: 20px;
-        }
-
-        .toggle-password svg {
-            fill: #999;
-            width: 100%;
-            height: 100%;
-        }
-
-        .toggle-password:hover svg {
-            fill: #333;
-        }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        p {
-            margin-top: 20px;
-            color: #666;
-        }
-
-        a {
-            color: #007bff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            position: relative;
-        }
-
-        .modal-content h1 {
-            margin-bottom: 20px;
-        }
-
-        .close {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .close:hover {
-            color: #333;
-        }
-
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 2;
-        }
-
-        .loading-overlay p {
-            color: white;
-            font-size: 18px;
-            margin-top: 10px;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .login-container {
-                padding: 30px;
-            }
-
-            h1 {
-                font-size: 24px;
-            }
-
-            input, button {
-                padding: 12px;
-                font-size: 14px;
-            }
-        }
-
-        /* Estilos para el botón de Google */
-        .google-login-btn {
-            width: 100%;
-            padding: 15px;
-            background-color: #4285F4;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            margin-top: 10px;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .google-login-btn:hover {
-            background-color: #3367D6;
-        }
-
-        /* Iconos en los botones */
-        button i {
-            margin-right: 10px;
-            font-size: 18px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login con Huella + Firebase</title>
+  <link rel="icon" href="iconGaleria.png" type="image/png" />
+  <style>
+    body{font-family:'Poppins',sans-serif;background:linear-gradient(135deg,#00c6ff,#0072ff);display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
+    .card{background:#fff;padding:32px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.1);width:100%;max-width:420px;text-align:center}
+    h1{margin:0 0 12px;font-size:26px;color:#333}
+    p{color:#666;margin:8px 0}
+    input{width:100%;padding:14px;margin-top:10px;border:2px solid #ddd;border-radius:10px;font-size:16px}
+    input:focus{outline:none;border-color:#007bff}
+    .spinner{margin:14px auto;border:4px solid rgba(0,0,0,.1);border-top:4px solid #000;border-radius:50%;width:36px;height:36px;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .hidden{display:none}
+    .btn{background:#007bff;color:#fff;border:none;padding:12px;width:100%;border-radius:10px;font-size:16px;margin-top:10px;cursor:pointer;letter-spacing:.3px}
+    .btn:hover{background:#0056b3}
+    .muted{font-size:12px;color:#777}
+  </style>
 </head>
 <body>
+  <div class="card">
+    <h1>MultiVault</h1>
+    <p>Escribe tu correo y valida con tu huella</p>
+    <input id="email" type="email" placeholder="tu@correo.com" autocomplete="username" />
+    <button id="btnLogin" class="btn">Continuar</button>
+    <div id="loader" class="spinner hidden"></div>
+    <p id="status" class="muted"></p>
+  </div>
 
-<div class="login-container">
-    <h2>Iniciar Sesión</h2>
-    <input type="email" id="email" placeholder="Correo" />
-    <input type="password" id="password" placeholder="Contraseña" />
-    <button onclick="login()">Ingresar</button>
-    <br><br>
-    <button class="google-btn" onclick="loginWithGoogle()">Iniciar con Google</button>
-    <br><br>
-    <button onclick="loginWithFingerprint()">Ingresar con Huella</button>
-</div>
-
-<script type="module">
-    // ======== Firebase Setup ========
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } 
-        from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+  <script type="module">
+    // ===== Firebase =====
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
+    import { getAuth, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
+    import { getFirestore, addDoc, collection, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
 
     const firebaseConfig = {
-        apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
-        authDomain: "login-de3fd.firebaseapp.com",
-        databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
-        projectId: "login-de3fd",
-        storageBucket: "login-de3fd.appspot.com",
-        messagingSenderId: "1064113669692",
-        appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
-        measurementId: "G-TMWR9JNR18"
+      apiKey: 'AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80',
+      authDomain: 'login-de3fd.firebaseapp.com',
+      databaseURL: 'https://login-de3fd-default-rtdb.firebaseio.com',
+      projectId: 'login-de3fd',
+      storageBucket: 'login-de3fd.appspot.com',
+      messagingSenderId: '1064113669692',
+      appId: '1:1064113669692:web:c45b68b5a8a519536f2539',
+      measurementId: 'G-TMWR9JNR18'
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+    const db = getFirestore(app);
 
-    // ======== Login normal ========
-    window.login = async function() {
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            localStorage.setItem("userEmail", email);
-            await registerBiometricCredential();
-            alert("Inicio de sesión exitoso");
-            location.href = "formulario.html";
-        } catch (error) {
-            alert("Error: " + error.message);
+    // ===== Constantes =====
+    const API_BASE = 'https://us-central1-login-de3fd.cloudfunctions.net/webauthn';
+    const FORM_URL = (location.hostname === 'ivanclas.github.io') ? '/MultiVault/formulario.html' : 'formulario.html';
+
+    // ===== Helpers UI =====
+    const $ = (id)=>document.getElementById(id);
+    const setLoading = (on)=> $('loader').classList[on?'remove':'add']('hidden');
+    const setStatus = (t)=> $('status').textContent = t || '';
+
+    // ===== Helpers base64url <-> ArrayBuffer =====
+    const b64urlToBuf = (b64url) => {
+      const pad = '='.repeat((4 - (b64url.length % 4)) % 4);
+      const b64 = (b64url + pad).replace(/-/g,'+').replace(/_/g,'/');
+      const bin = atob(b64);
+      const buf = new ArrayBuffer(bin.length);
+      const view = new Uint8Array(buf);
+      for(let i=0;i<bin.length;i++) view[i] = bin.charCodeAt(i);
+      return buf;
+    };
+    const bufToB64url = (buf) => {
+      const bytes = new Uint8Array(buf);
+      let str='';
+      for(let i=0;i<bytes.byteLength;i++) str += String.fromCharCode(bytes[i]);
+      return btoa(str).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    };
+
+    // ===== HTTP helper con diagnósticos =====
+    async function postJSON(url, body){
+      try{
+        const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body||{}) });
+        if(!res.ok){
+          const text = await res.text().catch(()=>'(sin body)');
+          throw new Error(`HTTP ${res.status} ${res.statusText} -> ${text}`);
         }
+        return await res.json();
+      }catch(e){
+        console.error('postJSON error', e);
+        throw e;
+      }
     }
 
-    // ======== Login con Google ========
-    window.loginWithGoogle = async function() {
-        try {
-            const result = await signInWithPopup(auth, provider);
-            const email = result.user.email;
-            localStorage.setItem("userEmail", email);
-            await registerBiometricCredential();
-            alert("Inicio de sesión con Google exitoso");
-            location.href = "formulario.html";
-        } catch (error) {
-            alert("Error con Google: " + error.message);
-        }
+    // ===== Log en Firestore =====
+    async function logLogin(method){
+      try{
+        const user = auth.currentUser;
+        if(!user) return;
+        await addDoc(collection(db,'loginLogs'),{
+          uid: user.uid,
+          email: user.email||null,
+          method,
+          at: serverTimestamp(),
+          ua: navigator.userAgent
+        });
+      }catch(err){ console.warn('No se pudo registrar el inicio de sesión:', err?.message||err); }
     }
 
-    // ======== Registrar credencial biométrica ========
-    async function registerBiometricCredential() {
-        try {
-            if (!window.PublicKeyCredential) {
-                console.warn("WebAuthn no soportado en este navegador");
-                return;
-            }
-
-            const email = localStorage.getItem("userEmail");
-            if (!email) return;
-
-            const userId = new TextEncoder().encode(email); // ID único basado en el email
-
-            const cred = await navigator.credentials.create({
-                publicKey: {
-                    challenge: crypto.getRandomValues(new Uint8Array(32)),
-                    rp: { name: "Mi App" },
-                    user: {
-                        id: userId,
-                        name: email,
-                        displayName: email
-                    },
-                    pubKeyCredParams: [{ type: "public-key", alg: -7 }],
-                    authenticatorSelection: {
-                        authenticatorAttachment: "platform",
-                        userVerification: "required"
-                    },
-                    timeout: 60000,
-                    attestation: "direct"
-                }
-            });
-
-            // Guardar el ID de la credencial en base64
-            const rawIdBase64 = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
-            localStorage.setItem("fingerprintId", rawIdBase64);
-
-            console.log("Credencial biométrica registrada y guardada");
-        } catch (err) {
-            console.warn("No se pudo registrar huella: " + err.message);
+    // ===== Registro de Passkey para un correo =====
+    async function registerPasskeyFor(email){
+      setStatus('Registrando tu huella…');
+      // 1) Pedir opciones de registro al backend
+      const options = await postJSON(`${API_BASE}/api/webauthn/register/options`, { email });
+      // Forzar lector del dispositivo (plataforma)
+      options.authenticatorSelection = {
+        authenticatorAttachment: 'platform',
+        residentKey: options.authenticatorSelection?.residentKey || 'preferred',
+        userVerification: 'required',
+      };
+      // Adaptar tipos
+      options.challenge = b64urlToBuf(options.challenge);
+      if(options.user?.id) options.user.id = b64urlToBuf(options.user.id);
+      if(Array.isArray(options.excludeCredentials)){
+        options.excludeCredentials = options.excludeCredentials.map(c=>({ ...c, id: b64urlToBuf(c.id) }));
+      }
+      // 2) Crear credencial (aparece prompt de huella/FaceID)
+      const cred = await navigator.credentials.create({ publicKey: options });
+      if(!cred) throw new Error('No se pudo crear la credencial');
+      // 3) Enviar al backend para verificar y guardar
+      const attestation = {
+        id: cred.id,
+        rawId: bufToB64url(cred.rawId),
+        type: cred.type,
+        response: {
+          clientDataJSON: bufToB64url(cred.response.clientDataJSON),
+          attestationObject: bufToB64url(cred.response.attestationObject)
         }
+      };
+      await postJSON(`${API_BASE}/api/webauthn/register/verify`, { email, attestation });
+      setStatus('Huella registrada. Ingresando…');
+      // Después de registrar, autenticar inmediatamente
+      await authenticateWithEmail(email);
     }
 
-    // ======== Login con huella ========
-    window.loginWithFingerprint = async function() {
-        try {
-            const savedEmail = localStorage.getItem("userEmail");
-            const savedId = localStorage.getItem("fingerprintId");
-
-            if (!savedEmail || !savedId) {
-                alert("No hay una huella registrada, inicia sesión primero");
-                return;
-            }
-
-            const rawId = Uint8Array.from(atob(savedId), c => c.charCodeAt(0));
-
-            await navigator.credentials.get({
-                publicKey: {
-                    challenge: crypto.getRandomValues(new Uint8Array(32)),
-                    allowCredentials: [{
-                        id: rawId,
-                        type: "public-key",
-                        transports: ["internal"]
-                    }],
-                    userVerification: "required"
-                }
-            });
-
-            alert("Huella verificada para " + savedEmail);
-            location.href = "formulario.html";
-        } catch (err) {
-            alert("Error con huella: " + err.message);
+    // ===== Autenticación con Passkey para un correo =====
+    async function authenticateWithEmail(email){
+      setStatus('Validando con tu huella…');
+      // 1) Pedir opciones de autenticación (allowCredentials por correo)
+      const options = await postJSON(`${API_BASE}/api/webauthn/auth/options`, { email });
+      options.challenge = b64urlToBuf(options.challenge);
+      if(Array.isArray(options.allowCredentials)){
+        options.allowCredentials = options.allowCredentials.map(c=>({ ...c, id: b64urlToBuf(c.id) }));
+      }
+      // 2) Prompt de huella/FaceID
+      const assertion = await navigator.credentials.get({ publicKey: options });
+      if(!assertion) throw new Error('No se obtuvo credencial');
+      // 3) Verificar en backend y obtener Custom Token
+      const authData = {
+        id: assertion.id,
+        rawId: bufToB64url(assertion.rawId),
+        type: assertion.type,
+        response: {
+          clientDataJSON: bufToB64url(assertion.response.clientDataJSON),
+          authenticatorData: bufToB64url(assertion.response.authenticatorData),
+          signature: bufToB64url(assertion.response.signature),
+          userHandle: assertion.response.userHandle ? bufToB64url(assertion.response.userHandle) : null,
         }
+      };
+      const verify = await postJSON(`${API_BASE}/api/webauthn/auth/verify`, { email, assertion: authData });
+      if(!verify?.firebaseCustomToken) throw new Error('Backend no devolvió Custom Token');
+      // 4) Iniciar sesión en Firebase y redirigir
+      await signInWithCustomToken(auth, verify.firebaseCustomToken);
+      await logLogin('passkey');
+      location.href = FORM_URL;
     }
 
-    // ======== Auto login con huella al abrir ========
-    window.addEventListener("load", async () => {
-        if (localStorage.getItem("userEmail") && localStorage.getItem("fingerprintId")) {
-            try {
-                await loginWithFingerprint();
-            } catch (e) {
-                console.log("Huella cancelada");
-            }
+    // ===== Al hacer click: pedir correo -> huella -> login (registrando si hace falta) =====
+    $('btnLogin').addEventListener('click', async ()=>{
+      const email = $('email').value.trim();
+      if(!email) return alert('Ingresa tu correo');
+      if(!window.PublicKeyCredential) return alert('Tu navegador no soporta WebAuthn/Passkeys');
+      setLoading(true); setStatus('Preparando autenticación…');
+      try{
+        // Intento de autenticación. Si falla por falta de passkey, registramos y luego autenticamos.
+        try{
+          await authenticateWithEmail(email);
+        }catch(e){
+          console.log('Auth falló, intentando registro:', e?.name, e?.message);
+          await registerPasskeyFor(email);
         }
+      }catch(err){
+        console.error(err);
+        alert('Error: ' + (err?.message || err));
+        setStatus('');
+      }finally{
+        setLoading(false);
+      }
     });
-</script>
+  </script>
 </body>
 </html>
