@@ -250,168 +250,210 @@
 </div>
 
 <script type="module">
-    // ======== Firebase Setup ========
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { 
-        getAuth, 
-        signInWithEmailAndPassword, 
-        signInWithPopup, 
-        GoogleAuthProvider, 
-        signInWithCustomToken 
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import { 
-        getFirestore, 
-        setDoc, 
-        getDoc, 
-        doc 
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } 
+    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import { getFirestore, setDoc, getDoc, doc, serverTimestamp } 
+    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
-        authDomain: "login-de3fd.firebaseapp.com",
-        projectId: "login-de3fd",
-        storageBucket: "login-de3fd.appspot.com",
-        messagingSenderId: "1064113669692",
-        appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
-        measurementId: "G-TMWR9JNR18"
-    };
+const firebaseConfig = {
+    apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
+    authDomain: "login-de3fd.firebaseapp.com",
+    databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
+    projectId: "login-de3fd",
+    storageBucket: "login-de3fd.appspot.com",
+    messagingSenderId: "1064113669692",
+    appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
+    measurementId: "G-TMWR9JNR18"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
 
-    // ======== LOGIN NORMAL ========
-    window.login = async function () {
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            localStorage.setItem("userEmail", email);
-            await registerBiometricCredential(email);
-            alert("Inicio de sesión exitoso");
-            location.href = "formulario.html";
-        } catch (error) {
-            alert("Error: " + error.message);
+// ----- helpers para base64url y arrays -----
+function bufferToBase64Url(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let str = "";
+    for (let i = 0; i < bytes.byteLength; i++) str += String.fromCharCode(bytes[i]);
+    return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function base64UrlToUint8Array(base64url) {
+    let base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
+    while (base64.length % 4) base64 += "=";
+    const binary = atob(base64);
+    const len = binary.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+}
+
+// ======== Login normal ========
+window.login = async function() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    try {
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        // guarda email local y continúa
+        localStorage.setItem("userEmail", email);
+        // registra la huella (si el dispositivo la soporta)
+        await registerBiometricCredential(email);
+        alert("Inicio de sesión exitoso");
+        location.href = "formulario.html";
+    } catch (error) {
+        console.error("login error:", error);
+        alert("Error: " + error.message);
+    }
+};
+
+// ======== Login con Google ========
+window.loginWithGoogle = async function() {
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const email = result.user.email;
+        localStorage.setItem("userEmail", email);
+        // registra la huella y asocia a este usuario
+        await registerBiometricCredential(email);
+        alert("Inicio de sesión con Google exitoso");
+        location.href = "formulario.html";
+    } catch (error) {
+        console.error("google login error:", error);
+        alert("Error con Google: " + error.message);
+    }
+};
+
+// ======== Registrar credencial biométrica (FIXED) ========
+async function registerBiometricCredential(email) {
+    try {
+        if (!window.PublicKeyCredential) {
+            console.warn("WebAuthn no soportado en este navegador");
+            return;
         }
-    };
 
-    // ======== LOGIN GOOGLE ========
-    window.loginWithGoogle = async function () {
-        try {
-            const result = await signInWithPopup(auth, provider);
-            const email = result.user.email;
-            localStorage.setItem("userEmail", email);
-            await registerBiometricCredential(email);
-            alert("Inicio de sesión con Google exitoso");
-            location.href = "formulario.html";
-        } catch (error) {
-            alert("Error con Google: " + error.message);
+        // nos aseguramos que hay usuario autenticado (Firestore rules seguras)
+        const user = auth.currentUser;
+        if (!user) {
+            console.warn("No hay usuario autenticado; no se guardará la huella en Firestore.");
+            return;
         }
-    };
 
-    // ======== REGISTRAR HUELLA ========
-    async function registerBiometricCredential(email) {
-        try {
-            if (!window.PublicKeyCredential) {
-                console.warn("WebAuthn no soportado");
-                return;
+        // user.id (UID) es más robusto que el email para identificación
+        const userId = new TextEncoder().encode(user.uid);
+
+        const publicKey = {
+            challenge: crypto.getRandomValues(new Uint8Array(32)),
+            rp: { name: "Mi App" },
+            user: { id: userId, name: email, displayName: email },
+            pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+            authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+            timeout: 60000,
+            attestation: "direct"
+        };
+
+        const cred = await navigator.credentials.create({ publicKey });
+
+        if (!cred) {
+            throw new Error("Credencial no retornada por el navegador.");
+        }
+
+        // transformamos rawId a base64url (seguro como docID)
+        const rawIdB64Url = bufferToBase64Url(cred.rawId);
+
+        // ====== GRABAR en Firestore en colección 'fingerprintIndex' ======
+        // usamos como document id la base64url (sin caracteres / + =) -> evita errores de path
+        const docRef = doc(db, "fingerprintIndex", rawIdB64Url);
+
+        // Si quieres guardar también refreshToken (opcional - ver nota de seguridad abajo)
+        const refreshToken = user.refreshToken || null;
+
+        await setDoc(docRef, {
+            uid: user.uid,
+            email: email,
+            createdAt: serverTimestamp(),
+            refreshToken: refreshToken
+        });
+
+        // Guardar localmente para rápido uso en este dispositivo
+        localStorage.setItem("fingerprintId", rawIdB64Url);
+
+        console.log("Huella registrada y guardada (doc id):", rawIdB64Url);
+
+    } catch (err) {
+        console.error("registerBiometricCredential error:", err);
+        alert("No se pudo registrar la huella: " + (err.message || err));
+    }
+}
+
+// ======== Login con huella (usa fingerprintId guardado) ========
+window.loginWithFingerprint = async function() {
+    try {
+        const savedId = localStorage.getItem("fingerprintId");
+        if (!savedId) {
+            alert("No hay huella registrada en este dispositivo.");
+            return;
+        }
+
+        const rawId = base64UrlToUint8Array(savedId);
+
+        // pedir verificación biométrica al navegador
+        await navigator.credentials.get({
+            publicKey: {
+                challenge: crypto.getRandomValues(new Uint8Array(32)),
+                allowCredentials: [{
+                    id: rawId,
+                    type: "public-key",
+                    transports: ["internal"]
+                }],
+                userVerification: "required"
             }
+        });
 
-            const userId = new TextEncoder().encode(email);
+        console.log("Huella local verificada (navegador confirmó). Buscando dueño en Firestore...");
 
-            const cred = await navigator.credentials.create({
-                publicKey: {
-                    challenge: crypto.getRandomValues(new Uint8Array(32)),
-                    rp: { name: "Mi App" },
-                    user: {
-                        id: userId,
-                        name: email,
-                        displayName: email
-                    },
-                    pubKeyCredParams: [{ type: "public-key", alg: -7 }],
-                    authenticatorSelection: {
-                        authenticatorAttachment: "platform",
-                        userVerification: "required"
-                    },
-                    timeout: 60000,
-                    attestation: "direct"
-                }
-            });
+        // buscamos documento en Firestore con ese id
+        const docSnap = await getDoc(doc(db, "fingerprintIndex", savedId));
+        if (!docSnap.exists()) {
+            alert("Huella verificada pero no se encontró usuario asociado en Firestore.");
+            return;
+        }
 
-            const rawIdBase64 = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
+        const info = docSnap.data();
+        console.log("fingerprintIndex doc data:", info);
 
-            // Guardamos en localStorage
-            localStorage.setItem("fingerprintId", rawIdBase64);
+        // guardamos el email local y redirigimos
+        localStorage.setItem("userEmail", info.email || "");
+        // opcional: guardar uid si lo necesitas
+        localStorage.setItem("userUid", info.uid || "");
 
-            // Guardamos en Firestore
-            await setDoc(doc(db, "fingerprints", rawIdBase64), {
-                email: email
-            });
+        alert("Huella verificada para " + (info.email || "usuario"));
+        // IMPORTANTE: aquí todavía NO hemos re-autenticado a Firebase.
+        // Para re-autenticar de forma segura debes usar un back-end que verifique la asserción
+        // y te devuelva un customToken de Firebase (te lo puedo armar).
+        // Por ahora redirigimos:
+        location.href = "formulario.html";
 
-            console.log("Huella registrada y vinculada a:", email);
-        } catch (err) {
-            console.warn("Error registrando huella:", err.message);
+    } catch (err) {
+        console.error("loginWithFingerprint error:", err);
+        alert("Error con huella: " + (err.message || err));
+    }
+};
+
+// ======== Auto login con huella al abrir (si quieres) ========
+window.addEventListener("load", async () => {
+    if (localStorage.getItem("fingerprintId")) {
+        try {
+            // intenta login con huella en segundo plano
+            // si no quieres auto preguntar huella al abrir, comenta la próxima línea
+            await loginWithFingerprint();
+        } catch (e) {
+            console.log("Auto huella cancelada:", e);
         }
     }
-
-    // ======== LOGIN CON HUELLA ========
-    window.loginWithFingerprint = async function () {
-        try {
-            const savedId = localStorage.getItem("fingerprintId");
-
-            if (!savedId) {
-                alert("No hay huella registrada en este dispositivo");
-                return;
-            }
-
-            const rawId = Uint8Array.from(atob(savedId), c => c.charCodeAt(0));
-
-            await navigator.credentials.get({
-                publicKey: {
-                    challenge: crypto.getRandomValues(new Uint8Array(32)),
-                    allowCredentials: [{
-                        id: rawId,
-                        type: "public-key",
-                        transports: ["internal"]
-                    }],
-                    userVerification: "required"
-                }
-            });
-
-            // Buscamos en Firestore el email de esa huella
-            const docSnap = await getDoc(doc(db, "fingerprints", savedId));
-
-            if (!docSnap.exists()) {
-                alert("No hay usuario asociado a esta huella");
-                return;
-            }
-
-            const email = docSnap.data().email;
-            alert("Huella verificada para: " + email);
-
-            // Guardamos email localmente
-            localStorage.setItem("userEmail", email);
-
-            // Aquí podrías implementar login automático con token si tienes backend
-            location.href = "formulario.html";
-
-        } catch (err) {
-            alert("Error con huella: " + err.message);
-        }
-    };
-
-    // ======== AUTOLOGIN CON HUELLA ========
-    window.addEventListener("load", async () => {
-        if (localStorage.getItem("fingerprintId")) {
-            try {
-                await loginWithFingerprint();
-            } catch (e) {
-                console.log("Huella cancelada");
-            }
-        }
-    });
+});
 </script>
+
 
 </body>
 </html>
