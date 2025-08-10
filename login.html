@@ -115,6 +115,8 @@
 
     // ===== BACKEND URL =====
     const API_BASE = 'https://us-central1-login-de3fd.cloudfunctions.net/webauthn';
+// URL de destino tras login (ajusta para GitHub Pages)
+const FORM_URL = (location.hostname === 'ivanclas.github.io') ? '/MultiVault/formulario.html' : 'formulario.html';
 
     // ===== Utils base64url <-> ArrayBuffer =====
     const b64urlToBuf = (b64url) => {
@@ -146,9 +148,23 @@
 
     // ===== API client =====
     async function postJSON(url, body){
-      const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body||{}) });
-      if(!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.json();
+      try {
+        console.log('POST', url, body);
+        const res = await fetch(url, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(body||{})
+        });
+        if(!res.ok){
+          const text = await res.text().catch(()=>'(sin body)');
+          throw new Error(`HTTP ${res.status} ${res.statusText} -> ${text}`);
+        }
+        return await res.json();
+      } catch (e) {
+        console.error('postJSON error', e);
+        alert('Error de fetch: ' + (e?.message || e));
+        throw e;
+      }
     }
 
     // ===== Login Email/Password =====
@@ -160,7 +176,7 @@
         showLoading(true);
         await signInWithEmailAndPassword(auth, email, password);
         alert('Inicio de sesión exitoso');
-        // window.location.href = 'formulario.html';
+        window.location.href = FORM_URL;
       }catch(err){ alert('Error: '+err.message); }
       finally{ showLoading(false); }
     });
@@ -171,7 +187,7 @@
         showLoading(true);
         await signInWithPopup(auth, provider);
         alert('Inicio con Google exitoso');
-        // window.location.href = 'formulario.html';
+        window.location.href = FORM_URL;
       }catch(err){ alert('Error con Google: '+err.message); }
       finally{ showLoading(false); }
     });
@@ -210,6 +226,12 @@
         if(!email) return alert('Ingresa tu correo o inicia sesión para asociar la passkey.');
         showLoading(true);
         const options = await postJSON(`${API_BASE}/api/webauthn/register/options`, { email });
+        // Forzar uso del lector del dispositivo (plataforma)
+        options.authenticatorSelection = {
+          authenticatorAttachment: 'platform',
+          residentKey: options.authenticatorSelection?.residentKey || 'preferred',
+          userVerification: 'required'
+        };
         options.challenge = b64urlToBuf(options.challenge);
         if(options.user?.id) options.user.id = b64urlToBuf(options.user.id);
         if(Array.isArray(options.excludeCredentials)){
@@ -260,7 +282,7 @@
         if(!verify?.firebaseCustomToken) throw new Error('Backend no devolvió Custom Token');
         await signInWithCustomToken(auth, verify.firebaseCustomToken);
         alert('Huella verificada. Login OK');
-        window.location.href = 'formulario.html';
+        window.location.href = FORM_URL;
       }catch(err){ alert('Error con huella: '+err.message); }
       finally{ showLoading(false); }
     });
