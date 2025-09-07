@@ -312,7 +312,7 @@
                 await createUserWithEmailAndPassword(auth, email, password);
                 
                 // Guardar el correo en Realtime Database
-                const userRef = ref(db, 'users/' + email.replace('.', ',')); 
+                const userRef = ref(db, 'users/' + email.replace('.', ','));
                 set(userRef, {
                     email: email,
                     loggedIn: true
