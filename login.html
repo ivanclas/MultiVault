@@ -24,10 +24,16 @@
     h1{color:#333;font-size:32px;margin-bottom:20px;font-weight:700;letter-spacing:1px}
     .input-wrapper{position:relative;width:100%}
     input{
-      width:100%;padding:15px;margin:15px 0;border:2px solid #ddd;border-radius:10px;
+      width:100%;padding:15px 48px 15px 15px;margin:15px 0;border:2px solid #ddd;border-radius:10px;
       font-size:16px;transition:border-color .3s ease;box-sizing:border-box
     }
     input:focus{border-color:#007bff;outline:none}
+    .toggle-visibility{
+      position:absolute;right:12px;top:50%;transform:translateY(-50%);
+      cursor:pointer;color:#666;font-size:18px
+    }
+    .toggle-visibility:hover{color:#111}
+
     button{
       width:100%;padding:15px;background:#007bff;color:#fff;border:none;border-radius:10px;
       cursor:pointer;font-size:16px;transition:background-color .3s ease;margin-top:12px
@@ -53,7 +59,7 @@
     }
     .close:hover{color:#000}
 
-    /* Capa de carga (opcional) */
+    /* Capa de carga */
     .loading-overlay{
       display:none;position:fixed;top:0;left:0;width:100%;height:100%;
       background:rgba(0,0,0,.65);justify-content:center;align-items:center;z-index:20;flex-direction:column
@@ -75,17 +81,22 @@
 <body>
   <div class="login-container">
     <h1>Iniciar Sesión</h1>
+
     <div class="input-wrapper">
       <input type="email" id="login-email" placeholder="Correo electrónico" required />
     </div>
+
     <div class="input-wrapper">
       <input type="password" id="login-password" placeholder="Contraseña" required />
+      <i id="toggle-login-pass" class="fa-regular fa-eye toggle-visibility"
+         title="Mostrar/Ocultar" onclick="togglePassword('login-password','toggle-login-pass')"></i>
     </div>
+
     <button id="btn-login" onclick="login()">
       <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
     </button>
 
-    <!-- Solo login con huella -->
+    <!-- Login con huella -->
     <button id="btn-fingerprint" onclick="loginWithFingerprint()">
       <i class="fa-solid fa-fingerprint"></i> Iniciar sesión con Huella
     </button>
@@ -99,12 +110,17 @@
     <div class="modal-content">
       <span class="close" onclick="closeModal()">&times;</span>
       <h1>Registro</h1>
+
       <div class="input-wrapper">
         <input type="email" id="register-email" placeholder="Correo electrónico" required />
       </div>
+
       <div class="input-wrapper">
         <input type="password" id="register-password" placeholder="Contraseña" required />
+        <i id="toggle-register-pass" class="fa-regular fa-eye toggle-visibility"
+           title="Mostrar/Ocultar" onclick="togglePassword('register-password','toggle-register-pass')"></i>
       </div>
+
       <button id="btn-register" onclick="register()">
         <i class="fas fa-user-plus"></i> Registrar
       </button>
@@ -141,9 +157,7 @@
       sendPasswordResetEmail,
       GoogleAuthProvider
     } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import {
-      getDatabase, ref, set
-    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
@@ -164,15 +178,21 @@
     // Helpers UI
     const $ = (sel)=>document.querySelector(sel);
     const loading = $("#loading");
-    function setLoading(state){
-      loading.style.display = state ? "flex" : "none";
-    }
+    function setLoading(state){ loading.style.display = state ? "flex" : "none"; }
     function setDisabled(ids, state){
-      ids.forEach(id=>{
-        const el = document.getElementById(id);
-        if(el) el.disabled = state;
-      });
+      ids.forEach(id=>{ const el = document.getElementById(id); if(el) el.disabled = state; });
     }
+
+    // ======= Mostrar/Ocultar contraseña (ojito) =======
+    window.togglePassword = (fieldId, iconId)=>{
+      const field = document.getElementById(fieldId);
+      const icon  = document.getElementById(iconId);
+      if(!field || !icon) return;
+      const showing = field.type === "text";
+      field.type = showing ? "password" : "text";
+      icon.classList.toggle("fa-eye", showing);
+      icon.classList.toggle("fa-eye-slash", !showing);
+    };
 
     // ======= Registro =======
     window.register = async function(){
@@ -184,7 +204,6 @@
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         const uid = cred.user.uid;
 
-        // Guarda por UID (mejor que por correo)
         await set(ref(db, "users/"+uid), {
           email,
           createdAt: new Date().toISOString()
@@ -196,6 +215,7 @@
         alert("Error en registro: " + err.message);
       }finally{
         setLoading(false); setDisabled(["btn-register"], false);
+        updateFingerprintButtonVisibility();
       }
     };
 
@@ -219,28 +239,24 @@
         alert("Error en inicio de sesión: " + err.message);
       }finally{
         setLoading(false); setDisabled(["btn-login","btn-fingerprint"], false);
+        updateFingerprintButtonVisibility();
       }
     };
 
     // ======= Registro de credencial biométrica (WebAuthn) =======
     async function registerBiometricCredential(){
       try{
-        if(!("PublicKeyCredential" in window)){
-          // Navegador no soporta WebAuthn
-          return;
-        }
-        // Evita registrar varias veces si ya existe
-        if(localStorage.getItem("fingerprintId")) return;
+        if(!("PublicKeyCredential" in window)) return;
+        if(localStorage.getItem("fingerprintId")) return; // ya registrado
 
-        // Requiere HTTPS o localhost
         const isSecure = window.isSecureContext || location.hostname === "localhost";
         if(!isSecure){ 
-          console.warn("WebAuthn requiere contexto seguro (HTTPS o localhost).");
+          console.warn("WebAuthn requiere HTTPS o localhost.");
           return;
         }
 
         const email = auth.currentUser?.email || localStorage.getItem("userEmail") || "usuario@example.com";
-        const userId = new TextEncoder().encode(email.slice(0,64)); // user.id máx 64 bytes
+        const userId = new TextEncoder().encode(email.slice(0,64)); // máx 64 bytes
 
         const publicKey = {
           challenge: crypto.getRandomValues(new Uint8Array(32)),
@@ -261,7 +277,6 @@
         const cred = await navigator.credentials.create({ publicKey });
         if(!cred) return;
 
-        // Guarda el id de la credencial en localStorage para futuras verificaciones
         const rawId = new Uint8Array(cred.rawId);
         const b64 = btoa(String.fromCharCode(...rawId));
         localStorage.setItem("fingerprintId", b64);
@@ -271,25 +286,27 @@
     }
 
     // ======= Login con huella =======
-    window.loginWithFingerprint = async function(){
+    //   Si se llama con {silent:true}, no muestra alertas en errores (para auto-intento).
+    window.loginWithFingerprint = async function(opts = {}){
+      const silent = opts.silent === true;
       try{
         setLoading(true); setDisabled(["btn-login","btn-fingerprint"], true);
 
         if(!("PublicKeyCredential" in window)){
-          alert("Tu navegador no soporta inicio con huella (WebAuthn).");
+          if(!silent) alert("Tu navegador no soporta inicio con huella (WebAuthn).");
           return;
         }
 
         const savedEmail = localStorage.getItem("userEmail");
         const savedId = localStorage.getItem("fingerprintId");
         if(!savedEmail || !savedId){
-          alert("No hay huella registrada. Inicia sesión con correo/contraseña primero.");
+          if(!silent) alert("No hay huella registrada. Inicia sesión con correo/contraseña primero.");
           return;
         }
 
         const isSecure = window.isSecureContext || location.hostname === "localhost";
         if(!isSecure){
-          alert("El inicio con huella requiere HTTPS o localhost.");
+          if(!silent) alert("El inicio con huella requiere HTTPS o localhost.");
           return;
         }
 
@@ -297,22 +314,21 @@
         await navigator.credentials.get({
           publicKey: {
             challenge: crypto.getRandomValues(new Uint8Array(32)),
-            allowCredentials: [{
-              id: rawId, type: "public-key", transports: ["internal"]
-            }],
+            allowCredentials: [{ id: rawId, type: "public-key", transports: ["internal"] }],
             userVerification: "required",
             timeout: 60000
           }
         });
 
-        // IMPORTANTE: En producción debes verificar en tu servidor la respuesta de WebAuthn.
-        // Aquí asumimos OK para flujo cliente.
-        alert("Huella verificada para " + savedEmail);
+        // Nota: en producción, valida en servidor.
+        if(!silent) alert("Huella verificada para " + savedEmail);
         location.href = "formulario.html";
       }catch(err){
-        alert("Error con huella: " + err.message);
+        if(!silent) alert("Error con huella: " + err.message);
+        else console.warn("Auto-huella falló:", err);
       }finally{
         setLoading(false); setDisabled(["btn-login","btn-fingerprint"], false);
+        updateFingerprintButtonVisibility();
       }
     };
 
@@ -325,7 +341,6 @@
       const modal = document.getElementById("registerModal");
       modal.style.display = "none"; modal.setAttribute("aria-hidden","true");
     };
-
     window.openResetPasswordModal = () => {
       const modal = document.getElementById("resetPasswordModal");
       modal.style.display = "flex"; modal.setAttribute("aria-hidden","false");
@@ -350,6 +365,29 @@
         setLoading(false); setDisabled(["btn-reset"], false);
       }
     };
+
+    // ======= Mostrar/ocultar botón de huella según soporte y registro =======
+    function updateFingerprintButtonVisibility(){
+      const btn = document.getElementById("btn-fingerprint");
+      const supported = ("PublicKeyCredential" in window);
+      const hasId = !!localStorage.getItem("fingerprintId");
+      btn.style.display = (supported && hasId) ? "block" : "none";
+    }
+
+    // ======= Auto-detección de huella al cargar =======
+    window.addEventListener("DOMContentLoaded", ()=>{
+      updateFingerprintButtonVisibility();
+
+      // Si hay huella guardada y soporte disponible → intentamos auto-login con huella
+      const supported = ("PublicKeyCredential" in window);
+      const hasId = !!localStorage.getItem("fingerprintId");
+      const isSecure = window.isSecureContext || location.hostname === "localhost";
+
+      if(supported && hasId && isSecure){
+        // Modo silencioso: no muestra alertas si el usuario cancela
+        loginWithFingerprint({silent:true});
+      }
+    });
 
     // Cerrar modal al hacer click fuera
     window.addEventListener("click",(e)=>{
