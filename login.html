@@ -1,337 +1,363 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login con Firebase</title>
-    <link rel="icon" href="iconGaleria.png" type="image/png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login con Firebase</title>
+  <link rel="icon" href="iconGaleria.png" type="image/png">
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Cargar Font Awesome para los iconos -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Estilo General */
+    body{
+      font-family:'Poppins',sans-serif;
+      background:linear-gradient(135deg,#00c6ff,#0072ff);
+      display:flex;justify-content:center;align-items:center;
+      height:100vh;margin:0;padding:0
+    }
+    .login-container{
+      background:#fff;padding:40px;border-radius:15px;
+      box-shadow:0 10px 30px rgba(0,0,0,.1);
+      width:100%;max-width:450px;text-align:center;position:relative
+    }
+    h1{color:#333;font-size:32px;margin-bottom:20px;font-weight:700;letter-spacing:1px}
+    .input-wrapper{position:relative;width:100%}
+    input{
+      width:100%;padding:15px;margin:15px 0;border:2px solid #ddd;border-radius:10px;
+      font-size:16px;transition:border-color .3s ease;box-sizing:border-box
+    }
+    input:focus{border-color:#007bff;outline:none}
+    button{
+      width:100%;padding:15px;background:#007bff;color:#fff;border:none;border-radius:10px;
+      cursor:pointer;font-size:16px;transition:background-color .3s ease;margin-top:12px
+    }
+    button:hover{background:#0056b3}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    p{margin-top:15px;color:#666}
+    a{color:#007bff;text-decoration:none;font-weight:700}
+    a:hover{text-decoration:underline}
 
-    <style>
-        /* Estilo General */
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            padding: 0;
-        }
+    /* Overlays / Modales */
+    .modal{
+      display:none;position:fixed;z-index:10;left:0;top:0;width:100%;height:100%;
+      background:rgba(0,0,0,.5);justify-content:center;align-items:center;padding:16px
+    }
+    .modal-content{
+      background:#fff;border-radius:14px;max-width:420px;width:100%;
+      padding:28px;box-shadow:0 10px 25px rgba(0,0,0,.18);position:relative
+    }
+    .modal-content h1{font-size:26px;margin:0 0 10px}
+    .close{
+      position:absolute;right:14px;top:10px;font-size:26px;cursor:pointer;color:#666
+    }
+    .close:hover{color:#000}
 
-        .login-container {
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 450px;
-            text-align: center;
-            position: relative;
-        }
+    /* Capa de carga (opcional) */
+    .loading-overlay{
+      display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,.65);justify-content:center;align-items:center;z-index:20;flex-direction:column
+    }
+    .spinner{
+      border:4px solid rgba(255,255,255,.3);
+      border-top:4px solid #fff;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite
+    }
+    .loading-overlay p{color:#fff;margin-top:10px;font-size:16px}
+    @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
 
-        h1 {
-            color: #333;
-            font-size: 32px;
-            margin-bottom: 20px;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        input {
-            width: 100%;
-            padding: 15px;
-            margin: 15px 0;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-            box-sizing: border-box;
-        }
-
-        input:focus {
-            border-color: #007bff;
-            outline: none;
-        }
-
-        .input-wrapper {
-            position: relative;
-            width: 100%;
-        }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        p {
-            margin-top: 15px;
-            color: #666;
-        }
-
-        a {
-            color: #007bff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        .loading-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 2;
-        }
-
-        .loading-overlay p {
-            color: white;
-            font-size: 18px;
-            margin-top: 10px;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .login-container {
-                padding: 30px;
-            }
-
-            h1 {
-                font-size: 28px;
-            }
-
-            input, button {
-                padding: 12px;
-                font-size: 14px;
-            }
-        }
-    </style>
+    @media (max-width:768px){
+      .login-container{padding:30px}
+      h1{font-size:28px}
+      input,button{padding:12px;font-size:14px}
+    }
+  </style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>Iniciar Sesión</h1>
-        <div class="input-wrapper">
-            <input type="email" id="login-email" placeholder="Correo electrónico" required />
-        </div>
-        <div class="input-wrapper">
-            <input type="password" id="login-password" placeholder="Contraseña" required />
-        </div>
-        <button onclick="login()">
-            <i class="fas fa-sign-in-alt"></i>
-            Iniciar Sesión
-        </button>
-
-        <!-- Solo la opción de login con huella -->
-        <button onclick="loginWithFingerprint()">
-            Iniciar sesión con Huella
-        </button>
-
-        <p><a href="javascript:void(0);" onclick="openResetPasswordModal()">¿Olvidaste tu contraseña?</a></p>
-        <p>¿No tienes una cuenta? <a href="javascript:void(0);" onclick="openModal()">Regístrate aquí</a>.</p>
+  <div class="login-container">
+    <h1>Iniciar Sesión</h1>
+    <div class="input-wrapper">
+      <input type="email" id="login-email" placeholder="Correo electrónico" required />
     </div>
-
-    <!-- Modal de registro -->
-    <div id="registerModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h1>Registro</h1>
-            <div class="input-wrapper">
-                <input type="email" id="register-email" placeholder="Correo electrónico" required />
-            </div>
-            <div class="input-wrapper">
-                <input type="password" id="register-password" placeholder="Contraseña" required />
-            </div>
-            <button onclick="register()">
-                <i class="fas fa-user-plus"></i>
-                Registrar
-            </button>
-        </div>
+    <div class="input-wrapper">
+      <input type="password" id="login-password" placeholder="Contraseña" required />
     </div>
+    <button id="btn-login" onclick="login()">
+      <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+    </button>
 
-    <!-- Modal para restablecer contraseña -->
-    <div id="resetPasswordModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeResetPasswordModal()">&times;</span>
-            <h1>Restablecer Contraseña</h1>
-            <p>Ingresa tu correo electrónico para recibir un enlace para restablecer tu contraseña.</p>
-            <div class="input-wrapper">
-                <input type="email" id="reset-email" placeholder="Correo electrónico" required />
-            </div>
-            <button onclick="resetPassword()">
-                <i class="fas fa-paper-plane"></i>
-                Enviar enlace
-            </button>
-        </div>
+    <!-- Solo login con huella -->
+    <button id="btn-fingerprint" onclick="loginWithFingerprint()">
+      <i class="fa-solid fa-fingerprint"></i> Iniciar sesión con Huella
+    </button>
+
+    <p><a href="javascript:void(0);" onclick="openResetPasswordModal()">¿Olvidaste tu contraseña?</a></p>
+    <p>¿No tienes una cuenta? <a href="javascript:void(0);" onclick="openModal()">Regístrate aquí</a>.</p>
+  </div>
+
+  <!-- Modal de registro -->
+  <div id="registerModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h1>Registro</h1>
+      <div class="input-wrapper">
+        <input type="email" id="register-email" placeholder="Correo electrónico" required />
+      </div>
+      <div class="input-wrapper">
+        <input type="password" id="register-password" placeholder="Contraseña" required />
+      </div>
+      <button id="btn-register" onclick="register()">
+        <i class="fas fa-user-plus"></i> Registrar
+      </button>
     </div>
+  </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"; 
+  <!-- Modal para restablecer contraseña -->
+  <div id="resetPasswordModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <span class="close" onclick="closeResetPasswordModal()">&times;</span>
+      <h1>Restablecer Contraseña</h1>
+      <p>Ingresa tu correo electrónico para recibir un enlace de restablecimiento.</p>
+      <div class="input-wrapper">
+        <input type="email" id="reset-email" placeholder="Correo electrónico" required />
+      </div>
+      <button id="btn-reset" onclick="resetPassword()">
+        <i class="fas fa-paper-plane"></i> Enviar enlace
+      </button>
+    </div>
+  </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
-            authDomain: "login-de3fd.firebaseapp.com",
-            databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
-            projectId: "login-de3fd",
-            storageBucket: "login-de3fd.appspot.com",
-            messagingSenderId: "1064113669692",
-            appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
-            measurementId: "G-TMWR9JNR18"
-        };
+  <!-- Overlay de carga -->
+  <div id="loading" class="loading-overlay" role="status" aria-live="polite">
+    <div class="spinner"></div>
+    <p>Procesando…</p>
+  </div>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-        const db = getDatabase(app);
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      sendPasswordResetEmail,
+      GoogleAuthProvider
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import {
+      getDatabase, ref, set
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-        // ======== Registro ========
-        window.register = async function() {
-            const email = document.getElementById("register-email").value;
-            const password = document.getElementById("register-password").value;
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-                
-                // Guardar el correo en Realtime Database
-                const userRef = ref(db, 'users/' + email.replace('.', ','));
-                set(userRef, {
-                    email: email,
-                    loggedIn: true
-                });
+    const firebaseConfig = {
+      apiKey: "AIzaSyARefiao7-HrGUZJLNgxLZM1ouJZnf0i80",
+      authDomain: "login-de3fd.firebaseapp.com",
+      databaseURL: "https://login-de3fd-default-rtdb.firebaseio.com",
+      projectId: "login-de3fd",
+      storageBucket: "login-de3fd.appspot.com",
+      messagingSenderId: "1064113669692",
+      appId: "1:1064113669692:web:c45b68b5a8a519536f2539",
+      measurementId: "G-TMWR9JNR18"
+    };
 
-                alert("Registro exitoso");
-                closeModal(); // Cerrar el modal de registro
-            } catch (error) {
-                alert("Error: " + error.message);
-            }
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider(); // por si luego agregas Google
+    const db = getDatabase(app);
+
+    // Helpers UI
+    const $ = (sel)=>document.querySelector(sel);
+    const loading = $("#loading");
+    function setLoading(state){
+      loading.style.display = state ? "flex" : "none";
+    }
+    function setDisabled(ids, state){
+      ids.forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.disabled = state;
+      });
+    }
+
+    // ======= Registro =======
+    window.register = async function(){
+      const email = $("#register-email").value.trim();
+      const password = $("#register-password").value;
+      if(!email || !password){ alert("Completa correo y contraseña."); return; }
+      try{
+        setLoading(true); setDisabled(["btn-register"], true);
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = cred.user.uid;
+
+        // Guarda por UID (mejor que por correo)
+        await set(ref(db, "users/"+uid), {
+          email,
+          createdAt: new Date().toISOString()
+        });
+
+        alert("Registro exitoso");
+        closeModal();
+      }catch(err){
+        alert("Error en registro: " + err.message);
+      }finally{
+        setLoading(false); setDisabled(["btn-register"], false);
+      }
+    };
+
+    // ======= Login normal =======
+    window.login = async function(){
+      const email = $("#login-email").value.trim();
+      const password = $("#login-password").value;
+      if(!email || !password){ alert("Completa correo y contraseña."); return; }
+
+      try{
+        setLoading(true); setDisabled(["btn-login","btn-fingerprint"], true);
+        await signInWithEmailAndPassword(auth, email, password);
+        localStorage.setItem("userEmail", email);
+
+        // Registrar credencial biométrica si es posible (solo una vez)
+        await registerBiometricCredential();
+
+        alert("Inicio de sesión exitoso");
+        location.href = "formulario.html";
+      }catch(err){
+        alert("Error en inicio de sesión: " + err.message);
+      }finally{
+        setLoading(false); setDisabled(["btn-login","btn-fingerprint"], false);
+      }
+    };
+
+    // ======= Registro de credencial biométrica (WebAuthn) =======
+    async function registerBiometricCredential(){
+      try{
+        if(!("PublicKeyCredential" in window)){
+          // Navegador no soporta WebAuthn
+          return;
+        }
+        // Evita registrar varias veces si ya existe
+        if(localStorage.getItem("fingerprintId")) return;
+
+        // Requiere HTTPS o localhost
+        const isSecure = window.isSecureContext || location.hostname === "localhost";
+        if(!isSecure){ 
+          console.warn("WebAuthn requiere contexto seguro (HTTPS o localhost).");
+          return;
         }
 
-        // ======== Login normal ========
-        window.login = async function() {
-            const email = document.getElementById("login-email").value;
-            const password = document.getElementById("login-password").value;
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                localStorage.setItem("userEmail", email);
-                await registerBiometricCredential();
+        const email = auth.currentUser?.email || localStorage.getItem("userEmail") || "usuario@example.com";
+        const userId = new TextEncoder().encode(email.slice(0,64)); // user.id máx 64 bytes
 
-                alert("Inicio de sesión exitoso");
-                location.href = "formulario.html";
-            } catch (error) {
-                alert("Error: " + error.message);
-            }
+        const publicKey = {
+          challenge: crypto.getRandomValues(new Uint8Array(32)),
+          rp: { name: "MultiVault", id: window.location.hostname || undefined },
+          user: { id: userId, name: email, displayName: email },
+          pubKeyCredParams: [
+            { type: "public-key", alg: -7 },    // ES256
+            { type: "public-key", alg: -257 }   // RS256
+          ],
+          authenticatorSelection: {
+            authenticatorAttachment: "platform",
+            userVerification: "required"
+          },
+          timeout: 60000,
+          attestation: "none"
+        };
+
+        const cred = await navigator.credentials.create({ publicKey });
+        if(!cred) return;
+
+        // Guarda el id de la credencial en localStorage para futuras verificaciones
+        const rawId = new Uint8Array(cred.rawId);
+        const b64 = btoa(String.fromCharCode(...rawId));
+        localStorage.setItem("fingerprintId", b64);
+      }catch(e){
+        console.warn("No se pudo registrar la credencial biométrica:", e);
+      }
+    }
+
+    // ======= Login con huella =======
+    window.loginWithFingerprint = async function(){
+      try{
+        setLoading(true); setDisabled(["btn-login","btn-fingerprint"], true);
+
+        if(!("PublicKeyCredential" in window)){
+          alert("Tu navegador no soporta inicio con huella (WebAuthn).");
+          return;
         }
 
-        // ======== Login con huella ========
-        window.loginWithFingerprint = async function() {
-            try {
-                const savedEmail = localStorage.getItem("userEmail");
-                const savedId = localStorage.getItem("fingerprintId");
-
-                if (!savedEmail || !savedId) {
-                    alert("No hay una huella registrada, inicia sesión primero");
-                    return;
-                }
-
-                const rawId = Uint8Array.from(atob(savedId), c => c.charCodeAt(0));
-
-                await navigator.credentials.get({
-                    publicKey: {
-                        challenge: crypto.getRandomValues(new Uint8Array(32)),
-                        allowCredentials: [{
-                            id: rawId,
-                            type: "public-key",
-                            transports: ["internal"]
-                        }],
-                        userVerification: "required"
-                    }
-                });
-
-                alert("Huella verificada para " + savedEmail);
-                location.href = "formulario.html";
-            } catch (err) {
-                alert("Error con huella: " + err.message);
-            }
+        const savedEmail = localStorage.getItem("userEmail");
+        const savedId = localStorage.getItem("fingerprintId");
+        if(!savedEmail || !savedId){
+          alert("No hay huella registrada. Inicia sesión con correo/contraseña primero.");
+          return;
         }
 
-        // Funciones para el Modal
-        window.openModal = () => {
-            const modal = document.getElementById("registerModal");
-            modal.style.display = "flex";
-        };
-
-        window.closeModal = () => {
-            const modal = document.getElementById("registerModal");
-            modal.style.display = "none";
-        };
-
-        // Función para mostrar la contraseña
-        window.togglePassword = (fieldId) => {
-            const field = document.getElementById(fieldId);
-            field.type = field.type === "password" ? "text" : "password";
-        };
-
-        // Modal para restablecer contraseña
-        window.openResetPasswordModal = () => {
-            const modal = document.getElementById("resetPasswordModal");
-            modal.style.display = "flex";
-        };
-
-        window.closeResetPasswordModal = () => {
-            const modal = document.getElementById("resetPasswordModal");
-            modal.style.display = "none";
-        };
-
-        window.resetPassword = async () => {
-            const email = document.getElementById("reset-email").value;
-            if (!email) {
-                alert("Por favor, ingresa tu correo electrónico.");
-                return;
-            }
-            try {
-                await sendPasswordResetEmail(auth, email);
-                alert("Correo de restablecimiento enviado.");
-                closeResetPasswordModal();
-            } catch (error) {
-                alert("Error: " + error.message);
-            }
+        const isSecure = window.isSecureContext || location.hostname === "localhost";
+        if(!isSecure){
+          alert("El inicio con huella requiere HTTPS o localhost.");
+          return;
         }
-    </script>
+
+        const rawId = Uint8Array.from(atob(savedId), c => c.charCodeAt(0));
+        await navigator.credentials.get({
+          publicKey: {
+            challenge: crypto.getRandomValues(new Uint8Array(32)),
+            allowCredentials: [{
+              id: rawId, type: "public-key", transports: ["internal"]
+            }],
+            userVerification: "required",
+            timeout: 60000
+          }
+        });
+
+        // IMPORTANTE: En producción debes verificar en tu servidor la respuesta de WebAuthn.
+        // Aquí asumimos OK para flujo cliente.
+        alert("Huella verificada para " + savedEmail);
+        location.href = "formulario.html";
+      }catch(err){
+        alert("Error con huella: " + err.message);
+      }finally{
+        setLoading(false); setDisabled(["btn-login","btn-fingerprint"], false);
+      }
+    };
+
+    // ======= Modales =======
+    window.openModal = () => {
+      const modal = document.getElementById("registerModal");
+      modal.style.display = "flex"; modal.setAttribute("aria-hidden","false");
+    };
+    window.closeModal = () => {
+      const modal = document.getElementById("registerModal");
+      modal.style.display = "none"; modal.setAttribute("aria-hidden","true");
+    };
+
+    window.openResetPasswordModal = () => {
+      const modal = document.getElementById("resetPasswordModal");
+      modal.style.display = "flex"; modal.setAttribute("aria-hidden","false");
+    };
+    window.closeResetPasswordModal = () => {
+      const modal = document.getElementById("resetPasswordModal");
+      modal.style.display = "none"; modal.setAttribute("aria-hidden","true");
+    };
+
+    // ======= Restablecer contraseña =======
+    window.resetPassword = async () => {
+      const email = document.getElementById("reset-email").value.trim();
+      if(!email){ alert("Por favor, ingresa tu correo electrónico."); return; }
+      try{
+        setLoading(true); setDisabled(["btn-reset"], true);
+        await sendPasswordResetEmail(auth, email);
+        alert("Correo de restablecimiento enviado.");
+        closeResetPasswordModal();
+      }catch(error){
+        alert("Error: " + error.message);
+      }finally{
+        setLoading(false); setDisabled(["btn-reset"], false);
+      }
+    };
+
+    // Cerrar modal al hacer click fuera
+    window.addEventListener("click",(e)=>{
+      const reg = document.getElementById("registerModal");
+      const rst = document.getElementById("resetPasswordModal");
+      if(e.target === reg) closeModal();
+      if(e.target === rst) closeResetPasswordModal();
+    });
+  </script>
 </body>
 </html>
